@@ -5,12 +5,16 @@ One-time script that uploads the JSON taxonomies (50 AM roles + 45 Semi roles)
 into the Supabase database so the pipeline has something to match jobs against.
 
 Idempotent: safe to run multiple times. For each industry, it:
-  1. Upserts the industry row (matched by slug)
+  1. Inserts the industry row if missing, else updates it
   2. Deletes existing canonical_roles for that industry
   3. Re-inserts all roles fresh
 
 Note: re-running this resets canonical_roles.open_jobs_count to 0. The next
 pipeline run will repopulate counts. For v1 this is acceptable.
+
+We deliberately avoid PostgREST's `upsert` because supabase-py 2.30 + PostgREST 13
+return a confusing PGRST125 ("Invalid path") error on conflict-target params.
+Explicit select-then-insert/update is more code but works on any version.
 
 Usage (in GitHub Actions):
     Triggered manually via the "Seed taxonomy data" workflow.
@@ -28,7 +32,7 @@ import sys
 import logging
 from pathlib import Path
 from dotenv import load_dotenv
-from supabase import create_client
+from supabase import create_client, Client
 
 load_dotenv()
 
@@ -43,36 +47,83 @@ JSON_DIR   = Path(__file__).parent.parent / "web" / "src" / "data"
 JSON_FILES = ["additive-manufacturing.json", "semiconductors.json"]
 
 
-def seed_industry(supabase, data: dict) -> int:
-    """Seed one industry from its JSON. Returns number of roles inserted."""
-    ind = data["industry"]
-    log.info(f"Seeding industry: {ind['name']}")
+def verify_schema(supabase: Client) -> bool:
+    """
+    Ensure required tables exist before we try to seed anything.
+    Gives a much clearer error than the deep PostgREST stack trace
+    if the user forgot to run schema.sql.
+    """
+    required = ["industries", "canonical_roles"]
+    for table in required:
+        try:
+            supabase.table(table).select("id").limit(1).execute()
+        except Exception as e:
+            log.error(f"Table '{table}' is not accessible: {e}")
+            log.error("")
+            log.error("Likely cause: schema.sql has not been run in this Supabase project.")
+            log.error("Fix:")
+            log.error("  1. Open your Supabase project → SQL Editor")
+            log.error("  2. New query → paste the entire contents of /schema.sql")
+            log.error("  3. Click 'Run' — wait for 'Success'")
+            log.error("  4. Re-run this seeder workflow")
+            return False
+    log.info(f"Schema verified: all {len(required)} required tables present")
+    return True
 
-    # 1. Upsert industry — match by slug (unique constraint in schema)
-    industry_result = (
+
+def upsert_industry(supabase: Client, ind: dict) -> str:
+    """
+    Insert industry row or update existing one matched by slug.
+    Returns the industry UUID (whether newly created or pre-existing).
+    """
+    row = {
+        "name":        ind["name"],
+        "slug":        ind["slug"],
+        "description": ind["description"],
+        "color":       ind["color"],
+    }
+
+    existing = (
         supabase.table("industries")
-        .upsert(
-            {
-                "name":        ind["name"],
-                "slug":        ind["slug"],
-                "description": ind["description"],
-                "color":       ind["color"],
-            },
-            on_conflict="slug",
-        )
+        .select("id")
+        .eq("slug", ind["slug"])
         .execute()
     )
-    industry_id = industry_result.data[0]["id"]
-    log.info(f"  industry uuid = {industry_id}")
 
-    # 2. Delete existing roles for this industry — fresh seed
-    supabase.table("canonical_roles").delete().eq("industry_id", industry_id).execute()
-    log.info(f"  cleared existing canonical_roles")
+    if existing.data:
+        industry_id = existing.data[0]["id"]
+        (
+            supabase.table("industries")
+            .update(row)
+            .eq("id", industry_id)
+            .execute()
+        )
+        log.info(f"  updated existing industry → uuid {industry_id}")
+    else:
+        result = supabase.table("industries").insert(row).execute()
+        industry_id = result.data[0]["id"]
+        log.info(f"  inserted new industry → uuid {industry_id}")
 
-    # 3. Insert all roles from JSON
-    rows = []
-    for role in data["roles"]:
-        rows.append({
+    return industry_id
+
+
+def replace_canonical_roles(supabase: Client, industry_id: str, roles: list[dict]) -> int:
+    """
+    Delete all canonical_roles for this industry, then insert fresh ones.
+    Returns count inserted.
+    """
+    # 1. Clear existing
+    (
+        supabase.table("canonical_roles")
+        .delete()
+        .eq("industry_id", industry_id)
+        .execute()
+    )
+    log.info("  cleared existing canonical_roles for this industry")
+
+    # 2. Build insert rows
+    rows = [
+        {
             "industry_id":     industry_id,
             "title":           role["title"],
             "cluster":         role["cluster"],
@@ -83,13 +134,22 @@ def seed_industry(supabase, data: dict) -> int:
             "skills":          role["skills"],
             "certifications":  role["certifications"],
             "description":     role["description"],
-        })
+        }
+        for role in roles
+    ]
 
-    # Bulk insert (Supabase handles batching internally)
+    # 3. Bulk insert
     supabase.table("canonical_roles").insert(rows).execute()
     log.info(f"  inserted {len(rows)} canonical_roles")
 
     return len(rows)
+
+
+def seed_industry(supabase: Client, data: dict) -> int:
+    ind = data["industry"]
+    log.info(f"Seeding industry: {ind['name']}")
+    industry_id = upsert_industry(supabase, ind)
+    return replace_canonical_roles(supabase, industry_id, data["roles"])
 
 
 def main() -> int:
@@ -103,12 +163,15 @@ def main() -> int:
         return 1
 
     supabase = create_client(url, key)
-    total_roles = 0
 
     log.info("=" * 50)
     log.info("Career Pathways — Taxonomy Seeder")
     log.info("=" * 50)
 
+    if not verify_schema(supabase):
+        return 1
+
+    total_roles = 0
     for filename in JSON_FILES:
         path = JSON_DIR / filename
         if not path.exists():
