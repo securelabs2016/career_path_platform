@@ -9,6 +9,11 @@ Orchestrates all 5 steps of the weekly data pipeline:
   Step 4: Routing    → auto-approve / pending / reject by confidence
   Step 5: Aggregation→ canonical_roles job counts updated (done inside matcher)
 
+AI provider strategy:
+  Supabase is required. AI providers are optional individually but at least
+  ONE of (ANTHROPIC_API_KEY, GEMINI_API_KEY) must be set. Extractor and matcher
+  use Claude first when available, fall back to Gemini automatically.
+
 Run manually:   python main.py
 Run in CI:      triggered by .github/workflows/ingest.yml (weekly cron)
 """
@@ -18,6 +23,7 @@ import sys
 import logging
 import argparse
 from datetime import datetime, timezone
+from typing import Optional
 from dotenv import load_dotenv
 from anthropic import Anthropic
 from supabase import create_client, Client
@@ -39,24 +45,48 @@ log = logging.getLogger("pipeline")
 INDUSTRIES = ["additive-manufacturing", "semiconductors"]
 
 
-def get_clients() -> tuple[Client, Anthropic]:
-    supabase_url = os.environ.get("SUPABASE_URL")
-    supabase_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+def get_clients() -> tuple[Client, Optional[Anthropic]]:
+    """
+    Returns (supabase_client, anthropic_client_or_None).
+
+    Required:    SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY
+    Required:    at least one of ANTHROPIC_API_KEY or GEMINI_API_KEY
+    Optional:    ANTHROPIC_API_KEY alone (falls back to Gemini if missing)
+    """
+    supabase_url  = os.environ.get("SUPABASE_URL")
+    supabase_key  = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
     anthropic_key = os.environ.get("ANTHROPIC_API_KEY")
+    gemini_key    = os.environ.get("GEMINI_API_KEY")
 
-    missing = []
-    if not supabase_url:  missing.append("SUPABASE_URL")
-    if not supabase_key:  missing.append("SUPABASE_SERVICE_ROLE_KEY")
-    if not anthropic_key: missing.append("ANTHROPIC_API_KEY")
+    # Supabase is hard-required
+    missing_required = []
+    if not supabase_url: missing_required.append("SUPABASE_URL")
+    if not supabase_key: missing_required.append("SUPABASE_SERVICE_ROLE_KEY")
 
-    if missing:
-        log.error(f"Missing environment variables: {', '.join(missing)}")
-        log.error("Copy apps/pipeline/.env.example to apps/pipeline/.env and fill in values.")
+    if missing_required:
+        log.error(f"Missing required environment variables: {', '.join(missing_required)}")
+        log.error("Add them as GitHub Actions secrets (Settings → Secrets → Actions)")
         sys.exit(1)
+
+    # At least one AI provider must be available
+    if not anthropic_key and not gemini_key:
+        log.error("No AI provider configured. Set ANTHROPIC_API_KEY or GEMINI_API_KEY.")
+        log.error("Get a free Gemini key at: https://aistudio.google.com/app/apikey")
+        sys.exit(1)
+
+    # Log which providers are active
+    if anthropic_key and gemini_key:
+        log.info("AI providers: Claude (primary) → Gemini (fallback)")
+    elif anthropic_key:
+        log.info("AI provider: Claude only")
+    else:
+        log.info("AI provider: Gemini only (no Claude key set)")
+
+    anthropic_client = Anthropic(api_key=anthropic_key) if anthropic_key else None
 
     return (
         create_client(supabase_url, supabase_key),
-        Anthropic(api_key=anthropic_key),
+        anthropic_client,
     )
 
 
@@ -87,7 +117,7 @@ def run(
     # ── Step 2: Extract ───────────────────────────────────────────────────────
     if not skip_extract:
         log.info("=" * 50)
-        log.info("STEP 2 — Extractor (Claude Haiku)")
+        log.info("STEP 2 — Extractor")
         extracted = run_extractor(supabase, anthropic, batch_size=100)
         log.info(f"Extractor done: {extracted} jobs extracted")
     else:
@@ -96,7 +126,7 @@ def run(
     # ── Step 3+4: Match & Route ───────────────────────────────────────────────
     if not skip_match:
         log.info("=" * 50)
-        log.info("STEP 3+4 — Ontology Matcher + Routing (Claude Sonnet)")
+        log.info("STEP 3+4 — Ontology Matcher + Routing")
         all_stats = {"matched": 0, "pending": 0, "rejected": 0}
         for industry in target:
             stats = run_matcher(supabase, anthropic, industry, batch_size=50)

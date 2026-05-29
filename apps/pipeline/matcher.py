@@ -121,11 +121,13 @@ def _judge_with_gemini(prompt: str) -> dict | None:
 def claude_judge(
     extracted_job: dict,
     candidate_role: dict,
-    client: Anthropic,
+    client: Anthropic | None,
     max_retries: int = 3,
 ) -> dict | None:
     """
-    Ask Claude Sonnet to judge match. Retries on rate limit, falls back to Gemini.
+    Judge whether a job matches a canonical role.
+    If Claude is configured: tries Claude with retries, falls back to Gemini.
+    If not: goes straight to Gemini.
     Returns None if everything fails — caller treats as low-confidence rejection.
     """
     prompt = MATCH_PROMPT.format(
@@ -137,6 +139,10 @@ def claude_judge(
         job_seniority=extracted_job.get("seniority", ""),
         job_skills=", ".join(extracted_job.get("skills", [])[:8]),
     )
+
+    # No Claude key → skip directly to Gemini
+    if client is None:
+        return _judge_with_gemini(prompt)
 
     for attempt in range(max_retries):
         try:
@@ -168,7 +174,7 @@ def route_confidence(confidence: float) -> str:
 
 def run_matcher(
     supabase: Client,
-    anthropic: Anthropic,
+    anthropic: Anthropic | None,
     industry_slug: str,
     batch_size: int = 30,
 ) -> dict:

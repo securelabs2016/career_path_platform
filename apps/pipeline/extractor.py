@@ -81,11 +81,16 @@ def _extract_with_gemini(raw_job: dict) -> dict | None:
         return None
 
 
-def extract_job(raw_job: dict, client: Anthropic, max_retries: int = 3) -> dict | None:
+def extract_job(raw_job: dict, client: Anthropic | None, max_retries: int = 3) -> dict | None:
     """
     Extract structured fields from one raw job.
-    Tries Claude first with retry + backoff, then falls back to Gemini.
+    If Claude is configured: try Claude first with retry + backoff, fall back to Gemini.
+    If not: go straight to Gemini.
     """
+    # No Claude key → skip Claude entirely
+    if client is None:
+        return _extract_with_gemini(raw_job)
+
     for attempt in range(max_retries):
         try:
             result = _extract_with_claude(raw_job, client)
@@ -106,7 +111,7 @@ def extract_job(raw_job: dict, client: Anthropic, max_retries: int = 3) -> dict 
     return _extract_with_gemini(raw_job)
 
 
-def run_extractor(supabase: Client, anthropic: Anthropic, batch_size: int = 50) -> int:
+def run_extractor(supabase: Client, anthropic: Anthropic | None, batch_size: int = 50) -> int:
     """
     Find raw_jobs that have no extracted_job yet, extract each one.
     Returns the number of jobs successfully extracted.
