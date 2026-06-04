@@ -47,7 +47,7 @@ export async function POST(request: Request) {
     secure:   process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     maxAge:   60 * 60 * 12, // 12 hours
-    path:     '/admin',
+    path:     '/', // must include /api/admin/* — not just /admin
   });
 
   return Response.json({ ok: true });

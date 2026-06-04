@@ -68,7 +68,7 @@ def _extract_with_gemini(raw_job: dict) -> dict | None:
     try:
         import google.generativeai as genai
         genai.configure(api_key=gemini_key)
-        model = genai.GenerativeModel("gemini-1.5-flash")
+        model = genai.GenerativeModel("gemini-2.5-flash")
         prompt = EXTRACTION_PROMPT.format(
             title=raw_job.get("raw_title", ""),
             company=raw_job.get("company", ""),
