@@ -280,7 +280,7 @@ export default async function RoleDetailPage({ params }: Props) {
                   Skill gap analysis
                 </h2>
                 <p className="text-sm text-gray-500 mb-6">
-                  What you'd need to develop to step into the next role
+                  What you&apos;d need to develop to step into the next role
                 </p>
 
                 <div className="flex flex-col gap-6">

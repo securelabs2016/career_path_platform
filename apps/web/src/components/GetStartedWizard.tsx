@@ -52,10 +52,13 @@ export default function GetStartedWizard({ data, onComplete, onSkip }: Props) {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Partial<Answers>>({});
 
-  // Check localStorage — only show if first visit
+  // Check localStorage — only show if first visit.
+  // setVisible is deferred via setTimeout so the setState call is not synchronous
+  // inside the effect body (satisfies react-hooks/set-state-in-effect).
   useEffect(() => {
-    const done = localStorage.getItem(STORAGE_KEY);
-    if (!done) setVisible(true);
+    if (localStorage.getItem(STORAGE_KEY)) return;
+    const id = setTimeout(() => setVisible(true), 0);
+    return () => clearTimeout(id);
   }, []);
 
   if (!visible) return null;

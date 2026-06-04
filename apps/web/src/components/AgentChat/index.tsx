@@ -169,8 +169,9 @@ export default function AgentChat({ data }: Props) {
           }
         }
       }
-    } catch (err: any) {
-      if (err?.name !== 'AbortError') {
+    } catch (err) {
+      const name = err instanceof Error ? err.name : undefined;
+      if (name !== 'AbortError') {
         setMessages(prev =>
           prev.map(m => m.id === assistantId
             ? { ...m, content: FALLBACK_MSG, error: true } : m)

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 interface RawJob   { company: string; raw_title: string; url: string; source: string; }
@@ -173,26 +173,28 @@ export default function AdminClient({ isAuthed: initAuthed }: { isAuthed: boolea
   const [authed,  setAuthed]  = useState(initAuthed);
   const [matches, setMatches] = useState<Match[]>([]);
   const [tab,     setTab]     = useState<'pending' | 'approved' | 'rejected'>('pending');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState('');
   const [total,   setTotal]   = useState(0);
   const [dbMissing, setDbMissing] = useState(false);
 
-  const fetchMatches = useCallback(async () => {
-    setLoading(true);
-    setError('');
-    const res = await fetch(`/api/admin/matches?status=${tab}`);
-    setLoading(false);
-
-    if (res.status === 503) { setDbMissing(true); return; }
-    if (!res.ok) { setError('Failed to load matches'); return; }
-
-    const { matches: data, total: t } = await res.json();
-    setMatches(data ?? []);
-    setTotal(t ?? 0);
-  }, [tab]);
-
-  useEffect(() => { if (authed) fetchMatches(); }, [authed, fetchMatches]);
+  useEffect(() => {
+    if (!authed) return;
+    let cancelled = false;
+    (async () => {
+      const res = await fetch(`/api/admin/matches?status=${tab}`);
+      if (cancelled) return;
+      if (res.status === 503) { setDbMissing(true); setLoading(false); return; }
+      if (!res.ok) { setError('Failed to load matches'); setLoading(false); return; }
+      const { matches: data, total: t } = await res.json();
+      if (cancelled) return;
+      setMatches(data ?? []);
+      setTotal(t ?? 0);
+      setError('');
+      setLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, [authed, tab]);
 
   async function handleDecide(matchId: string, decision: string) {
     await fetch('/api/admin/decide', {
@@ -260,7 +262,7 @@ export default function AdminClient({ isAuthed: initAuthed }: { isAuthed: boolea
           {TABS.map(t => (
             <button
               key={t}
-              onClick={() => setTab(t)}
+              onClick={() => { if (t !== tab) { setLoading(true); setError(''); setTab(t); } }}
               className={[
                 'px-4 py-2 rounded-xl text-sm font-semibold capitalize transition-colors',
                 t === tab ? 'bg-gray-900 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50',
