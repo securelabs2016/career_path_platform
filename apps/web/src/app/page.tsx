@@ -4,8 +4,8 @@ const INDUSTRIES = [
   {
     slug: 'additive-manufacturing',
     name: 'Additive Manufacturing',
-    description: '3D printing, metal fabrication, and advanced materials — one of the fastest-growing sectors in US defense and aerospace.',
-    roleCount: '~50 roles',
+    description: '3D printing, metal fabrication, and advanced materials — one of the fastest-growing sectors in U.S. defense, aerospace, and medical manufacturing.',
+    roleCount: '36 roles',
     color: 'bg-blue-600',
     hoverColor: 'hover:bg-blue-700',
   },
@@ -16,6 +16,14 @@ const INDUSTRIES = [
     roleCount: '~45 roles',
     color: 'bg-violet-600',
     hoverColor: 'hover:bg-violet-700',
+  },
+  {
+    slug: 'space',
+    name: 'Space Industry',
+    description: 'Spacecraft design, propulsion, launch operations, mission control, and the commercial space economy.',
+    roleCount: '38 roles',
+    color: 'bg-indigo-600',
+    hoverColor: 'hover:bg-indigo-700',
   },
 ];
 
@@ -37,7 +45,7 @@ export default function HomePage() {
           Find your path in the industries that matter
         </h1>
         <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          Explore every role in Additive Manufacturing and Semiconductors — see what skills you need,
+          Explore every role in Additive Manufacturing, Semiconductors, and the Space Industry — see what skills you need,
           what you can earn, and what jobs are open right now.
         </p>
       </section>
@@ -47,7 +55,7 @@ export default function HomePage() {
         <p className="text-sm font-medium text-gray-500 mb-6 text-center">
           Choose an industry to explore
         </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {INDUSTRIES.map((industry) => (
             <Link
               key={industry.slug}
@@ -70,13 +78,6 @@ export default function HomePage() {
           ))}
         </div>
 
-        {/* Coming soon */}
-        <div className="mt-6 border border-dashed border-gray-300 rounded-2xl p-8 text-center">
-          <span className="text-sm font-semibold text-gray-400 uppercase tracking-wide">
-            Coming soon
-          </span>
-          <p className="text-gray-500 mt-2">Space Industry — launch ops, satellite manufacturing, propulsion, and more</p>
-        </div>
       </section>
     </main>
   );

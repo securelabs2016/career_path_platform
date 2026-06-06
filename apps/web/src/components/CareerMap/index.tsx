@@ -3,17 +3,18 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import type { IndustryData, SeniorityLevel } from '@/lib/types';
+import type { IndustryData } from '@/lib/types';
 import {
   computeLayout, LAYOUT, SENIORITY_DISPLAY_ORDER,
   SENIORITY_LABELS, SENIORITY_TO_ROW,
 } from '@/lib/map-layout';
 import { roleMatchesFilter } from '@/lib/role-utils';
-import { CLUSTER_COLORS, DEGREE_BADGES, formatSalary } from './constants';
+import { CLUSTER_COLORS, DEGREE_BADGES } from './constants';
 import FilterBar from './FilterBar';
 import MobileList from './MobileList';
 import RoleCard from './RoleCard';
 import PathwayLines from './PathwayLines';
+import CareerPathPanel from './CareerPathPanel';
 
 interface Props {
   data: IndustryData;
@@ -27,14 +28,26 @@ export default function CareerMap({ data, recommendedIds = [] }: Props) {
 
   const { roles, pathways, clusters, industry } = data;
 
+  // ── Derived lookups (declared early so initial state can use them) ────────
+  const roleById = useMemo(() => new Map(roles.map(r => [r.id, r])), [roles]);
+
   // ── State ─────────────────────────────────────────────────────────────────
-  const [selectedId,   setSelectedId]   = useState<string | null>(searchParams.get('role'));
+  // Hydrate ordered path chain from ?path=am-r-01,am-r-05 on first render.
+  // Invalid IDs are trimmed silently.
+  const [selectedIds, setSelectedIds] = useState<string[]>(() => {
+    const raw = searchParams.get('path');
+    if (!raw) {
+      // Back-compat: also accept a legacy ?role= param
+      const single = searchParams.get('role');
+      return single && roleById.has(single) ? [single] : [];
+    }
+    return raw.split(',').map(s => s.trim()).filter(id => roleById.has(id));
+  });
   const [searchQuery,  setSearchQuery]  = useState('');
   const [degreeFilter, setDegreeFilter] = useState('all');
   const [clusterFilter,setClusterFilter]= useState('all');
 
-  // ── Derived lookups ────────────────────────────────────────────────────────
-  const roleById = useMemo(() => new Map(roles.map(r => [r.id, r])), [roles]);
+  // ── Layout ────────────────────────────────────────────────────────────────
   const layout   = useMemo(() => computeLayout(roles), [roles]);
   const { positions, totalWidth, totalHeight, rowStartY, rowBandHeight } = layout;
 
@@ -51,62 +64,82 @@ export default function CareerMap({ data, recommendedIds = [] }: Props) {
 
   const matchCount = filteredIds ? filteredIds.size : roles.length;
 
-  // ── Related ids for selection dimming ─────────────────────────────────────
+  // ── Related ids: union of adjacents + pathway peers across all selected ──
   const relatedIds = useMemo(() => {
-    if (!selectedId) return new Set<string>();
-    const role = roleById.get(selectedId);
-    if (!role) return new Set<string>();
-    const set = new Set<string>([selectedId]);
-    role.adjacent_role_ids.forEach(id => set.add(id));
-    role.pathway_ids.forEach(pid => {
-      pathways.find(p => p.id === pid)?.role_ids.forEach(id => set.add(id));
+    if (selectedIds.length === 0) return new Set<string>();
+    const set = new Set<string>(selectedIds);
+    selectedIds.forEach(id => {
+      const role = roleById.get(id);
+      if (!role) return;
+      role.adjacent_role_ids.forEach(adj => set.add(adj));
+      role.pathway_ids.forEach(pid => {
+        pathways.find(p => p.id === pid)?.role_ids.forEach(rid => set.add(rid));
+      });
     });
     return set;
-  }, [selectedId, roleById, pathways]);
+  }, [selectedIds, roleById, pathways]);
 
   const highlightedPathwayIds = useMemo(() => {
-    if (!selectedId) return new Set<string>();
-    return new Set(roleById.get(selectedId)?.pathway_ids ?? []);
-  }, [selectedId, roleById]);
+    const set = new Set<string>();
+    selectedIds.forEach(id => {
+      roleById.get(id)?.pathway_ids.forEach(pid => set.add(pid));
+    });
+    return set;
+  }, [selectedIds, roleById]);
+
+  const selectedIdSet = useMemo(() => new Set(selectedIds), [selectedIds]);
 
   // ── Visibility logic ──────────────────────────────────────────────────────
-  // Priority: filter match → selection state → recommendation highlight
+  // Priority: filter match → path membership → dim if path exists but unrelated
   function getVisibility(roleId: string): 'selected' | 'adjacent' | 'normal' | 'dimmed' {
     const filteredOut = filteredIds !== null && !filteredIds.has(roleId);
     if (filteredOut) return 'dimmed';
-    if (selectedId === roleId) return 'selected';
-    if (selectedId && !relatedIds.has(roleId)) return 'dimmed';
-    if (selectedId && relatedIds.has(roleId) && roleId !== selectedId) return 'adjacent';
+    if (selectedIdSet.has(roleId)) return 'selected';
+    if (selectedIds.length > 0 && !relatedIds.has(roleId)) return 'dimmed';
+    if (selectedIds.length > 0 && relatedIds.has(roleId)) return 'adjacent';
     return 'normal';
   }
 
-  // ── URL sync: write selected role to URL ──────────────────────────────────
+  // ── URL sync helper ───────────────────────────────────────────────────────
+  const syncUrl = useCallback((ids: string[]) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('role'); // drop legacy param
+    if (ids.length > 0) params.set('path', ids.join(','));
+    else params.delete('path');
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  }, [searchParams, router, pathname]);
+
+  // Click: toggle role in path. If already in path, remove. Else append.
+  // Note: the URL sync is done OUTSIDE the setState updater. Calling
+  // router.replace() from inside a state updater triggers React's
+  // "setState during render" warning because updater functions must be pure.
   const handleRoleClick = useCallback((id: string) => {
-    const next = selectedId === id ? null : id;
-    setSelectedId(next);
+    const next = selectedIds.includes(id)
+      ? selectedIds.filter(x => x !== id)
+      : [...selectedIds, id];
+    setSelectedIds(next);
+    syncUrl(next);
+  }, [selectedIds, syncUrl]);
 
-    const params = new URLSearchParams(searchParams.toString());
-    if (next) params.set('role', next);
-    else params.delete('role');
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-  }, [selectedId, searchParams, router, pathname]);
+  const handleRemoveFromPath = useCallback((id: string) => {
+    const next = selectedIds.filter(x => x !== id);
+    setSelectedIds(next);
+    syncUrl(next);
+  }, [selectedIds, syncUrl]);
 
-  const handleDeselect = useCallback(() => {
-    if (!selectedId) return;
-    setSelectedId(null);
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete('role');
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-  }, [selectedId, searchParams, router, pathname]);
+  const handleClearPath = useCallback(() => {
+    setSelectedIds([]);
+    syncUrl([]);
+  }, [syncUrl]);
 
-  // ── Keyboard: Escape to deselect ─────────────────────────────────────────
+  // ── Keyboard: Escape clears the entire path ──────────────────────────────
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') handleDeselect();
+      if (e.key === 'Escape' && selectedIds.length > 0) handleClearPath();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [handleDeselect]);
+  }, [handleClearPath, selectedIds.length]);
 
   const clearFilters = () => {
     setSearchQuery('');
@@ -114,8 +147,12 @@ export default function CareerMap({ data, recommendedIds = [] }: Props) {
     setClusterFilter('all');
   };
 
-  const selectedRole = selectedId ? roleById.get(selectedId) : null;
-  const { CARD_W, CARD_H, COL_W, HEADER_H, LEFT_W, ROW_GAP, OUTER_PAD } = LAYOUT;
+  // Most recently clicked role drives the inline detail card under the map
+  const lastSelectedRole = selectedIds.length > 0
+    ? roleById.get(selectedIds[selectedIds.length - 1]) ?? null
+    : null;
+
+  const { COL_W, HEADER_H, LEFT_W, OUTER_PAD } = LAYOUT;
 
   return (
     <div className="flex flex-col gap-4">
@@ -139,7 +176,11 @@ export default function CareerMap({ data, recommendedIds = [] }: Props) {
         <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Education:</span>
         {Object.entries(DEGREE_BADGES).map(([key, badge]) => (
           <span key={key} className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${badge.className}`}>
-            {key === 'hs' ? 'HS Diploma' : key === '2yr' ? "Associate's" : key === '4yr' ? "Bachelor's" : 'Graduate'}
+            {key === 'hs' ? 'HS Diploma'
+              : key === '2yr' ? "Associate's"
+              : key === '4yr' ? "Bachelor's"
+              : key === 'sometimes' ? 'Sometimes'
+              : 'Graduate'}
           </span>
         ))}
         <span className="flex items-center gap-1.5 text-xs text-amber-600 font-semibold ml-4">
@@ -147,7 +188,7 @@ export default function CareerMap({ data, recommendedIds = [] }: Props) {
           Live openings
         </span>
         <span className="text-xs text-gray-400 ml-auto hidden lg:block">
-          Tip: click a role to highlight its career pathway
+          Tip: click multiple roles to build a career path
         </span>
       </div>
 
@@ -171,7 +212,6 @@ export default function CareerMap({ data, recommendedIds = [] }: Props) {
           <div
             className="relative"
             style={{ width: totalWidth, height: totalHeight, userSelect: 'none' }}
-            onClick={handleDeselect}
           >
             {/* Cluster headers */}
             <div
@@ -237,7 +277,7 @@ export default function CareerMap({ data, recommendedIds = [] }: Props) {
               pathways={pathways}
               positions={positions}
               highlightedPathwayIds={highlightedPathwayIds}
-              selectedId={selectedId}
+              hasSelection={selectedIds.length > 0}
               width={totalWidth}
               height={totalHeight}
               industryColor={industry.color}
@@ -248,8 +288,8 @@ export default function CareerMap({ data, recommendedIds = [] }: Props) {
               const pos = positions.get(role.id);
               if (!pos) return null;
               const vis = getVisibility(role.id);
-              // Recommended roles glow faintly when nothing is selected and no filter
-              const isRecommended = !selectedId && filteredIds === null && recommendedIds.includes(role.id);
+              // Recommended roles glow faintly when no path/filter is active
+              const isRecommended = selectedIds.length === 0 && filteredIds === null && recommendedIds.includes(role.id);
               return (
                 <RoleCard
                   key={role.id}
@@ -267,25 +307,33 @@ export default function CareerMap({ data, recommendedIds = [] }: Props) {
           </div>
         </div>
 
-        {/* ── Selected role panel ─────────────────────────────────────────── */}
-        {selectedRole && (
+        {/* ── Your Career Path panel (Phase A) ─────────────────────────────── */}
+        <CareerPathPanel
+          selectedIds={selectedIds}
+          roleById={roleById}
+          industry={industry}
+          onRemove={handleRemoveFromPath}
+          onClear={handleClearPath}
+        />
+
+        {/* ── Most-recently-clicked role: inline details card ─────────────── */}
+        {lastSelectedRole && (
           <div
             className="mt-4 rounded-2xl border border-gray-200 bg-white shadow-sm p-5"
             role="region"
-            aria-label="Selected role details"
-            onClick={e => e.stopPropagation()}
+            aria-label="Latest selected role details"
           >
             <div className="flex items-start justify-between gap-4 flex-wrap">
               {/* Left */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${CLUSTER_COLORS[selectedRole.cluster]?.dot ?? 'bg-gray-400'}`} aria-hidden="true" />
+                  <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${CLUSTER_COLORS[lastSelectedRole.cluster]?.dot ?? 'bg-gray-400'}`} aria-hidden="true" />
                   <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                    {selectedRole.cluster} · {selectedRole.seniority}
+                    {lastSelectedRole.cluster} · {lastSelectedRole.seniority}
                   </span>
                 </div>
-                <h2 className="text-xl font-bold text-gray-900 mb-1">{selectedRole.title}</h2>
-                <p className="text-sm text-gray-600 leading-relaxed max-w-2xl line-clamp-3">{selectedRole.description}</p>
+                <h2 className="text-xl font-bold text-gray-900 mb-1">{lastSelectedRole.title}</h2>
+                <p className="text-sm text-gray-600 leading-relaxed max-w-2xl line-clamp-3">{lastSelectedRole.description}</p>
               </div>
 
               {/* Right: stats */}
@@ -293,15 +341,16 @@ export default function CareerMap({ data, recommendedIds = [] }: Props) {
                 <div className="bg-gray-50 rounded-xl p-3">
                   <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-0.5">Salary</p>
                   <p className="text-lg font-bold text-gray-900">
-                    ${Math.round(selectedRole.salary_min / 1000)}k–${Math.round(selectedRole.salary_max / 1000)}k
+                    ${Math.round(lastSelectedRole.salary_min / 1000)}k–${Math.round(lastSelectedRole.salary_max / 1000)}k
                   </p>
                 </div>
                 <div className="bg-gray-50 rounded-xl p-3">
                   <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-0.5">Education</p>
                   <p className="text-sm font-semibold text-gray-900">
-                    {selectedRole.degree_required === 'hs'       ? 'HS Diploma'
-                     : selectedRole.degree_required === '2yr'    ? "Associate's"
-                     : selectedRole.degree_required === '4yr'    ? "Bachelor's"
+                    {lastSelectedRole.degree_required === 'hs'        ? 'HS Diploma'
+                     : lastSelectedRole.degree_required === '2yr'     ? "Associate's"
+                     : lastSelectedRole.degree_required === '4yr'     ? "Bachelor's"
+                     : lastSelectedRole.degree_required === 'sometimes' ? 'Sometimes required'
                      : 'Graduate Degree'}
                   </p>
                 </div>
@@ -309,11 +358,11 @@ export default function CareerMap({ data, recommendedIds = [] }: Props) {
             </div>
 
             {/* Skills */}
-            {selectedRole.skills.length > 0 && (
+            {lastSelectedRole.skills.length > 0 && (
               <div className="mt-4">
                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Key skills</p>
                 <div className="flex flex-wrap gap-1.5">
-                  {selectedRole.skills.map(skill => (
+                  {lastSelectedRole.skills.map(skill => (
                     <span key={skill} className="text-xs bg-gray-100 text-gray-700 px-2.5 py-1 rounded-full font-medium">
                       {skill}
                     </span>
@@ -323,11 +372,11 @@ export default function CareerMap({ data, recommendedIds = [] }: Props) {
             )}
 
             {/* Pathways */}
-            {selectedRole.pathway_ids.length > 0 && (
+            {lastSelectedRole.pathway_ids.length > 0 && (
               <div className="mt-3">
                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Career pathways</p>
                 <div className="flex flex-wrap gap-2">
-                  {selectedRole.pathway_ids.map(pid => {
+                  {lastSelectedRole.pathway_ids.map(pid => {
                     const p = pathways.find(pw => pw.id === pid);
                     if (!p) return null;
                     return (
@@ -346,11 +395,10 @@ export default function CareerMap({ data, recommendedIds = [] }: Props) {
             {/* Actions */}
             <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between flex-wrap gap-3">
               <p className="text-xs text-gray-400">
-                Press <kbd className="bg-gray-100 px-1.5 py-0.5 rounded text-gray-600 font-mono text-[10px]">Esc</kbd> to deselect ·
-                Click a different role to compare
+                Click another role to extend the path · Press <kbd className="bg-gray-100 px-1.5 py-0.5 rounded text-gray-600 font-mono text-[10px]">Esc</kbd> to clear
               </p>
               <Link
-                href={`/${industry.slug}/role/${selectedRole.id}`}
+                href={`/${industry.slug}/role/${lastSelectedRole.id}`}
                 className="text-sm font-semibold px-4 py-2 rounded-xl text-white hover:opacity-90 transition-opacity"
                 style={{ backgroundColor: industry.color }}
               >
@@ -360,11 +408,11 @@ export default function CareerMap({ data, recommendedIds = [] }: Props) {
           </div>
         )}
 
-        {!selectedId && (
+        {selectedIds.length === 0 && (
           <p className="text-center text-sm text-gray-400 mt-2">
             {recommendedIds.length > 0
-              ? 'Highlighted roles match your profile — click any role to explore'
-              : 'Click any role to see details, salary, and career pathways'}
+              ? 'Highlighted roles match your profile — click any role to start building a path'
+              : 'Click any role to start building your career path'}
           </p>
         )}
       </div>

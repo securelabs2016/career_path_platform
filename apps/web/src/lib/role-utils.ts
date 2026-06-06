@@ -50,11 +50,16 @@ export function getRecommendedRoles(
 
   const scored = data.roles.map(role => {
     let score = 0;
-    const roleRank = degreeRank[role.degree_required] ?? 0;
+    // 'sometimes' = flexible: count it as accessible to anyone (rank 0)
+    const roleRank = role.degree_required === 'sometimes'
+      ? 0
+      : (degreeRank[role.degree_required] ?? 0);
 
     // Education fit — prefer roles the user is qualified for
     if (roleRank <= userRank) score += 3;
     if (roleRank === userRank) score += 2;
+    // 'Sometimes required' roles get a small bonus — they're entry points for non-traditional backgrounds
+    if (role.degree_required === 'sometimes') score += 1;
 
     // Persona
     if (persona === 'student' && role.seniority === 'entry') score += 4;

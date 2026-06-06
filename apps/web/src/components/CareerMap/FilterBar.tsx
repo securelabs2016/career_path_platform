@@ -14,11 +14,12 @@ interface Props {
 }
 
 const DEGREES = [
-  { value: 'all',      label: 'All education' },
-  { value: 'hs',       label: 'HS Diploma' },
-  { value: '2yr',      label: "Associate's" },
-  { value: '4yr',      label: "Bachelor's" },
-  { value: 'graduate', label: 'Graduate' },
+  { value: 'all',       label: 'All education' },
+  { value: 'hs',        label: 'HS Diploma' },
+  { value: '2yr',       label: "Associate's" },
+  { value: '4yr',       label: "Bachelor's" },
+  { value: 'graduate',  label: 'Graduate' },
+  { value: 'sometimes', label: 'Sometimes required' },
 ];
 
 export default function FilterBar({

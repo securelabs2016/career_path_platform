@@ -8,7 +8,7 @@ interface Props {
   pathways: Pathway[];
   positions: Map<string, CardPosition>;
   highlightedPathwayIds: Set<string>;
-  selectedId: string | null;
+  hasSelection: boolean;
   width: number;
   height: number;
   industryColor: string;
@@ -29,7 +29,7 @@ function makePath(a: CardPosition, b: CardPosition): string {
 }
 
 export default function PathwayLines({
-  roles, pathways, positions, highlightedPathwayIds, selectedId, width, height, industryColor,
+  roles, pathways, positions, highlightedPathwayIds, hasSelection, width, height, industryColor,
 }: Props) {
   // Build role lookup
   const roleById = new Map(roles.map(r => [r.id, r]));
@@ -60,8 +60,6 @@ export default function PathwayLines({
       });
     }
   });
-
-  const hasSelection = selectedId !== null;
 
   return (
     <svg

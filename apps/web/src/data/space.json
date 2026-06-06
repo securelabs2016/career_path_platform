@@ -1,0 +1,1297 @@
+{
+  "industry": {
+    "id": "space",
+    "name": "Space Industry",
+    "slug": "space",
+    "description": "Spacecraft design, propulsion, launch operations, mission control, and the commercial space economy. 38 roles across 6 clusters.",
+    "color": "#7c3aed"
+  },
+  "clusters": [
+    "Spacecraft Design & Engineering",
+    "Propulsion & Systems",
+    "Manufacturing & Assembly (AIT)",
+    "Mission Operations & Ground Systems",
+    "Launch & Test Operations",
+    "Business, Policy & Supply Chain"
+  ],
+  "seniority_levels": [
+    "entry",
+    "mid",
+    "senior",
+    "lead"
+  ],
+  "roles": [
+    {
+      "id": "sp-r-01",
+      "industry_id": "space",
+      "title": "Spacecraft Design Engineer 1",
+      "cluster": "Spacecraft Design & Engineering",
+      "seniority": "entry",
+      "salary_min": 74000,
+      "salary_max": 102000,
+      "degree_required": "4yr",
+      "skills": [
+        "CAD",
+        "structural design",
+        "spacecraft subsystems",
+        "requirements analysis"
+      ],
+      "certifications": [],
+      "description": "Designs spacecraft structures and subsystems under senior guidance, translating mission requirements into hardware.",
+      "pathway_ids": [
+        "sp-p-01"
+      ],
+      "adjacent_role_ids": [
+        "sp-r-02",
+        "sp-r-03",
+        "sp-r-04",
+        "sp-r-05"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 0,
+      "grid_row": 0
+    },
+    {
+      "id": "sp-r-02",
+      "industry_id": "space",
+      "title": "Avionics Engineer",
+      "cluster": "Spacecraft Design & Engineering",
+      "seniority": "mid",
+      "salary_min": 95000,
+      "salary_max": 135000,
+      "degree_required": "4yr",
+      "skills": [
+        "Flight electronics",
+        "PCB design",
+        "embedded systems",
+        "radiation-hardened design"
+      ],
+      "certifications": [],
+      "description": "Designs and tests the electronic systems \u2014 flight computers, power, sensors \u2014 that control spacecraft.",
+      "pathway_ids": [
+        "sp-p-01"
+      ],
+      "adjacent_role_ids": [
+        "sp-r-01",
+        "sp-r-03",
+        "sp-r-04",
+        "sp-r-05",
+        "sp-r-06"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 0,
+      "grid_row": 1
+    },
+    {
+      "id": "sp-r-03",
+      "industry_id": "space",
+      "title": "Spacecraft Systems Engineer",
+      "cluster": "Spacecraft Design & Engineering",
+      "seniority": "mid",
+      "salary_min": 105000,
+      "salary_max": 150000,
+      "degree_required": "4yr",
+      "skills": [
+        "Systems integration",
+        "requirements management",
+        "subsystem trade studies",
+        "MBSE"
+      ],
+      "certifications": [],
+      "description": "Integrates all spacecraft subsystems into a coherent design, managing requirements and trade-offs across the vehicle.",
+      "pathway_ids": [
+        "sp-p-01"
+      ],
+      "adjacent_role_ids": [
+        "sp-r-01",
+        "sp-r-02",
+        "sp-r-04",
+        "sp-r-05",
+        "sp-r-06"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 0,
+      "grid_row": 1
+    },
+    {
+      "id": "sp-r-04",
+      "industry_id": "space",
+      "title": "Thermal Engineer",
+      "cluster": "Spacecraft Design & Engineering",
+      "seniority": "mid",
+      "salary_min": 95000,
+      "salary_max": 135000,
+      "degree_required": "4yr",
+      "skills": [
+        "Thermal analysis",
+        "thermal control systems",
+        "Thermal Desktop",
+        "heat transfer modeling"
+      ],
+      "certifications": [],
+      "description": "Designs the thermal control systems that keep spacecraft within survivable temperatures in the extremes of space.",
+      "pathway_ids": [
+        "sp-p-01"
+      ],
+      "adjacent_role_ids": [
+        "sp-r-01",
+        "sp-r-02",
+        "sp-r-03",
+        "sp-r-05",
+        "sp-r-06"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 0,
+      "grid_row": 1
+    },
+    {
+      "id": "sp-r-05",
+      "industry_id": "space",
+      "title": "GNC Engineer",
+      "cluster": "Spacecraft Design & Engineering",
+      "seniority": "mid",
+      "salary_min": 110000,
+      "salary_max": 155000,
+      "degree_required": "graduate",
+      "skills": [
+        "Guidance navigation & control",
+        "orbital mechanics",
+        "control theory",
+        "MATLAB/Simulink"
+      ],
+      "certifications": [],
+      "description": "Develops the guidance, navigation, and control algorithms that steer and stabilize spacecraft.",
+      "pathway_ids": [
+        "sp-p-01"
+      ],
+      "adjacent_role_ids": [
+        "sp-r-01",
+        "sp-r-02",
+        "sp-r-03",
+        "sp-r-04",
+        "sp-r-06"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 0,
+      "grid_row": 1
+    },
+    {
+      "id": "sp-r-06",
+      "industry_id": "space",
+      "title": "Senior Spacecraft Systems Engineer",
+      "cluster": "Spacecraft Design & Engineering",
+      "seniority": "senior",
+      "salary_min": 140000,
+      "salary_max": 190000,
+      "degree_required": "graduate",
+      "skills": [
+        "Full-lifecycle systems leadership",
+        "mission architecture",
+        "technical risk management"
+      ],
+      "certifications": [],
+      "description": "Leads spacecraft systems engineering across the full mission lifecycle from concept through in-orbit operations.",
+      "pathway_ids": [
+        "sp-p-01"
+      ],
+      "adjacent_role_ids": [
+        "sp-r-02",
+        "sp-r-03",
+        "sp-r-04",
+        "sp-r-05",
+        "sp-r-07",
+        "sp-r-36"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 0,
+      "grid_row": 2
+    },
+    {
+      "id": "sp-r-07",
+      "industry_id": "space",
+      "title": "Chief Engineer (Spacecraft)",
+      "cluster": "Spacecraft Design & Engineering",
+      "seniority": "lead",
+      "salary_min": 175000,
+      "salary_max": 250000,
+      "degree_required": "graduate",
+      "skills": [
+        "Technical authority",
+        "mission architecture",
+        "design reviews",
+        "multidisciplinary leadership"
+      ],
+      "certifications": [],
+      "description": "Holds ultimate technical authority for a spacecraft program, owning the architecture and all major engineering decisions.",
+      "pathway_ids": [
+        "sp-p-01"
+      ],
+      "adjacent_role_ids": [
+        "sp-r-06"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 0,
+      "grid_row": 3
+    },
+    {
+      "id": "sp-r-08",
+      "industry_id": "space",
+      "title": "Propulsion Engineer 1",
+      "cluster": "Propulsion & Systems",
+      "seniority": "entry",
+      "salary_min": 78000,
+      "salary_max": 105000,
+      "degree_required": "4yr",
+      "skills": [
+        "Propulsion fundamentals",
+        "fluid systems",
+        "CAD",
+        "test support"
+      ],
+      "certifications": [],
+      "description": "Supports the design and testing of rocket engines and propulsion systems under senior engineers.",
+      "pathway_ids": [
+        "sp-p-02"
+      ],
+      "adjacent_role_ids": [
+        "sp-r-09",
+        "sp-r-10",
+        "sp-r-11"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 1,
+      "grid_row": 0
+    },
+    {
+      "id": "sp-r-09",
+      "industry_id": "space",
+      "title": "Propulsion Engineer",
+      "cluster": "Propulsion & Systems",
+      "seniority": "mid",
+      "salary_min": 100000,
+      "salary_max": 145000,
+      "degree_required": "4yr",
+      "skills": [
+        "Rocket engine design",
+        "combustion",
+        "fluid dynamics",
+        "thermodynamics",
+        "CFD"
+      ],
+      "certifications": [],
+      "description": "Designs, analyzes, and tests the engines and propulsion systems that provide thrust for launch and maneuvering.",
+      "pathway_ids": [
+        "sp-p-02"
+      ],
+      "adjacent_role_ids": [
+        "sp-r-08",
+        "sp-r-10",
+        "sp-r-11",
+        "sp-r-12",
+        "sp-r-13"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 1,
+      "grid_row": 1
+    },
+    {
+      "id": "sp-r-10",
+      "industry_id": "space",
+      "title": "Propulsion Test Engineer",
+      "cluster": "Propulsion & Systems",
+      "seniority": "mid",
+      "salary_min": 95000,
+      "salary_max": 135000,
+      "degree_required": "4yr",
+      "skills": [
+        "Engine hot-fire testing",
+        "test stand operation",
+        "data acquisition",
+        "instrumentation"
+      ],
+      "certifications": [],
+      "description": "Plans and runs engine hot-fire tests, operating test stands and analyzing performance data.",
+      "pathway_ids": [
+        "sp-p-02"
+      ],
+      "adjacent_role_ids": [
+        "sp-r-08",
+        "sp-r-09",
+        "sp-r-11",
+        "sp-r-12",
+        "sp-r-13"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 1,
+      "grid_row": 1
+    },
+    {
+      "id": "sp-r-11",
+      "industry_id": "space",
+      "title": "Power Systems Engineer",
+      "cluster": "Propulsion & Systems",
+      "seniority": "mid",
+      "salary_min": 95000,
+      "salary_max": 135000,
+      "degree_required": "4yr",
+      "skills": [
+        "Solar arrays",
+        "batteries",
+        "power distribution",
+        "spacecraft EPS design"
+      ],
+      "certifications": [],
+      "description": "Designs the electrical power systems \u2014 solar arrays, batteries, distribution \u2014 that keep spacecraft alive.",
+      "pathway_ids": [
+        "sp-p-02"
+      ],
+      "adjacent_role_ids": [
+        "sp-r-08",
+        "sp-r-09",
+        "sp-r-10",
+        "sp-r-12",
+        "sp-r-13",
+        "sp-r-03"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 1,
+      "grid_row": 1
+    },
+    {
+      "id": "sp-r-12",
+      "industry_id": "space",
+      "title": "Senior Propulsion Engineer",
+      "cluster": "Propulsion & Systems",
+      "seniority": "senior",
+      "salary_min": 140000,
+      "salary_max": 195000,
+      "degree_required": "graduate",
+      "skills": [
+        "Propulsion architecture",
+        "engine development programs",
+        "team leadership",
+        "design reviews"
+      ],
+      "certifications": [],
+      "description": "Leads propulsion development programs from architecture through qualification, mentoring engineers and owning design reviews.",
+      "pathway_ids": [
+        "sp-p-02"
+      ],
+      "adjacent_role_ids": [
+        "sp-r-09",
+        "sp-r-10",
+        "sp-r-11",
+        "sp-r-13"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 1,
+      "grid_row": 2
+    },
+    {
+      "id": "sp-r-13",
+      "industry_id": "space",
+      "title": "Propulsion Lead / Manager",
+      "cluster": "Propulsion & Systems",
+      "seniority": "senior",
+      "salary_min": 160000,
+      "salary_max": 230000,
+      "degree_required": "graduate",
+      "skills": [
+        "Propulsion program leadership",
+        "multi-team coordination",
+        "technical strategy",
+        "budget ownership"
+      ],
+      "certifications": [],
+      "description": "Owns the propulsion organization for a vehicle or program, coordinating multiple teams and setting technical strategy.",
+      "pathway_ids": [
+        "sp-p-02"
+      ],
+      "adjacent_role_ids": [
+        "sp-r-09",
+        "sp-r-10",
+        "sp-r-11",
+        "sp-r-12"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 1,
+      "grid_row": 2
+    },
+    {
+      "id": "sp-r-14",
+      "industry_id": "space",
+      "title": "AIT Technician 1",
+      "cluster": "Manufacturing & Assembly (AIT)",
+      "seniority": "entry",
+      "salary_min": 45000,
+      "salary_max": 62000,
+      "degree_required": "hs",
+      "skills": [
+        "Electromechanical assembly",
+        "harness integration",
+        "cleanroom protocol",
+        "hand tools"
+      ],
+      "certifications": [],
+      "description": "Assembles and integrates spacecraft components and harnesses in cleanroom environments under guidance.",
+      "pathway_ids": [
+        "sp-p-03"
+      ],
+      "adjacent_role_ids": [
+        "sp-r-15",
+        "sp-r-16",
+        "sp-r-17",
+        "sp-r-18"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 2,
+      "grid_row": 0
+    },
+    {
+      "id": "sp-r-15",
+      "industry_id": "space",
+      "title": "AIT Technician II",
+      "cluster": "Manufacturing & Assembly (AIT)",
+      "seniority": "entry",
+      "salary_min": 55000,
+      "salary_max": 75000,
+      "degree_required": "hs",
+      "skills": [
+        "System-level fault finding",
+        "functional testing",
+        "continuity/leak tests",
+        "ESD safe handling"
+      ],
+      "certifications": [],
+      "description": "Performs system-level assembly, integration, and fault-finding on satellites and space hardware.",
+      "pathway_ids": [
+        "sp-p-03"
+      ],
+      "adjacent_role_ids": [
+        "sp-r-14",
+        "sp-r-16",
+        "sp-r-17",
+        "sp-r-18"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 2,
+      "grid_row": 0
+    },
+    {
+      "id": "sp-r-16",
+      "industry_id": "space",
+      "title": "Senior AIT Technician",
+      "cluster": "Manufacturing & Assembly (AIT)",
+      "seniority": "mid",
+      "salary_min": 70000,
+      "salary_max": 95000,
+      "degree_required": "hs",
+      "skills": [
+        "Complex integration",
+        "procedure authoring",
+        "junior tech training",
+        "quality processes"
+      ],
+      "certifications": [],
+      "description": "Leads the most complex spacecraft integration tasks, writes assembly procedures, and trains junior technicians.",
+      "pathway_ids": [
+        "sp-p-03"
+      ],
+      "adjacent_role_ids": [
+        "sp-r-14",
+        "sp-r-15",
+        "sp-r-17",
+        "sp-r-18",
+        "sp-r-19",
+        "sp-r-20"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 2,
+      "grid_row": 1
+    },
+    {
+      "id": "sp-r-17",
+      "industry_id": "space",
+      "title": "Spacecraft Manufacturing Engineer",
+      "cluster": "Manufacturing & Assembly (AIT)",
+      "seniority": "mid",
+      "salary_min": 90000,
+      "salary_max": 130000,
+      "degree_required": "4yr",
+      "skills": [
+        "Manufacturing processes",
+        "production tooling",
+        "build planning",
+        "design-for-manufacturability"
+      ],
+      "certifications": [],
+      "description": "Designs the processes and tooling to build spacecraft at rate, bridging design and the production floor.",
+      "pathway_ids": [
+        "sp-p-03"
+      ],
+      "adjacent_role_ids": [
+        "sp-r-14",
+        "sp-r-15",
+        "sp-r-16",
+        "sp-r-18",
+        "sp-r-19",
+        "sp-r-20"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 2,
+      "grid_row": 1
+    },
+    {
+      "id": "sp-r-18",
+      "industry_id": "space",
+      "title": "AIT Engineer",
+      "cluster": "Manufacturing & Assembly (AIT)",
+      "seniority": "mid",
+      "salary_min": 95000,
+      "salary_max": 135000,
+      "degree_required": "4yr",
+      "skills": [
+        "Test procedures",
+        "integration planning",
+        "ECSS standards",
+        "subsystem/system testing"
+      ],
+      "certifications": [],
+      "description": "Plans and executes assembly, integration, and test campaigns for spacecraft, owning procedures and test readiness.",
+      "pathway_ids": [
+        "sp-p-03"
+      ],
+      "adjacent_role_ids": [
+        "sp-r-14",
+        "sp-r-15",
+        "sp-r-16",
+        "sp-r-17",
+        "sp-r-19",
+        "sp-r-20"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 2,
+      "grid_row": 1
+    },
+    {
+      "id": "sp-r-19",
+      "industry_id": "space",
+      "title": "Senior Manufacturing Engineer (Space)",
+      "cluster": "Manufacturing & Assembly (AIT)",
+      "seniority": "senior",
+      "salary_min": 130000,
+      "salary_max": 175000,
+      "degree_required": "4yr",
+      "skills": [
+        "Production scale-up",
+        "lean manufacturing",
+        "rate production",
+        "cross-functional leadership"
+      ],
+      "certifications": [],
+      "description": "Leads the scale-up of spacecraft production, driving rate, cost, and quality improvements across the factory.",
+      "pathway_ids": [
+        "sp-p-03"
+      ],
+      "adjacent_role_ids": [
+        "sp-r-16",
+        "sp-r-17",
+        "sp-r-18",
+        "sp-r-20"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 2,
+      "grid_row": 2
+    },
+    {
+      "id": "sp-r-20",
+      "industry_id": "space",
+      "title": "Production Manager (Space)",
+      "cluster": "Manufacturing & Assembly (AIT)",
+      "seniority": "senior",
+      "salary_min": 125000,
+      "salary_max": 175000,
+      "degree_required": "4yr",
+      "skills": [
+        "Production leadership",
+        "capacity planning",
+        "team management",
+        "delivery accountability"
+      ],
+      "certifications": [],
+      "description": "Runs spacecraft or component production \u2014 schedule, capacity, quality, and team \u2014 and is accountable for delivery.",
+      "pathway_ids": [
+        "sp-p-03"
+      ],
+      "adjacent_role_ids": [
+        "sp-r-16",
+        "sp-r-17",
+        "sp-r-18",
+        "sp-r-19"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 2,
+      "grid_row": 2
+    },
+    {
+      "id": "sp-r-21",
+      "industry_id": "space",
+      "title": "Mission Operations Technician",
+      "cluster": "Mission Operations & Ground Systems",
+      "seniority": "entry",
+      "salary_min": 55000,
+      "salary_max": 75000,
+      "degree_required": "sometimes",
+      "skills": [
+        "Spacecraft monitoring",
+        "telemetry review",
+        "console operations",
+        "anomaly logging"
+      ],
+      "certifications": [],
+      "description": "Monitors spacecraft health from mission control, reviewing telemetry and logging anomalies during operations.",
+      "pathway_ids": [
+        "sp-p-04"
+      ],
+      "adjacent_role_ids": [
+        "sp-r-22",
+        "sp-r-23",
+        "sp-r-24",
+        "sp-r-25"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 3,
+      "grid_row": 0
+    },
+    {
+      "id": "sp-r-22",
+      "industry_id": "space",
+      "title": "Ground Systems Engineer",
+      "cluster": "Mission Operations & Ground Systems",
+      "seniority": "mid",
+      "salary_min": 90000,
+      "salary_max": 130000,
+      "degree_required": "4yr",
+      "skills": [
+        "Ground station software",
+        "antenna systems",
+        "data pipelines",
+        "mission planning tools"
+      ],
+      "certifications": [],
+      "description": "Builds and maintains the ground systems \u2014 software, antennas, data pipelines \u2014 that command and receive data from spacecraft.",
+      "pathway_ids": [
+        "sp-p-04"
+      ],
+      "adjacent_role_ids": [
+        "sp-r-21",
+        "sp-r-23",
+        "sp-r-24",
+        "sp-r-25",
+        "sp-r-26"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 3,
+      "grid_row": 1
+    },
+    {
+      "id": "sp-r-23",
+      "industry_id": "space",
+      "title": "Spacecraft Operations Engineer",
+      "cluster": "Mission Operations & Ground Systems",
+      "seniority": "mid",
+      "salary_min": 100000,
+      "salary_max": 145000,
+      "degree_required": "4yr",
+      "skills": [
+        "Spacecraft commanding",
+        "anomaly resolution",
+        "orbital operations",
+        "flight procedures"
+      ],
+      "certifications": [],
+      "description": "Commands spacecraft in orbit, resolves anomalies, and executes flight procedures to keep missions healthy.",
+      "pathway_ids": [
+        "sp-p-04"
+      ],
+      "adjacent_role_ids": [
+        "sp-r-21",
+        "sp-r-22",
+        "sp-r-24",
+        "sp-r-25",
+        "sp-r-26",
+        "sp-r-27"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 3,
+      "grid_row": 1
+    },
+    {
+      "id": "sp-r-24",
+      "industry_id": "space",
+      "title": "TT&C Engineer",
+      "cluster": "Mission Operations & Ground Systems",
+      "seniority": "mid",
+      "salary_min": 95000,
+      "salary_max": 138000,
+      "degree_required": "4yr",
+      "skills": [
+        "Telemetry tracking & command",
+        "RF link budgets",
+        "comms protocols",
+        "ground-space interfaces"
+      ],
+      "certifications": [],
+      "description": "Owns the telemetry, tracking, and command links that connect ground operators to spacecraft.",
+      "pathway_ids": [
+        "sp-p-04"
+      ],
+      "adjacent_role_ids": [
+        "sp-r-21",
+        "sp-r-22",
+        "sp-r-23",
+        "sp-r-25",
+        "sp-r-26"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 3,
+      "grid_row": 1
+    },
+    {
+      "id": "sp-r-25",
+      "industry_id": "space",
+      "title": "Flight Software Engineer",
+      "cluster": "Mission Operations & Ground Systems",
+      "seniority": "mid",
+      "salary_min": 110000,
+      "salary_max": 160000,
+      "degree_required": "4yr",
+      "skills": [
+        "Embedded C/C++",
+        "real-time systems",
+        "flight software",
+        "fault management"
+      ],
+      "certifications": [],
+      "description": "Writes the embedded software that runs onboard spacecraft, managing autonomy, fault response, and subsystem control.",
+      "pathway_ids": [
+        "sp-p-04"
+      ],
+      "adjacent_role_ids": [
+        "sp-r-21",
+        "sp-r-22",
+        "sp-r-23",
+        "sp-r-24",
+        "sp-r-26"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 3,
+      "grid_row": 1
+    },
+    {
+      "id": "sp-r-26",
+      "industry_id": "space",
+      "title": "Senior Spacecraft Operations Engineer",
+      "cluster": "Mission Operations & Ground Systems",
+      "seniority": "senior",
+      "salary_min": 140000,
+      "salary_max": 190000,
+      "degree_required": "4yr",
+      "skills": [
+        "Operations leadership",
+        "mission planning",
+        "anomaly board leadership",
+        "constellation operations"
+      ],
+      "certifications": [],
+      "description": "Leads spacecraft operations teams, owns mission planning, and directs anomaly response for complex missions or constellations.",
+      "pathway_ids": [
+        "sp-p-04"
+      ],
+      "adjacent_role_ids": [
+        "sp-r-22",
+        "sp-r-23",
+        "sp-r-24",
+        "sp-r-25",
+        "sp-r-27"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 3,
+      "grid_row": 2
+    },
+    {
+      "id": "sp-r-27",
+      "industry_id": "space",
+      "title": "Mission Director",
+      "cluster": "Mission Operations & Ground Systems",
+      "seniority": "lead",
+      "salary_min": 160000,
+      "salary_max": 220000,
+      "degree_required": "graduate",
+      "skills": [
+        "Mission leadership",
+        "go/no-go authority",
+        "cross-team coordination",
+        "risk management"
+      ],
+      "certifications": [],
+      "description": "Holds operational authority for a mission, making go/no-go calls and coordinating all teams during critical operations.",
+      "pathway_ids": [
+        "sp-p-04"
+      ],
+      "adjacent_role_ids": [
+        "sp-r-26"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 3,
+      "grid_row": 3
+    },
+    {
+      "id": "sp-r-28",
+      "industry_id": "space",
+      "title": "Launch Operations Technician",
+      "cluster": "Launch & Test Operations",
+      "seniority": "entry",
+      "salary_min": 50000,
+      "salary_max": 70000,
+      "degree_required": "hs",
+      "skills": [
+        "Vehicle processing",
+        "propellant handling",
+        "pad operations",
+        "safety procedures"
+      ],
+      "certifications": [],
+      "description": "Supports launch vehicle processing and pad operations, handling propellants and hardware under strict safety protocols.",
+      "pathway_ids": [
+        "sp-p-05"
+      ],
+      "adjacent_role_ids": [
+        "sp-r-29",
+        "sp-r-30"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 4,
+      "grid_row": 0
+    },
+    {
+      "id": "sp-r-29",
+      "industry_id": "space",
+      "title": "Test Engineer (Space)",
+      "cluster": "Launch & Test Operations",
+      "seniority": "mid",
+      "salary_min": 90000,
+      "salary_max": 130000,
+      "degree_required": "4yr",
+      "skills": [
+        "Environmental testing",
+        "vibration/thermal-vac",
+        "test planning",
+        "data analysis"
+      ],
+      "certifications": [],
+      "description": "Plans and runs environmental tests \u2014 vibration, thermal-vacuum, shock \u2014 that qualify hardware for spaceflight.",
+      "pathway_ids": [
+        "sp-p-05"
+      ],
+      "adjacent_role_ids": [
+        "sp-r-28",
+        "sp-r-30",
+        "sp-r-31"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 4,
+      "grid_row": 1
+    },
+    {
+      "id": "sp-r-30",
+      "industry_id": "space",
+      "title": "Launch Operations Engineer",
+      "cluster": "Launch & Test Operations",
+      "seniority": "mid",
+      "salary_min": 100000,
+      "salary_max": 145000,
+      "degree_required": "4yr",
+      "skills": [
+        "Launch campaign planning",
+        "vehicle integration",
+        "countdown operations",
+        "range coordination"
+      ],
+      "certifications": [],
+      "description": "Plans and executes launch campaigns \u2014 vehicle integration, countdown procedures, and range coordination.",
+      "pathway_ids": [
+        "sp-p-05"
+      ],
+      "adjacent_role_ids": [
+        "sp-r-28",
+        "sp-r-29",
+        "sp-r-31",
+        "sp-r-32"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 4,
+      "grid_row": 1
+    },
+    {
+      "id": "sp-r-31",
+      "industry_id": "space",
+      "title": "Senior Test Engineer (Space)",
+      "cluster": "Launch & Test Operations",
+      "seniority": "senior",
+      "salary_min": 130000,
+      "salary_max": 175000,
+      "degree_required": "4yr",
+      "skills": [
+        "Test program leadership",
+        "qualification campaigns",
+        "test facility management",
+        "standards"
+      ],
+      "certifications": [],
+      "description": "Leads qualification test programs and test facilities, owning the strategy that proves hardware survives launch and space.",
+      "pathway_ids": [
+        "sp-p-05"
+      ],
+      "adjacent_role_ids": [
+        "sp-r-29",
+        "sp-r-30",
+        "sp-r-32"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 4,
+      "grid_row": 2
+    },
+    {
+      "id": "sp-r-32",
+      "industry_id": "space",
+      "title": "Launch Director",
+      "cluster": "Launch & Test Operations",
+      "seniority": "lead",
+      "salary_min": 165000,
+      "salary_max": 235000,
+      "degree_required": "graduate",
+      "skills": [
+        "Launch authority",
+        "countdown leadership",
+        "multi-team coordination",
+        "risk ownership"
+      ],
+      "certifications": [],
+      "description": "Holds launch authority \u2014 leads the countdown, makes the final go/no-go call, and owns launch risk.",
+      "pathway_ids": [
+        "sp-p-05"
+      ],
+      "adjacent_role_ids": [
+        "sp-r-31"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 4,
+      "grid_row": 3
+    },
+    {
+      "id": "sp-r-33",
+      "industry_id": "space",
+      "title": "Space Supply Chain Analyst",
+      "cluster": "Business, Policy & Supply Chain",
+      "seniority": "entry",
+      "salary_min": 58000,
+      "salary_max": 80000,
+      "degree_required": "4yr",
+      "skills": [
+        "Procurement",
+        "supplier management",
+        "aerospace parts sourcing",
+        "ERP",
+        "AS9100 awareness"
+      ],
+      "certifications": [],
+      "description": "Sources and manages the specialized parts and materials that go into spacecraft, navigating long-lead aerospace supply chains.",
+      "pathway_ids": [
+        "sp-p-06"
+      ],
+      "adjacent_role_ids": [
+        "sp-r-34",
+        "sp-r-35"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 5,
+      "grid_row": 0
+    },
+    {
+      "id": "sp-r-34",
+      "industry_id": "space",
+      "title": "Space Systems Analyst",
+      "cluster": "Business, Policy & Supply Chain",
+      "seniority": "mid",
+      "salary_min": 85000,
+      "salary_max": 125000,
+      "degree_required": "4yr",
+      "skills": [
+        "Mission analysis",
+        "trade studies",
+        "modeling",
+        "data analysis",
+        "STK"
+      ],
+      "certifications": [],
+      "description": "Performs the analyses and trade studies that shape mission concepts, architectures, and business cases.",
+      "pathway_ids": [
+        "sp-p-06"
+      ],
+      "adjacent_role_ids": [
+        "sp-r-33",
+        "sp-r-35",
+        "sp-r-36",
+        "sp-r-37"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 5,
+      "grid_row": 1
+    },
+    {
+      "id": "sp-r-35",
+      "industry_id": "space",
+      "title": "Space Policy Analyst",
+      "cluster": "Business, Policy & Supply Chain",
+      "seniority": "mid",
+      "salary_min": 75000,
+      "salary_max": 115000,
+      "degree_required": "4yr",
+      "skills": [
+        "Space policy",
+        "regulatory analysis",
+        "licensing (FCC/FAA)",
+        "export control (ITAR)"
+      ],
+      "certifications": [],
+      "description": "Analyzes and navigates the policy, regulatory, and licensing landscape that governs space activities.",
+      "pathway_ids": [
+        "sp-p-06"
+      ],
+      "adjacent_role_ids": [
+        "sp-r-33",
+        "sp-r-34",
+        "sp-r-36",
+        "sp-r-37"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 5,
+      "grid_row": 1
+    },
+    {
+      "id": "sp-r-36",
+      "industry_id": "space",
+      "title": "Spacecraft Program Manager",
+      "cluster": "Business, Policy & Supply Chain",
+      "seniority": "senior",
+      "salary_min": 140000,
+      "salary_max": 200000,
+      "degree_required": "4yr",
+      "skills": [
+        "Program management",
+        "budget/schedule ownership",
+        "stakeholder management",
+        "risk management"
+      ],
+      "certifications": [],
+      "description": "Owns the cost, schedule, and delivery of a spacecraft program, coordinating engineering, supply chain, and customers.",
+      "pathway_ids": [
+        "sp-p-06"
+      ],
+      "adjacent_role_ids": [
+        "sp-r-34",
+        "sp-r-35",
+        "sp-r-37",
+        "sp-r-38"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 5,
+      "grid_row": 2
+    },
+    {
+      "id": "sp-r-37",
+      "industry_id": "space",
+      "title": "Business Development Manager (Space)",
+      "cluster": "Business, Policy & Supply Chain",
+      "seniority": "senior",
+      "salary_min": 130000,
+      "salary_max": 190000,
+      "degree_required": "4yr",
+      "skills": [
+        "Capture strategy",
+        "government/commercial sales",
+        "proposal leadership",
+        "partnership building"
+      ],
+      "certifications": [],
+      "description": "Wins new business by leading capture and proposal efforts across government and commercial space customers.",
+      "pathway_ids": [
+        "sp-p-06"
+      ],
+      "adjacent_role_ids": [
+        "sp-r-34",
+        "sp-r-35",
+        "sp-r-36",
+        "sp-r-38"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 5,
+      "grid_row": 2
+    },
+    {
+      "id": "sp-r-38",
+      "industry_id": "space",
+      "title": "Director of Space Programs",
+      "cluster": "Business, Policy & Supply Chain",
+      "seniority": "lead",
+      "salary_min": 180000,
+      "salary_max": 280000,
+      "degree_required": "graduate",
+      "skills": [
+        "Portfolio leadership",
+        "P&L ownership",
+        "executive strategy",
+        "org leadership"
+      ],
+      "certifications": [],
+      "description": "Leads a portfolio of space programs at the executive level, owning P&L, strategy, and organizational direction.",
+      "pathway_ids": [
+        "sp-p-06"
+      ],
+      "adjacent_role_ids": [
+        "sp-r-36",
+        "sp-r-37"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 5,
+      "grid_row": 3
+    }
+  ],
+  "pathways": [
+    {
+      "id": "sp-p-01",
+      "industry_id": "space",
+      "name": "Spacecraft Design & Engineering Pathway",
+      "description": "Progression of roles within the Spacecraft Design & Engineering cluster, from entry through lead.",
+      "role_ids": [
+        "sp-r-01",
+        "sp-r-02",
+        "sp-r-05",
+        "sp-r-03",
+        "sp-r-04",
+        "sp-r-06",
+        "sp-r-07"
+      ]
+    },
+    {
+      "id": "sp-p-02",
+      "industry_id": "space",
+      "name": "Propulsion & Systems Pathway",
+      "description": "Progression of roles within the Propulsion & Systems cluster, from entry through lead.",
+      "role_ids": [
+        "sp-r-08",
+        "sp-r-11",
+        "sp-r-09",
+        "sp-r-10",
+        "sp-r-13",
+        "sp-r-12"
+      ]
+    },
+    {
+      "id": "sp-p-03",
+      "industry_id": "space",
+      "name": "Manufacturing & Assembly (AIT) Pathway",
+      "description": "Progression of roles within the Manufacturing & Assembly (AIT) cluster, from entry through lead.",
+      "role_ids": [
+        "sp-r-14",
+        "sp-r-15",
+        "sp-r-18",
+        "sp-r-16",
+        "sp-r-17",
+        "sp-r-20",
+        "sp-r-19"
+      ]
+    },
+    {
+      "id": "sp-p-04",
+      "industry_id": "space",
+      "name": "Mission Operations & Ground Systems Pathway",
+      "description": "Progression of roles within the Mission Operations & Ground Systems cluster, from entry through lead.",
+      "role_ids": [
+        "sp-r-21",
+        "sp-r-25",
+        "sp-r-22",
+        "sp-r-23",
+        "sp-r-24",
+        "sp-r-26",
+        "sp-r-27"
+      ]
+    },
+    {
+      "id": "sp-p-05",
+      "industry_id": "space",
+      "name": "Launch & Test Operations Pathway",
+      "description": "Progression of roles within the Launch & Test Operations cluster, from entry through lead.",
+      "role_ids": [
+        "sp-r-28",
+        "sp-r-30",
+        "sp-r-29",
+        "sp-r-31",
+        "sp-r-32"
+      ]
+    },
+    {
+      "id": "sp-p-06",
+      "industry_id": "space",
+      "name": "Business, Policy & Supply Chain Pathway",
+      "description": "Progression of roles within the Business, Policy & Supply Chain cluster, from entry through lead.",
+      "role_ids": [
+        "sp-r-33",
+        "sp-r-35",
+        "sp-r-34",
+        "sp-r-37",
+        "sp-r-36",
+        "sp-r-38"
+      ]
+    }
+  ]
+}

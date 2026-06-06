@@ -1,16 +1,18 @@
 import { ImageResponse } from 'next/og';
 import type { IndustryData } from '@/lib/types';
 
-import amData   from '@/data/additive-manufacturing.json';
-import semiData from '@/data/semiconductors.json';
+import amData    from '@/data/additive-manufacturing.json';
+import semiData  from '@/data/semiconductors.json';
+import spaceData from '@/data/space.json';
 
 export const runtime = 'edge';
 export const size    = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
 const INDUSTRY_MAP: Record<string, IndustryData> = {
-  'additive-manufacturing': amData   as IndustryData,
-  'semiconductors':         semiData as IndustryData,
+  'additive-manufacturing': amData    as IndustryData,
+  'semiconductors':         semiData  as IndustryData,
+  'space':                  spaceData as IndustryData,
 };
 
 export default async function OGImage({

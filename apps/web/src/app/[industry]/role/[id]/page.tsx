@@ -6,12 +6,14 @@ import type { IndustryData, Role } from '@/lib/types';
 import { computeSkillGap, getSeniorityDelta } from '@/lib/role-utils';
 import { CLUSTER_COLORS, DEGREE_BADGES, formatSalary } from '@/components/CareerMap/constants';
 
-import amData   from '@/data/additive-manufacturing.json';
-import semiData from '@/data/semiconductors.json';
+import amData    from '@/data/additive-manufacturing.json';
+import semiData  from '@/data/semiconductors.json';
+import spaceData from '@/data/space.json';
 
 const INDUSTRY_MAP: Record<string, IndustryData> = {
-  'additive-manufacturing': amData as IndustryData,
-  'semiconductors':         semiData as IndustryData,
+  'additive-manufacturing': amData    as IndustryData,
+  'semiconductors':         semiData  as IndustryData,
+  'space':                  spaceData as IndustryData,
 };
 
 interface Props {
@@ -74,6 +76,7 @@ export default async function RoleDetailPage({ params }: Props) {
   const precedingIds  = new Set<string>();
   const followingIds  = new Set<string>();
 
+  // Pathway-based: the role immediately before / after this one in any pathway sequence
   rolePathways.forEach(pw => {
     if (!pw) return;
     const idx = pw.role_ids.indexOf(role.id);
@@ -81,14 +84,28 @@ export default async function RoleDetailPage({ params }: Props) {
     if (idx < pw.role_ids.length - 1)  followingIds.add(pw.role_ids[idx + 1]);
   });
 
+  // Adjacency-based: also include adjacent roles that sit at a lower / higher seniority.
+  // This widens "prerequisites" beyond pure pathway predecessors to include the typical
+  // sideways-then-up moves that the client's research highlights.
+  const SENIORITY_RANK: Record<string, number> = { entry: 0, mid: 1, senior: 2, lead: 3 };
+  const myRank = SENIORITY_RANK[role.seniority] ?? 0;
+  role.adjacent_role_ids.forEach(aid => {
+    const r = roleById.get(aid);
+    if (!r) return;
+    const theirRank = SENIORITY_RANK[r.seniority] ?? 0;
+    if (theirRank < myRank) precedingIds.add(aid);
+    else if (theirRank > myRank) followingIds.add(aid);
+  });
+
   const precedingRoles = [...precedingIds].map(rid => roleById.get(rid)).filter((r): r is Role => !!r);
   const followingRoles = [...followingIds].map(rid => roleById.get(rid)).filter((r): r is Role => !!r);
 
   const degreeLabel =
-    role.degree_required === 'hs'       ? 'High School Diploma' :
-    role.degree_required === '2yr'      ? "Associate's Degree"  :
-    role.degree_required === '4yr'      ? "Bachelor's Degree"   :
-                                          'Graduate Degree';
+    role.degree_required === 'hs'        ? 'High School Diploma' :
+    role.degree_required === '2yr'       ? "Associate's Degree"  :
+    role.degree_required === '4yr'       ? "Bachelor's Degree"   :
+    role.degree_required === 'sometimes' ? 'Sometimes Required'  :
+                                           'Graduate Degree';
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -109,7 +126,7 @@ export default async function RoleDetailPage({ params }: Props) {
           <div className="hidden sm:flex items-center gap-2 flex-shrink-0">
             <PrintButton />
             <Link
-              href={`/${slug}?role=${role.id}`}
+              href={`/${slug}?path=${role.id}`}
               className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2
                          rounded-xl text-white hover:opacity-90 transition-opacity"
               style={{ backgroundColor: data.industry.color }}
@@ -207,69 +224,87 @@ export default async function RoleDetailPage({ params }: Props) {
               </section>
             )}
 
-            {/* Career transitions */}
+            {/* Career transitions — two-column Prerequisite + Next-Step layout */}
             <section className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm"
               aria-labelledby="transitions-heading">
               <h2 id="transitions-heading" className="text-base font-bold text-gray-900 mb-5">
                 Career transitions
               </h2>
 
-              {precedingRoles.length > 0 && (
-                <div className="mb-5">
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
-                    People typically come from
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {precedingRoles.map(r => (
-                      <Link
-                        key={r.id}
-                        href={`/${slug}/role/${r.id}`}
-                        className="flex items-center gap-2 text-sm bg-gray-50 border border-gray-200
-                                   text-gray-700 px-3 py-2 rounded-xl hover:bg-gray-100 transition-colors
-                                   font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                      >
-                        <DeltaBadge delta={getSeniorityDelta(r, role)} />
-                        {r.title}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {followingRoles.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Prerequisite Roles */}
                 <div>
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
-                    From here, people commonly move to
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {followingRoles.map(r => {
-                      const delta = getSeniorityDelta(role, r);
-                      return (
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-xs font-bold text-gray-700 uppercase tracking-wide">
+                      ← Prerequisite Roles
+                    </span>
+                    {precedingRoles.length > 0 && (
+                      <span className="text-[10px] font-semibold text-gray-400">
+                        {precedingRoles.length}
+                      </span>
+                    )}
+                  </div>
+                  {precedingRoles.length > 0 ? (
+                    <div className="flex flex-col gap-2">
+                      {precedingRoles.map(r => (
                         <Link
                           key={r.id}
                           href={`/${slug}/role/${r.id}`}
-                          className="flex items-center gap-2 text-sm font-semibold px-3 py-2
-                                     rounded-xl text-white hover:opacity-90 transition-opacity
-                                     focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-blue-500"
-                          style={{ backgroundColor: data.industry.color }}
+                          className="flex items-center gap-2 text-sm bg-gray-50 border border-gray-200
+                                     text-gray-700 px-3 py-2 rounded-xl hover:bg-gray-100 transition-colors
+                                     font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                         >
-                          <DeltaBadge delta={delta} />
-                          {r.title}
+                          <DeltaBadge delta={getSeniorityDelta(r, role)} />
+                          <span className="truncate">{r.title}</span>
                         </Link>
-                      );
-                    })}
-                  </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-gray-400 italic">
+                      An entry point into the industry — no prerequisite role required.
+                    </p>
+                  )}
                 </div>
-              )}
 
-              {precedingRoles.length === 0 && followingRoles.length === 0 && (
-                <p className="text-sm text-gray-400">
-                  This role connects to others via the career map.{' '}
-                  <Link href={`/${slug}?role=${role.id}`} className="text-blue-600 hover:underline">
-                    View on map
-                  </Link>
-                </p>
-              )}
+                {/* Next-Step Roles */}
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-xs font-bold uppercase tracking-wide"
+                      style={{ color: data.industry.color }}>
+                      Next-Step Roles →
+                    </span>
+                    {followingRoles.length > 0 && (
+                      <span className="text-[10px] font-semibold text-gray-400">
+                        {followingRoles.length}
+                      </span>
+                    )}
+                  </div>
+                  {followingRoles.length > 0 ? (
+                    <div className="flex flex-col gap-2">
+                      {followingRoles.map(r => {
+                        const delta = getSeniorityDelta(role, r);
+                        return (
+                          <Link
+                            key={r.id}
+                            href={`/${slug}/role/${r.id}`}
+                            className="flex items-center gap-2 text-sm font-semibold px-3 py-2
+                                       rounded-xl text-white hover:opacity-90 transition-opacity
+                                       focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-blue-500"
+                            style={{ backgroundColor: data.industry.color }}
+                          >
+                            <DeltaBadge delta={delta} />
+                            <span className="truncate">{r.title}</span>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-gray-400 italic">
+                      A senior endpoint — explore lateral pathways via the map.
+                    </p>
+                  )}
+                </div>
+              </div>
             </section>
 
             {/* ── Skill gap analysis ─────────────────────────────────────────── */}
@@ -357,7 +392,7 @@ export default async function RoleDetailPage({ params }: Props) {
 
             {/* View on map */}
             <Link
-              href={`/${slug}?role=${role.id}`}
+              href={`/${slug}?path=${role.id}`}
               className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-semibold
                          text-sm text-white hover:opacity-90 transition-opacity shadow-sm
                          focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500"

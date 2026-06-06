@@ -388,9 +388,9 @@ export default function AgentChat({ data }: Props) {
             </button>
           </form>
 
-          {/* Footer note */}
-          <p className="text-center text-[10px] text-gray-600 py-1.5 bg-gray-900 flex-shrink-0">
-            Powered by Claude · Role citations link to the career map
+          {/* Footer disclaimer — visible, plain language */}
+          <p className="text-center text-[10px] text-gray-400 leading-snug py-2 px-3 bg-gray-900 flex-shrink-0">
+            AI-generated responses. May be inaccurate — verify with a qualified career advisor before major decisions.
           </p>
         </div>
       )}

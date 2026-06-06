@@ -1,4 +1,4 @@
-export type DegreeLevel = 'hs' | '2yr' | '4yr' | 'graduate';
+export type DegreeLevel = 'hs' | '2yr' | '4yr' | 'graduate' | 'sometimes';
 export type SeniorityLevel = 'entry' | 'mid' | 'senior' | 'lead';
 export type MatchStatus = 'pending' | 'approved' | 'rejected';
 

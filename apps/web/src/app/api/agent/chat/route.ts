@@ -15,12 +15,14 @@ import type { IndustryData } from '@/lib/types';
 import { streamWithFallback } from '@/lib/ai-providers';
 import { checkRateLimit, LIMITS, getClientIp } from '@/lib/rate-limit';
 
-import amData   from '@/data/additive-manufacturing.json';
-import semiData from '@/data/semiconductors.json';
+import amData    from '@/data/additive-manufacturing.json';
+import semiData  from '@/data/semiconductors.json';
+import spaceData from '@/data/space.json';
 
 const INDUSTRY_MAP: Record<string, IndustryData> = {
-  'additive-manufacturing': amData   as IndustryData,
-  'semiconductors':         semiData as IndustryData,
+  'additive-manufacturing': amData    as IndustryData,
+  'semiconductors':         semiData  as IndustryData,
+  'space':                  spaceData as IndustryData,
 };
 
 // ── Taxonomy context builder ───────────────────────────────────────────────────
@@ -66,6 +68,12 @@ const SUGGESTED: Record<string, string[]> = {
     "How do I get into chip design without an EE degree?",
     "Which semiconductor roles are growing fastest after the CHIPS Act?",
     "What's the path from wafer fab technician to engineering manager?",
+  ],
+  'space': [
+    "How do I become a spacecraft systems engineer?",
+    "Which space roles are accessible without an aerospace degree?",
+    "What's the career path from AIT technician to mission director?",
+    "Which propulsion roles pay over $150k?",
   ],
 };
 

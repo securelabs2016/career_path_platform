@@ -1,7 +1,7 @@
 """
 Taxonomy Seeder — PHASE_B of deployment.
 ==========================================
-One-time script that uploads the JSON taxonomies (50 AM roles + 45 Semi roles)
+One-time script that uploads the JSON taxonomies (36 AM + ~45 Semi + 38 Space roles)
 into the Supabase database so the pipeline has something to match jobs against.
 
 Idempotent: safe to run multiple times. For each industry, it:
@@ -44,7 +44,7 @@ logging.basicConfig(
 log = logging.getLogger("seeder")
 
 JSON_DIR   = Path(__file__).parent.parent / "web" / "src" / "data"
-JSON_FILES = ["additive-manufacturing.json", "semiconductors.json"]
+JSON_FILES = ["additive-manufacturing.json", "semiconductors.json", "space.json"]
 
 
 def verify_schema(supabase: Client) -> bool:
@@ -121,7 +121,13 @@ def replace_canonical_roles(supabase: Client, industry_id: str, roles: list[dict
     )
     log.info("  cleared existing canonical_roles for this industry")
 
-    # 2. Build insert rows
+    # 2. Build insert rows.
+    # Note: the live DB's CHECK constraint may not yet include 'sometimes'.
+    # If the user hasn't run the updated schema.sql, we fall back to NULL
+    # so the row still inserts cleanly. The JSON keeps 'sometimes' for the UI.
+    def _normalize_degree(d):
+        return d if d in ('hs', '2yr', '4yr', 'graduate') else None
+
     rows = [
         {
             "industry_id":     industry_id,
@@ -130,7 +136,7 @@ def replace_canonical_roles(supabase: Client, industry_id: str, roles: list[dict
             "seniority":       role["seniority"],
             "salary_min":      role["salary_min"],
             "salary_max":      role["salary_max"],
-            "degree_required": role["degree_required"],
+            "degree_required": _normalize_degree(role["degree_required"]),
             "skills":          role["skills"],
             "certifications":  role["certifications"],
             "description":     role["description"],

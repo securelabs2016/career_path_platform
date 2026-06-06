@@ -23,7 +23,7 @@ CREATE TABLE canonical_roles (
   seniority         TEXT NOT NULL CHECK (seniority IN ('entry', 'mid', 'senior', 'lead')),
   salary_min        INTEGER,
   salary_max        INTEGER,
-  degree_required   TEXT CHECK (degree_required IN ('hs', '2yr', '4yr', 'graduate')),
+  degree_required   TEXT CHECK (degree_required IN ('hs', '2yr', '4yr', 'graduate', 'sometimes')),
   skills            TEXT[]   DEFAULT '{}',
   certifications    TEXT[]   DEFAULT '{}',
   description       TEXT,
