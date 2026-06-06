@@ -15,6 +15,7 @@ for better cross-industry matching at scale).
 """
 
 import json
+import re
 import time
 import os
 import logging
@@ -22,6 +23,11 @@ from anthropic import Anthropic, RateLimitError as AnthropicRateLimit
 from supabase import Client
 
 log = logging.getLogger(__name__)
+
+# Free-tier Gemini pacing — keep matcher under 15 RPM when Claude is absent.
+GEMINI_PACE_SECONDS = 3.0
+
+SENIORITY_RANK = {"entry": 0, "mid": 1, "senior": 2, "lead": 3}
 
 MATCH_PROMPT = """You are an expert workforce taxonomist. Decide whether a scraped job posting matches a canonical career role.
 
@@ -46,37 +52,66 @@ Respond with ONLY a JSON object, no explanation:
 
 
 def skill_overlap_score(job_skills: list[str], role_skills: list[str]) -> float:
-    """Jaccard-like overlap between two skill lists (case-insensitive)."""
+    """
+    Coverage of the smaller skill set by the intersection (not Jaccard).
+
+    Why not Jaccard: scraped job postings often list 3–5 skills while
+    canonical roles list 8+. Jaccard penalises this gap brutally — a job
+    with 3 skills, 2 of which match a role's 8 skills, gets 2/9 = 0.22.
+    Smaller-set normalisation gives 2/3 = 0.67, which better reflects
+    "most of what the job needs is in this role."
+    """
     if not job_skills or not role_skills:
         return 0.0
-    job_set  = {s.lower() for s in job_skills}
-    role_set = {s.lower() for s in role_skills}
+    job_set  = {s.lower().strip() for s in job_skills if s}
+    role_set = {s.lower().strip() for s in role_skills if s}
+    if not job_set or not role_set:
+        return 0.0
     intersection = job_set & role_set
-    union        = job_set | role_set
-    return len(intersection) / len(union)
+    smaller = min(len(job_set), len(role_set))
+    return len(intersection) / smaller
 
 
 def title_similarity(job_title: str, role_title: str) -> float:
-    """Simple word overlap between titles."""
-    j_words = set(job_title.lower().split())
-    r_words = set(role_title.lower().split())
+    """Word overlap between titles, ignoring common filler tokens."""
+    stop = {"the", "a", "of", "and", "for", "in", "to", "i", "ii", "iii", "1", "2", "3"}
+    j_words = {w for w in re.findall(r"\w+", job_title.lower()) if w not in stop}
+    r_words = {w for w in re.findall(r"\w+", role_title.lower()) if w not in stop}
     if not j_words or not r_words:
         return 0.0
     return len(j_words & r_words) / max(len(j_words), len(r_words))
 
 
+def seniority_score(job_seniority: str, role_seniority: str) -> float:
+    """Graded match — adjacent tiers are still good signal."""
+    js = SENIORITY_RANK.get(job_seniority, 1)
+    rs = SENIORITY_RANK.get(role_seniority, 1)
+    diff = abs(js - rs)
+    if diff == 0: return 1.0
+    if diff == 1: return 0.7
+    if diff == 2: return 0.4
+    return 0.2
+
+
 def rank_candidates(extracted_job: dict, canonical_roles: list[dict]) -> list[dict]:
-    """Score all canonical roles and return top-3."""
-    job_skills  = extracted_job.get("skills", [])
-    job_title   = extracted_job.get("normalized_title", "")
+    """
+    Score all canonical roles and return top-3.
+
+    Weights tuned for workforce taxonomy matching:
+    - Title is the strongest signal humans use (40%)
+    - Skill overlap is noisy but informative (40%)
+    - Seniority alignment graded — adjacent tiers still count (20%)
+    """
+    job_skills    = extracted_job.get("skills", [])
+    job_title     = extracted_job.get("normalized_title", "")
     job_seniority = extracted_job.get("seniority", "mid")
 
     scored = []
     for role in canonical_roles:
-        skill_score  = skill_overlap_score(job_skills, role.get("skills", []))
-        title_score  = title_similarity(job_title, role.get("title", ""))
-        seniority_match = 1.0 if role.get("seniority") == job_seniority else 0.5
-        combined = skill_score * 0.5 + title_score * 0.35 + seniority_match * 0.15
+        skill_score = skill_overlap_score(job_skills, role.get("skills", []))
+        title_score = title_similarity(job_title, role.get("title", ""))
+        sen_score   = seniority_score(job_seniority, role.get("seniority", "mid"))
+        combined    = title_score * 0.4 + skill_score * 0.4 + sen_score * 0.2
         scored.append({"role": role, "score": combined})
 
     scored.sort(key=lambda x: x["score"], reverse=True)
@@ -102,8 +137,15 @@ def _judge_with_claude(prompt: str, client: Anthropic) -> dict | None:
     return _parse_judgment(message.content[0].text)
 
 
-def _judge_with_gemini(prompt: str) -> dict | None:
-    """Gemini fallback — only used if GEMINI_API_KEY is set."""
+def _is_rate_limit_error(err: Exception) -> bool:
+    s = str(err).lower()
+    return "429" in s or "rate" in s or "quota" in s or "resourceexhausted" in s
+
+
+def _judge_with_gemini(prompt: str, max_retries: int = 3) -> dict | None:
+    """Gemini fallback — only used if GEMINI_API_KEY is set.
+    Retries on rate-limit errors so we don't silently drop every other judgment
+    once we hit the free tier's 15 RPM ceiling."""
     gemini_key = os.environ.get("GEMINI_API_KEY")
     if not gemini_key:
         return None
@@ -111,11 +153,30 @@ def _judge_with_gemini(prompt: str) -> dict | None:
         import google.generativeai as genai
         genai.configure(api_key=gemini_key)
         model = genai.GenerativeModel("gemini-2.5-flash")
-        response = model.generate_content(prompt)
-        return _parse_judgment(response.text)
-    except Exception as e:
-        log.warning(f"Gemini judgment failed: {e}")
+    except ImportError:
         return None
+
+    for attempt in range(max_retries):
+        try:
+            response = model.generate_content(prompt)
+            parsed = _parse_judgment(response.text)
+            if parsed is None and attempt < max_retries - 1:
+                log.warning(
+                    f"Gemini judgment unparseable (attempt {attempt+1}): "
+                    f"{(response.text or '')[:200]!r}"
+                )
+                time.sleep(2)
+                continue
+            return parsed
+        except Exception as e:
+            if _is_rate_limit_error(e) and attempt < max_retries - 1:
+                wait = 5 * (2 ** attempt)
+                log.warning(f"Gemini rate-limited (attempt {attempt+1}), waiting {wait}s…")
+                time.sleep(wait)
+                continue
+            log.warning(f"Gemini judgment failed (attempt {attempt+1}): {e}")
+            return None
+    return None
 
 
 def claude_judge(
@@ -165,9 +226,17 @@ def claude_judge(
 
 
 def route_confidence(confidence: float) -> str:
-    if confidence >= 0.85:
+    """
+    Confidence → moderation bucket.
+    Lower thresholds than the initial design — the original 0.85/0.50 gates
+    produced ~100% rejections on the first real-world run because most
+    scraped roles are not perfect-fit matches. 0.80/0.35 keeps the auto-approve
+    bar high but gives the human admin queue more borderline cases to review,
+    which is what the queue is for.
+    """
+    if confidence >= 0.80:
         return "approved"
-    if confidence >= 0.50:
+    if confidence >= 0.35:
         return "pending"
     return "rejected"
 
@@ -224,11 +293,18 @@ def run_matcher(
     log.info(f"Matching {len(all_extracted)} jobs against {len(canonical_roles)} canonical roles for {industry_slug}…")
 
     stats = {"matched": 0, "pending": 0, "rejected": 0}
+    gemini_only = anthropic is None
 
-    for job in all_extracted:
+    for i, job in enumerate(all_extracted):
+        # Pace Gemini-only runs to stay under the free-tier 15 RPM ceiling.
+        if gemini_only and i > 0:
+            time.sleep(GEMINI_PACE_SECONDS)
+
         top3 = rank_candidates(job, canonical_roles)
-        if not top3 or top3[0]["score"] < 0.1:
-            # Too weak a candidate — save as rejected without calling Claude
+        if not top3 or top3[0]["score"] < 0.05:
+            # Almost no signal at all — reject pre-AI without spending API calls.
+            # Threshold lowered from 0.10 to 0.05 so more borderline candidates
+            # get a real AI judgment instead of being thrown away.
             supabase.table("role_matches").insert({
                 "extracted_job_id":  job["id"],
                 "canonical_role_id": top3[0]["role"]["id"] if top3 else canonical_roles[0]["id"],
