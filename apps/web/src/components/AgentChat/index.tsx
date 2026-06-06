@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import type { IndustryData } from '@/lib/types';
+import DolphIQIcon, { DolphIQWordmark } from '../DolphIQIcon';
 
 interface Message {
   id: string;
@@ -49,7 +50,7 @@ function RichText({ text, data }: { text: string; data: IndustryData }) {
 }
 
 const FALLBACK_MSG =
-  'The AI advisor is not available right now. Make sure ANTHROPIC_API_KEY is set in your .env.local file and restart the dev server.';
+  'dolphIQ is not available right now. Make sure at least one AI provider key is set in .env.local and restart the dev server.';
 
 export default function AgentChat({ data }: Props) {
   const [open,       setOpen]       = useState(false);
@@ -205,10 +206,10 @@ export default function AgentChat({ data }: Props) {
 
   return (
     <>
-      {/* ── Floating toggle button ─────────────────────────────────────────── */}
+      {/* Floating toggle button — dolphIQ identity */}
       <button
         onClick={() => setOpen(o => !o)}
-        aria-label={open ? 'Close AI advisor' : 'Open AI career advisor'}
+        aria-label={open ? 'Close dolphIQ' : 'Open dolphIQ — your career guide'}
         aria-expanded={open}
         className="fixed bottom-6 right-6 z-40 flex items-center gap-2 px-4 py-3
                    rounded-2xl text-white font-semibold text-sm shadow-xl
@@ -217,16 +218,13 @@ export default function AgentChat({ data }: Props) {
         style={{ backgroundColor: data.industry.color }}
       >
         {open ? (
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         ) : (
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-              d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-          </svg>
+          <DolphIQIcon className="w-6 h-4" />
         )}
-        <span>AI Advisor</span>
+        <DolphIQWordmark />
         {!open && messages.length > 0 && (
           <span className="w-2 h-2 rounded-full bg-white/70" aria-hidden="true" />
         )}
@@ -243,42 +241,52 @@ export default function AgentChat({ data }: Props) {
           aria-label="AI Career Advisor"
           aria-modal="false"
         >
-          {/* Header */}
+          {/* Header — dolphIQ identity + tagline + industry */}
           <div
-            className="flex items-center justify-between px-4 py-3 flex-shrink-0"
+            className="flex items-start justify-between px-4 py-3 flex-shrink-0 gap-3"
             style={{ backgroundColor: `${data.industry.color}22`, borderBottom: `1px solid ${data.industry.color}33` }}
           >
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-green-400" aria-hidden="true" />
-              <span className="text-sm font-bold text-white">AI Career Advisor</span>
-              <span className="text-xs text-gray-400">· {data.industry.name}</span>
+            <div className="flex items-start gap-2.5 min-w-0">
+              <DolphIQIcon className="w-7 h-5 text-white mt-0.5 flex-shrink-0" />
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-bold text-white">
+                    <DolphIQWordmark />
+                  </span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-400 flex-shrink-0" aria-hidden="true" />
+                </div>
+                <p className="text-[11px] text-gray-300 leading-tight mt-0.5">
+                  Intelligent navigation for your career
+                </p>
+                <p className="text-[10px] text-gray-500 leading-tight mt-0.5">
+                  {data.industry.name}
+                </p>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              {messages.length > 0 && (
-                <button
-                  onClick={clearChat}
-                  className="text-xs text-gray-500 hover:text-gray-300 transition-colors
-                             focus:outline-none focus-visible:ring-1 focus-visible:ring-gray-400 rounded"
-                  aria-label="Clear conversation"
-                >
-                  Clear
-                </button>
-              )}
-            </div>
+            {messages.length > 0 && (
+              <button
+                onClick={clearChat}
+                className="text-xs text-gray-500 hover:text-gray-300 transition-colors flex-shrink-0
+                           focus:outline-none focus-visible:ring-1 focus-visible:ring-gray-400 rounded"
+                aria-label="Clear conversation"
+              >
+                Clear
+              </button>
+            )}
           </div>
 
           {/* Messages area */}
           <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4 min-h-0">
 
-            {/* Welcome message */}
+            {/* Welcome message — dolphIQ introduces itself */}
             {messages.length === 0 && (
               <div className="text-center py-4">
-                <p className="text-2xl mb-2" aria-hidden="true">🤖</p>
+                <DolphIQIcon className="w-12 h-8 text-white/90 mx-auto mb-2" />
                 <p className="text-sm font-semibold text-gray-200">
-                  Ask me anything about {data.industry.name} careers
+                  Hi, I&apos;m <DolphIQWordmark />
                 </p>
-                <p className="text-xs text-gray-500 mt-1">
-                  I know every role, salary range, and career pathway in this map
+                <p className="text-xs text-gray-400 mt-1.5 max-w-[260px] mx-auto leading-relaxed">
+                  Ask me anything about {data.industry.name} careers — I know every role, salary, and pathway on this map.
                 </p>
               </div>
             )}
@@ -388,9 +396,9 @@ export default function AgentChat({ data }: Props) {
             </button>
           </form>
 
-          {/* Footer disclaimer — visible, plain language */}
+          {/* Footer disclaimer — names dolphIQ explicitly */}
           <p className="text-center text-[10px] text-gray-400 leading-snug py-2 px-3 bg-gray-900 flex-shrink-0">
-            AI-generated responses. May be inaccurate — verify with a qualified career advisor before major decisions.
+            <DolphIQWordmark /> is an AI guide. Responses may be inaccurate — verify with a human advisor before major decisions.
           </p>
         </div>
       )}
