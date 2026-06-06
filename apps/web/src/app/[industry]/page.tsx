@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import IndustryPageClient from '@/components/IndustryPageClient';
+import WelcomeBanner from '@/components/WelcomeBanner';
 import type { IndustryData } from '@/lib/types';
 
 import amData    from '@/data/additive-manufacturing.json';
@@ -115,6 +116,9 @@ export default async function IndustryMapPage({ params }: Props) {
 
       {/* ── Main content ─────────────────────────────────────────────────────── */}
       <main id="main-content" className="flex-1 max-w-[1320px] mx-auto w-full px-4 sm:px-6 py-6">
+
+        {/* Light welcome banner — first visit only (localStorage flag) */}
+        <WelcomeBanner />
 
         {/* About / How to use — uses native <details> so it works without JS */}
         <details className="mb-4 rounded-2xl border border-gray-200 bg-white shadow-sm group">
