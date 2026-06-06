@@ -219,61 +219,78 @@ export async function streamWithFallback(options: ChatOptions): Promise<StreamRe
     );
   }
 
-  // Try each configured provider in order
+  // Try each configured provider in order.
+  // KEY INSIGHT: provider.stream() returns a generator instantly without
+  // making any API calls. The actual API call (and any rate-limit error)
+  // happens on the first `await gen.next()`. So we MUST prime the generator
+  // here — pull the first chunk — to know whether the provider really worked.
+  // If priming fails, we fall over to the next provider. Once we have a
+  // first chunk, we're committed to this provider for the rest of the stream.
+  const lastErrors: string[] = [];
+
   for (const provider of available) {
     if (!provider.breaker.canAttempt()) {
       // Circuit is OPEN — skip this provider entirely
       console.warn(`[ai-providers] ${provider.name} circuit OPEN — skipping`);
+      lastErrors.push(`${provider.name}: circuit open`);
       continue;
     }
 
+    let gen: AsyncGenerator<string>;
+    let firstChunk: IteratorResult<string>;
+
     try {
-      // Start the stream — we yield from it in the route handler
-      const gen = provider.stream(options);
-
-      // We return a wrapped generator that records success/failure on the breaker
-      const wrapped = wrapWithBreaker(gen, provider.breaker, provider.name);
-
-      return { stream: wrapped, providerUsed: provider.name };
-
+      gen = provider.stream(options);
+      // Prime: pull the first chunk so any API error surfaces NOW.
+      firstChunk = await gen.next();
     } catch (err) {
       const shouldFallback = isRateLimitError(err) || isTransientError(err);
       provider.breaker.onFailure();
+      const msg = (err as Error)?.message ?? String(err);
+      lastErrors.push(`${provider.name}: ${msg}`);
       console.warn(
-        `[ai-providers] ${provider.name} failed ` +
-        `(breaker: ${provider.breaker.getState()}, fallback: ${shouldFallback}):`,
-        (err as Error)?.message ?? err
+        `[ai-providers] ${provider.name} priming failed ` +
+        `(breaker: ${provider.breaker.getState()}, fallback: ${shouldFallback}): ${msg}`
       );
-
       if (shouldFallback) continue; // try next provider
       throw err;                    // non-retriable — bubble up
     }
+
+    // Provider worked — record success and return a wrapped stream that
+    // replays the buffered first chunk, then continues with the rest.
+    provider.breaker.onSuccess();
+    console.log(`[ai-providers] using ${provider.name}`);
+    return {
+      stream:       replayThenContinue(firstChunk, gen, provider.breaker, provider.name),
+      providerUsed: provider.name,
+    };
   }
 
   throw new Error(
-    'All AI providers hit rate limits or are unavailable. Please try again in a few minutes.'
+    `All AI providers failed. ${lastErrors.join(' · ') || 'Try again in a few minutes.'}`
   );
 }
 
-// Wraps a generator so the circuit breaker is notified on first yield (success)
-// or on thrown error (failure)
-async function* wrapWithBreaker(
-  gen:     AsyncGenerator<string>,
-  breaker: CircuitBreaker,
-  name:    string,
+// Replays the primed first chunk (if any) and then yields the rest of the
+// stream. Mid-stream errors are still caught here — at that point we've
+// already started sending to the client and can't switch providers, so the
+// stream just ends gracefully.
+async function* replayThenContinue(
+  firstChunk: IteratorResult<string>,
+  gen:        AsyncGenerator<string>,
+  breaker:    CircuitBreaker,
+  name:       string,
 ): AsyncGenerator<string> {
-  let firstChunk = true;
+  if (!firstChunk.done && firstChunk.value) {
+    yield firstChunk.value;
+  }
   try {
     for await (const chunk of gen) {
-      if (firstChunk) {
-        breaker.onSuccess();
-        firstChunk = false;
-      }
       yield chunk;
     }
   } catch (err) {
     breaker.onFailure();
-    console.warn(`[ai-providers] ${name} stream error:`, (err as Error)?.message);
+    console.warn(`[ai-providers] ${name} mid-stream error:`, (err as Error)?.message);
     // Don't rethrow — the stream is already partially delivered; just end it
   }
 }
