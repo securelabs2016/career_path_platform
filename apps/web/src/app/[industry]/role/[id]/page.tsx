@@ -387,8 +387,71 @@ export default async function RoleDetailPage({ params }: Props) {
             )}
           </div>
 
-          {/* ── Right sidebar (1/3) ──────────────────────────────────────────── */}
+          {/* Right sidebar (1/3) */}
           <div className="flex flex-col gap-4">
+
+            {/* Quick facts — icon-led summary */}
+            <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
+              <h3 className="text-sm font-bold text-gray-900 mb-4">Quick facts</h3>
+              <div className="flex flex-col gap-4">
+
+                {/* Education */}
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                      <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+                      <path d="M6 12v5c3 3 9 3 12 0v-5" />
+                    </svg>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 mb-0.5">
+                      Required education
+                    </p>
+                    <p className="text-sm font-semibold text-gray-900">{degreeLabel}</p>
+                    {role.degree_detail && (
+                      <p className="text-xs text-gray-500 mt-0.5 leading-snug">{role.degree_detail}</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Experience */}
+                {role.experience && (
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                        <rect x="2" y="7" width="20" height="14" rx="2" />
+                        <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
+                      </svg>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 mb-0.5">
+                        Work experience
+                      </p>
+                      <p className="text-sm font-semibold text-gray-900">{role.experience}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Pay */}
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                      <line x1="12" y1="1" x2="12" y2="23" />
+                      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                    </svg>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 mb-0.5">
+                      Pay range
+                    </p>
+                    <p className="text-sm font-semibold text-gray-900">
+                      {role.salary_range || formatSalary(role.salary_min, role.salary_max)}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-0.5">U.S. market estimate</p>
+                  </div>
+                </div>
+              </div>
+            </div>
 
             {/* View on map */}
             <Link
