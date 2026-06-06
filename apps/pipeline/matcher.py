@@ -319,8 +319,11 @@ def run_matcher(
         if not judgment or judgment.get("verdict") == "noise":
             confidence = 0.1
         elif judgment.get("verdict") == "new_role":
-            # Flag for human review but don't match to an existing role
-            confidence = 0.3
+            # "new_role" means the AI thinks this is a real job that doesn't
+            # fit any existing canonical role. The whole point of this verdict
+            # is to surface it to a human reviewer — so it must land in the
+            # pending bucket (>=0.35), not auto-rejected.
+            confidence = 0.5
         else:
             confidence = float(judgment.get("confidence", 0.5))
 
