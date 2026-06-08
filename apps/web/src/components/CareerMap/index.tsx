@@ -14,6 +14,9 @@ import MobileList from './MobileList';
 import RoleCard from './RoleCard';
 import PathwayLines from './PathwayLines';
 import CareerPathPanel from './CareerPathPanel';
+import SaveShareModal from './SaveShareModal';
+import ErrorModal from './ErrorModal';
+import RoleDetailModal from './RoleDetailModal';
 
 interface Props {
   data: IndustryData;
@@ -40,7 +43,9 @@ export default function CareerMap({ data }: Props) {
   const [searchQuery,   setSearchQuery]   = useState('');
   const [degreeFilter,  setDegreeFilter]  = useState('all');
   const [clusterFilter, setClusterFilter] = useState('all');
-  const [copyState,     setCopyState]     = useState<'idle' | 'copied' | 'error'>('idle');
+  const [saveOpen,      setSaveOpen]      = useState(false);
+  const [errorOpen,     setErrorOpen]     = useState(false);
+  const [detailRoleId,  setDetailRoleId]  = useState<string | null>(null);
 
   const layout = useMemo(() => computeLayout(roles), [roles]);
   const { positions, totalWidth, totalHeight, rowStartY, rowBandHeight } = layout;
@@ -111,15 +116,9 @@ export default function CareerMap({ data }: Props) {
     syncUrl([]);
   }, [syncUrl]);
 
-  // Save & Share — for now copies the URL to clipboard. J4 replaces with modal.
-  const handleShare = useCallback(async () => {
-    try {
-      await navigator.clipboard.writeText(window.location.href);
-      setCopyState('copied');
-    } catch {
-      setCopyState('error');
-    }
-    setTimeout(() => setCopyState('idle'), 2000);
+  // Save & Share opens the modal (Phase J4)
+  const handleShare = useCallback(() => {
+    setSaveOpen(true);
   }, []);
 
   // Esc clears the entire path
@@ -325,6 +324,7 @@ export default function CareerMap({ data }: Props) {
                   isRecommended={false}
                   industryColor={industry.color}
                   onClick={handleRoleClick}
+                  onShowDetails={setDetailRoleId}
                 />
               );
             })}
@@ -367,7 +367,7 @@ export default function CareerMap({ data }: Props) {
                        focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#1f6f7a]"
             style={{ backgroundColor: '#1f6f7a' }}
           >
-            {copyState === 'copied' ? '✓ Link copied' : copyState === 'error' ? 'Copy failed' : 'Save it & Share it here'}
+            Save it &amp; Share it here
           </button>
         </div>
 
@@ -384,6 +384,14 @@ export default function CareerMap({ data }: Props) {
           </p>
         </div>
       </div>
+
+      {/* Modals (Phase J4 + J6) — controlled by state above */}
+      <SaveShareModal open={saveOpen}  onClose={() => setSaveOpen(false)} />
+      <ErrorModal     open={errorOpen} onClose={() => setErrorOpen(false)} />
+      <RoleDetailModal
+        role={detailRoleId ? roleById.get(detailRoleId) ?? null : null}
+        onClose={() => setDetailRoleId(null)}
+      />
     </div>
   );
 }

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import IndustryPageClient from '@/components/IndustryPageClient';
+import IndustryTabs from '@/components/IndustryTabs';
 import type { IndustryData } from '@/lib/types';
 
 import amData    from '@/data/additive-manufacturing.json';
@@ -101,23 +102,8 @@ export default async function IndustryMapPage({ params }: Props) {
           {industry.name} Career Map
         </h1>
 
-        {/* Two-tab placeholder — About modal wiring lands in Phase J4 */}
-        <div className="border-b border-gray-200 mb-6 flex items-center gap-6">
-          <button
-            type="button"
-            className="pb-3 text-sm font-semibold text-gray-900 border-b-2 border-gray-900"
-            aria-current="page"
-          >
-            Build your Path
-          </button>
-          <button
-            type="button"
-            className="pb-3 text-sm font-semibold text-gray-500 hover:text-gray-700 transition-colors"
-            data-modal-target="about"
-          >
-            About this Map / FAQs
-          </button>
-        </div>
+        {/* Two-tab nav — About tab opens a modal */}
+        <IndustryTabs industryName={industry.name} />
 
         <IndustryPageClient data={data} />
       </main>

@@ -1,14 +1,19 @@
 import type { Role, SeniorityLevel } from './types';
 
+/**
+ * Map layout constants — sized to match the Critical Materials reference site:
+ * compact circular nodes packed densely in tinted columns.
+ */
 export const LAYOUT = {
-  CARD_W: 172,
-  CARD_H: 78,
-  STACK_GAP: 10,     // gap between cards stacked in the same cell
-  COL_W: 228,        // width of each column zone (card is centered inside)
-  ROW_GAP: 48,       // vertical gap between seniority bands
-  HEADER_H: 60,      // cluster name header height
-  LEFT_W: 100,       // seniority label column width
-  OUTER_PAD: 28,     // right + bottom padding
+  CARD_W: 96,        // total clickable footprint per role (circle + title)
+  CARD_H: 56,
+  STACK_GAP: 8,      // gap between cards stacked in the same cell
+  COL_W: 168,        // width of each column zone (card centered inside)
+  ROW_GAP: 28,       // vertical gap between seniority bands
+  HEADER_H: 56,      // cluster name header height
+  LEFT_W: 80,        // seniority label column width
+  OUTER_PAD: 24,     // right + bottom padding
+  NODE_R: 12,        // circle node radius (visual indicator at top of card)
 } as const;
 
 // Display order — lead at top, entry at bottom

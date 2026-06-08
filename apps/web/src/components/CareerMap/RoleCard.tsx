@@ -4,134 +4,108 @@ import { useState } from 'react';
 import type { Role } from '@/lib/types';
 import type { CardPosition } from '@/lib/map-layout';
 import { LAYOUT } from '@/lib/map-layout';
-import { CLUSTER_COLORS, DEGREE_BADGES, formatSalary } from './constants';
+import { CLUSTER_COLORS } from './constants';
 
 interface Props {
-  role: Role;
-  position: CardPosition;
-  isSelected: boolean;
-  isDimmed: boolean;
-  isAdjacent: boolean;
-  isRecommended: boolean;
-  industryColor: string;
-  onClick: (id: string) => void;
+  role:           Role;
+  position:       CardPosition;
+  isSelected:     boolean;
+  isDimmed:       boolean;
+  isAdjacent:     boolean;
+  isRecommended:  boolean;     // legacy prop — wizard removed in Phase J1 but kept for compat
+  industryColor:  string;
+  onClick:        (id: string) => void;
+  onShowDetails:  (id: string) => void;
 }
 
+/**
+ * Circle role node — Critical Materials reference visual.
+ *
+ *   ●  ← circle (cluster color, filled when selected/hovered, outlined otherwise)
+ *  Role
+ *  Title
+ *
+ * A small hover tooltip carries the title and a DETAILS button.
+ * The DETAILS button currently links to the standalone role detail page;
+ * Phase J6 swaps it for the in-place role detail modal.
+ */
 export default function RoleCard({
-  role, position, isSelected, isDimmed, isAdjacent, isRecommended, industryColor, onClick,
+  role, position, isSelected, isDimmed, isAdjacent, onClick, onShowDetails,
 }: Props) {
   const [hovered, setHovered] = useState(false);
-  const { CARD_W, CARD_H } = LAYOUT;
+  const { CARD_W, CARD_H, NODE_R } = LAYOUT;
 
-  const clusterColor = CLUSTER_COLORS[role.cluster] ?? CLUSTER_COLORS['Design & Engineering'];
-  const degreeBadge = DEGREE_BADGES[role.degree_required];
+  const clusterColor = CLUSTER_COLORS[role.cluster];
+  const clusterHex   = clusterColor?.light ?? '#6b7280';
 
-  // ── Visual state classes ───────────────────────────────────────────────────
-  const opacityClass = isDimmed ? 'opacity-30' : 'opacity-100';
-  const scaleClass = isSelected || (hovered && !isDimmed) ? 'scale-[1.03]' : 'scale-100';
-  const shadowClass = isSelected
-    ? 'shadow-lg shadow-black/10'
-    : hovered && !isDimmed
-    ? 'shadow-md shadow-black/8'
-    : 'shadow-sm shadow-black/5';
-  const borderClass = isSelected
-    ? `ring-2 ring-offset-1`
-    : isAdjacent
-    ? 'ring-1 ring-offset-1'
-    : 'ring-0';
-  const ringColor = isSelected || isAdjacent ? clusterColor.ring : '';
+  // Visual states for the circle node
+  const showFilled = isSelected || (hovered && !isDimmed);
+  const nodeStyle: React.CSSProperties = {
+    width:           NODE_R * 2,
+    height:          NODE_R * 2,
+    borderRadius:    '50%',
+    borderWidth:     isSelected ? 2 : 1.5,
+    borderStyle:     'solid',
+    borderColor:     clusterHex,
+    backgroundColor: showFilled ? clusterHex : 'white',
+    transition:      'background-color 120ms, border-width 120ms, transform 120ms',
+    transform:       isSelected ? 'scale(1.15)' : 'scale(1)',
+    boxShadow:       showFilled ? `0 0 0 4px ${clusterHex}22` : 'none',
+  };
 
-  const hasJobs = role.open_jobs_count > 0;
-  // Recommended glow (from wizard) — subtle pulse border
-  const recommendedStyle = isRecommended
-    ? { boxShadow: `0 0 0 2px ${industryColor}55, 0 0 12px ${industryColor}33` }
-    : {};
-  const jobGlow = hasJobs ? 'bg-amber-50' : isRecommended ? 'bg-blue-50/40' : 'bg-white';
+  const opacityClass = isDimmed ? 'opacity-30' : isAdjacent ? 'opacity-100' : 'opacity-100';
 
   return (
     <div
-      className="absolute"
+      className={`absolute ${opacityClass} transition-opacity duration-150`}
       style={{ left: position.x, top: position.y, width: CARD_W, height: CARD_H, zIndex: isSelected ? 20 : hovered ? 10 : 1 }}
     >
-      {/* ── Tooltip (shown above card on hover) ────────────────────────────── */}
+      {/* Hover tooltip — title + DETAILS button. Salary lives in the modal. */}
       {hovered && !isDimmed && (
         <div
-          className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 pointer-events-none"
-          style={{ filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.12))' }}
+          className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-1 w-56 pointer-events-none"
+          style={{ filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.18))' }}
         >
-          <div className="bg-gray-900 text-white rounded-xl p-3 text-xs">
-            <p className="font-semibold text-sm leading-snug mb-1">{role.title}</p>
-            <p className="text-gray-300 mb-2">{role.cluster}</p>
-            <div className="flex items-center justify-between text-gray-200">
-              <span>{formatSalary(role.salary_min, role.salary_max)}</span>
-              <span className="bg-gray-700 px-1.5 py-0.5 rounded text-gray-300">
-                {degreeBadge?.label}
-              </span>
-            </div>
-            {role.skills.length > 0 && (
-              <div className="mt-2 flex flex-wrap gap-1">
-                {role.skills.slice(0, 3).map(skill => (
-                  <span key={skill} className="bg-gray-800 px-1.5 py-0.5 rounded text-gray-300 text-[10px]">
-                    {skill}
-                  </span>
-                ))}
-                {role.skills.length > 3 && (
-                  <span className="text-gray-500 text-[10px]">+{role.skills.length - 3} more</span>
-                )}
-              </div>
-            )}
-            {hasJobs && (
-              <p className="mt-2 text-amber-400 font-medium">
-                {role.open_jobs_count} open role{role.open_jobs_count !== 1 ? 's' : ''}
-              </p>
-            )}
-            <p className="mt-2 text-gray-500 text-[10px]">Click for full details</p>
+          <div className="bg-white text-gray-900 rounded border border-gray-200 p-3 text-xs">
+            <p className="font-semibold text-sm leading-snug mb-2">{role.title}</p>
+            <button
+              type="button"
+              onClick={e => { e.stopPropagation(); onShowDetails(role.id); }}
+              className="inline-block pointer-events-auto px-3 py-1 rounded text-[11px] font-semibold uppercase tracking-wide text-white
+                         focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1"
+              style={{ backgroundColor: clusterHex }}
+            >
+              Details
+            </button>
           </div>
-          {/* Tooltip arrow */}
-          <div className="w-0 h-0 mx-auto border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-gray-900" />
+          <div className="w-0 h-0 mx-auto border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[5px] border-t-white" />
         </div>
       )}
 
-      {/* ── Role card ──────────────────────────────────────────────────────── */}
+      {/* The role node itself — circle + title underneath */}
       <button
-        className={[
-          'w-full h-full rounded-xl border border-gray-200 px-3 py-2.5 text-left',
-          'transition-all duration-150 cursor-pointer',
-          'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500',
-          opacityClass, scaleClass, shadowClass, borderClass, ringColor, jobGlow,
-        ].join(' ')}
-        style={{ transformOrigin: 'center center', ...recommendedStyle }}
+        type="button"
         onClick={e => { e.stopPropagation(); onClick(role.id); }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         aria-pressed={isSelected}
-        aria-label={`${role.title} — ${role.cluster}, ${role.seniority} level`}
+        aria-label={`${role.title}${isSelected ? ' (in path)' : ''}`}
+        className="w-full h-full flex flex-col items-center gap-1 px-1 pt-1
+                   cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
       >
-        {/* Cluster indicator + degree badge */}
-        <div className="flex items-center justify-between mb-1.5">
-          <span className={`w-2 h-2 rounded-full flex-shrink-0 ${clusterColor.dot}`} />
-          <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${degreeBadge?.className}`}>
-            {degreeBadge?.label}
-          </span>
-        </div>
+        {/* The circle — shows a check mark when selected */}
+        <span className="flex-shrink-0 flex items-center justify-center" style={nodeStyle} aria-hidden="true">
+          {isSelected && (
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          )}
+        </span>
 
-        {/* Role title */}
-        <p className="text-[13px] font-semibold text-gray-900 leading-tight line-clamp-2">
+        {/* Title — small, two-line clamp, centered */}
+        <span className="text-[10px] text-gray-800 leading-tight text-center px-0.5 line-clamp-2 font-medium">
           {role.title}
-        </p>
-
-        {/* Salary */}
-        <p className="text-[11px] text-gray-500 mt-1 font-medium">
-          {formatSalary(role.salary_min, role.salary_max)}
-        </p>
-
-        {/* Job count heat map indicator */}
-        {hasJobs && (
-          <div className="flex items-center gap-1 mt-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-            <span className="text-[10px] text-amber-600 font-medium">{role.open_jobs_count} jobs</span>
-          </div>
-        )}
+        </span>
       </button>
     </div>
   );
