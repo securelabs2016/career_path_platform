@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import DolphIQIcon, { DolphIQWordmark } from '@/components/DolphIQIcon';
 
 const INDUSTRIES = [
   {
@@ -40,23 +39,15 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* Hero */}
+      {/* Hero — minimal, matches the reference site's restraint */}
       <section className="max-w-5xl mx-auto px-6 pt-20 pb-12 text-center">
         <h1 className="text-4xl font-bold text-gray-900 leading-tight mb-4">
           Find your path in the industries that matter
         </h1>
-        <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-6">
-          Explore every role in Additive Manufacturing, Semiconductors, and the Space Industry — see what skills you need,
-          what you can earn, and what jobs are open right now.
+        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          Explore every role in Additive Manufacturing, Semiconductors, and the Space Industry — see what skills you
+          need, what you can earn, and where each role can take you.
         </p>
-        <div className="inline-flex items-center gap-2 text-sm text-gray-500 bg-blue-50 px-4 py-2 rounded-full">
-          <DolphIQIcon className="w-6 h-4 text-blue-600" />
-          <span>
-            <span className="font-semibold text-gray-700"><DolphIQWordmark /></span>
-            <span className="mx-1.5 text-gray-400">·</span>
-            <span>your AI guide on every page</span>
-          </span>
-        </div>
       </section>
 
       {/* Industry cards */}
@@ -87,35 +78,14 @@ export default function HomePage() {
           ))}
         </div>
 
-        {/* Meet dolphIQ — small introduction */}
-        <div className="mt-12 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 p-8 flex flex-col md:flex-row items-center gap-6">
-          <DolphIQIcon className="w-24 h-16 text-blue-600 flex-shrink-0" />
-          <div className="flex-1 text-center md:text-left">
-            <p className="text-xs font-bold uppercase tracking-wide text-blue-600 mb-1">
-              Meet <DolphIQWordmark />
-            </p>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">
-              Intelligent navigation for your career
-            </h3>
-            <p className="text-sm text-gray-600 leading-relaxed max-w-2xl">
-              Named after one of the most intelligent species on Earth — the doctor of the sea —
-              <span className="font-semibold"> <DolphIQWordmark /></span> is your AI guide on every industry map.
-              Ask about roles, salaries, education paths, or skills you&apos;d need to switch lanes.
-              Look for the floating dolphin on any industry page.
-            </p>
-          </div>
-        </div>
       </section>
 
-      {/* Footer */}
+      {/* Minimal footer — matches the reference site */}
       <footer className="border-t border-gray-100 bg-white mt-auto">
-        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between flex-wrap gap-2">
-          <p className="text-xs text-gray-400">
-            Salary data: BLS OEWS. Job counts update weekly via the live ingestion pipeline.
-          </p>
-          <p className="text-xs text-gray-400">
-            Career Pathways Platform · {new Date().getFullYear()}
-          </p>
+        <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-center gap-3 text-xs text-gray-500">
+          <a href="#" className="hover:text-gray-800 transition-colors">Privacy Policy</a>
+          <span aria-hidden="true">|</span>
+          <a href="#" className="hover:text-gray-800 transition-colors">Terms of Service</a>
         </div>
       </footer>
     </main>
