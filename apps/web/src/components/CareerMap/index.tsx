@@ -41,8 +41,6 @@ export default function CareerMap({ data }: Props) {
     return raw.split(',').map(s => s.trim()).filter(id => roleById.has(id));
   });
   const [searchQuery,   setSearchQuery]   = useState('');
-  const [degreeFilter,  setDegreeFilter]  = useState('all');
-  const [clusterFilter, setClusterFilter] = useState('all');
   const [saveOpen,      setSaveOpen]      = useState(false);
   const [errorOpen,     setErrorOpen]     = useState(false);
   const [detailRoleId,  setDetailRoleId]  = useState<string | null>(null);
@@ -51,16 +49,13 @@ export default function CareerMap({ data }: Props) {
   const { positions, totalWidth, totalHeight, rowStartY, rowBandHeight } = layout;
 
   const filteredIds = useMemo(() => {
-    const active = searchQuery.trim() || degreeFilter !== 'all' || clusterFilter !== 'all';
-    if (!active) return null;
+    if (!searchQuery.trim()) return null;
     return new Set(
       roles
-        .filter(r => roleMatchesFilter(r, searchQuery.trim(), degreeFilter, clusterFilter))
+        .filter(r => roleMatchesFilter(r, searchQuery.trim(), 'all', 'all'))
         .map(r => r.id),
     );
-  }, [roles, searchQuery, degreeFilter, clusterFilter]);
-
-  const matchCount = filteredIds ? filteredIds.size : roles.length;
+  }, [roles, searchQuery]);
 
   const relatedIds = useMemo(() => {
     if (selectedIds.length === 0) return new Set<string>();
@@ -130,12 +125,6 @@ export default function CareerMap({ data }: Props) {
     return () => window.removeEventListener('keydown', onKey);
   }, [handleClearPath, selectedIds.length]);
 
-  const clearFilters = () => {
-    setSearchQuery('');
-    setDegreeFilter('all');
-    setClusterFilter('all');
-  };
-
   const { COL_W, HEADER_H, LEFT_W, OUTER_PAD } = LAYOUT;
 
   const selectedLabel = selectedIds.length === 1
@@ -157,19 +146,8 @@ export default function CareerMap({ data }: Props) {
             <li>(3) Click &quot;Clear Map&quot; to start over.</li>
           </ol>
         </div>
-        <div className="md:flex-shrink-0 md:w-72">
-          <FilterBar
-            clusters={clusters}
-            searchQuery={searchQuery}
-            degreeFilter={degreeFilter}
-            clusterFilter={clusterFilter}
-            matchCount={matchCount}
-            totalCount={roles.length}
-            onSearch={setSearchQuery}
-            onDegree={setDegreeFilter}
-            onCluster={setClusterFilter}
-            onClear={clearFilters}
-          />
+        <div className="md:flex-shrink-0 md:w-[400px]">
+          <FilterBar searchQuery={searchQuery} onSearch={setSearchQuery} />
         </div>
       </div>
 

@@ -1,46 +1,22 @@
 'use client';
 
 interface Props {
-  clusters: string[];
   searchQuery: string;
-  degreeFilter: string;
-  clusterFilter: string;
-  matchCount: number;
-  totalCount: number;
-  onSearch: (q: string) => void;
-  onDegree: (d: string) => void;
-  onCluster: (c: string) => void;
-  onClear: () => void;
+  onSearch:    (q: string) => void;
 }
 
-const DEGREES = [
-  { value: 'all',       label: 'All education' },
-  { value: 'hs',        label: 'HS Diploma' },
-  { value: '2yr',       label: "Associate's" },
-  { value: '4yr',       label: "Bachelor's" },
-  { value: 'graduate',  label: 'Graduate' },
-  { value: 'sometimes', label: 'Sometimes required' },
-];
-
-export default function FilterBar({
-  clusters, searchQuery, degreeFilter, clusterFilter,
-  matchCount, totalCount, onSearch, onDegree, onCluster, onClear,
-}: Props) {
-  const hasActive =
-    searchQuery.trim().length > 0 ||
-    (degreeFilter && degreeFilter !== 'all') ||
-    (clusterFilter && clusterFilter !== 'all');
-
+/**
+ * Reference-site search box. The earlier degree/cluster dropdowns were
+ * stripped during Phase J polish — kept the search alone to match the
+ * minimalism of the Critical Materials reference. Bigger and more
+ * prominent than the previous compact filter row.
+ */
+export default function FilterBar({ searchQuery, onSearch }: Props) {
   return (
-    <div
-      className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3"
-      role="search"
-      aria-label="Filter career map"
-    >
-      {/* Search */}
-      <div className="relative flex-1 max-w-xs">
+    <div className="w-full" role="search" aria-label="Filter career map">
+      <div className="relative">
         <svg
-          className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
+          className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none"
           fill="none" stroke="currentColor" viewBox="0 0 24 24"
           aria-hidden="true"
         >
@@ -49,65 +25,25 @@ export default function FilterBar({
         </svg>
         <input
           type="search"
-          placeholder="Search roles or skills…"
+          placeholder="Search jobs…"
           value={searchQuery}
           onChange={e => onSearch(e.target.value)}
-          className="w-full pl-9 pr-8 py-2 text-sm border border-gray-200 rounded-xl bg-white
-                     focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          aria-label="Search roles or skills"
+          className="w-full pl-12 pr-10 py-3 text-base border border-gray-300 rounded-full bg-white
+                     focus:outline-none focus:ring-2 focus:ring-[#1f6f7a] focus:border-transparent"
+          aria-label="Search jobs"
         />
         {searchQuery && (
           <button
             onClick={() => onSearch('')}
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600
-                       text-lg leading-none focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full text-gray-400 hover:text-gray-700
+                       hover:bg-gray-100 flex items-center justify-center text-lg leading-none
+                       focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
             aria-label="Clear search"
           >
             ×
           </button>
         )}
       </div>
-
-      {/* Degree filter */}
-      <select
-        value={degreeFilter || 'all'}
-        onChange={e => onDegree(e.target.value)}
-        className="text-sm border border-gray-200 rounded-xl px-3 py-2 bg-white cursor-pointer
-                   focus:outline-none focus:ring-2 focus:ring-blue-500"
-        aria-label="Filter by education level"
-      >
-        {DEGREES.map(opt => (
-          <option key={opt.value} value={opt.value}>{opt.label}</option>
-        ))}
-      </select>
-
-      {/* Cluster filter */}
-      <select
-        value={clusterFilter || 'all'}
-        onChange={e => onCluster(e.target.value)}
-        className="text-sm border border-gray-200 rounded-xl px-3 py-2 bg-white cursor-pointer
-                   focus:outline-none focus:ring-2 focus:ring-blue-500"
-        aria-label="Filter by cluster"
-      >
-        <option value="all">All clusters</option>
-        {clusters.map(c => (
-          <option key={c} value={c}>{c}</option>
-        ))}
-      </select>
-
-      {/* Match count + clear */}
-      {hasActive && (
-        <div className="flex items-center gap-2 text-sm text-gray-500">
-          <span aria-live="polite">{matchCount} of {totalCount} roles</span>
-          <button
-            onClick={onClear}
-            className="text-blue-600 hover:text-blue-700 font-semibold
-                       focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
-          >
-            Clear filters
-          </button>
-        </div>
-      )}
     </div>
   );
 }
