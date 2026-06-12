@@ -46,3 +46,12 @@ from_client/
 
 # Local-only safety backups of taxonomy JSON (used during migration scripts)
 *.bak
+
+# Internal docs — handed to client as a bundle, not exposed via GitHub.
+# These live locally and are NOT tracked in version control.
+/CLAUDE.md
+/HANDOVER.md
+/STAKEHOLDER_REPORT.md
+/schema.sql
+/docs/
+/client_docs/

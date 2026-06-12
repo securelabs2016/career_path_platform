@@ -42,12 +42,14 @@ career_path/
 ├── .github/workflows/
 │   ├── ingest.yml              # Weekly ingestion pipeline cron (Mondays 10:00 UTC)
 │   └── seed.yml                # Manual taxonomy seeder
-├── schema.sql                  # Supabase Postgres schema (run once in SQL editor)
-├── CLAUDE.md                   # Guidance for AI-assisted contributors
-├── HANDOVER.md                 # Client handover checklist
-├── STAKEHOLDER_REPORT.md       # 5-section stakeholder summary
+├── LICENSE
 └── README.md                   # You are here
 ```
+
+> **Note**: Comprehensive user-experience and developer-onboarding documentation
+> (User Manual + Coder Manual + schema reference + stakeholder report) is
+> delivered to clients as a separate bundle rather than via this repository.
+> Contact the project owner for access.
 
 ---
 
@@ -172,15 +174,6 @@ The admin `/admin` UI changes `status` between buckets and writes audit rows to 
 3. Import the JSON in `apps/web/src/app/[industry]/page.tsx` and `apps/web/src/app/api/agent/chat/route.ts` (and the OG image route)
 4. Add a card to the homepage `INDUSTRIES` array
 5. Re-run the seeder to push to Supabase
-
----
-
-## Useful docs
-
-- `CLAUDE.md` — full development guide + gotchas (read this if you're contributing)
-- `HANDOVER.md` — client handover checklist + known issues + maintenance cadence
-- `STAKEHOLDER_REPORT.md` — 5-section summary suitable for non-technical stakeholders
-- `schema.sql` — Postgres schema + RPC functions
 
 ---
 
