@@ -67,8 +67,7 @@ export default function PathChain({
   // Trim each endpoint by the radius of whatever circle it touches:
   //   • Committed (non-last) role  → SMALL_R (resting circle + 2px gap)
   //   • Last role (the bloom)      → BLOOM_R (active bloom + 2px gap)
-  // Exploration target (adjacent small circle) is left at the center so the
-  // line still reaches into the adjacent dot.
+  //   • Exploration target         → SMALL_R (stops at inner circle perimeter)
   const committedSegments = useMemo(() => {
     const segs: { id: string; x1: number; y1: number; x2: number; y2: number }[] = [];
     for (let i = 0; i < selectedPath.length - 1; i++) {
@@ -93,7 +92,7 @@ export default function PathChain({
       if (pathSet.has(adjId)) continue;
       const adjPos = positions.get(adjId);
       if (!adjPos) continue;
-      const trimmed = trimEnd(lastPos.cx, lastPos.cy, adjPos.cx, adjPos.cy, BLOOM_R, 0);
+      const trimmed = trimEnd(lastPos.cx, lastPos.cy, adjPos.cx, adjPos.cy, BLOOM_R, SMALL_R);
       const dx = trimmed.x2 - trimmed.x1;
       const dy = trimmed.y2 - trimmed.y1;
       segs.push({

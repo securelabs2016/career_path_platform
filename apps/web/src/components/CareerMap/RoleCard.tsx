@@ -318,28 +318,30 @@ export default function RoleCard({
             <span
               className="absolute inset-0 rounded-full bg-white"
               style={{
-                border: '0.3px solid #374151',
+                border: '0.1px solid #374151',
                 zIndex: 3,
               }}
             />
           )}
 
-          {/* Tiny ◆ degree marker — shown only when neither active nor committed. */}
-          {!showActive && !isCommitted && (
+          {/* ◆ degree marker — CSS-rotated square, pixel-centered inside the white
+              core. Visible whenever the white inner circle is visible (resting,
+              adjacent, hover, last-in-path). Hidden only on committed-non-active
+              roles where the white core is replaced by the cluster-colored dot. */}
+          {(!isCommitted || showActive) && (
             <span
-              className="absolute leading-none pointer-events-none"
+              className="absolute pointer-events-none"
               style={{
-                top:      -3,
-                right:    -2,
-                fontSize: 9,
-                color:    clusterHex,
-                zIndex:   4,
-                textShadow: '0 0 2px white, 0 0 2px white',
+                top:    '50%',
+                left:   '50%',
+                width:  NODE_R,
+                height: NODE_R,
+                transform: 'translate(-50%, -50%) rotate(45deg)',
+                backgroundColor: clusterHex,
+                zIndex: 5,
               }}
               aria-hidden="true"
-            >
-              ♦
-            </span>
+            />
           )}
         </span>
 

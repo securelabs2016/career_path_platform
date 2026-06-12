@@ -379,22 +379,22 @@ export default function CareerMap({ data }: Props) {
                 and left of column-header strip (edge 6) meet at (LEFT_W, HEADER_H)
                 to close the notch.                                              */}
             {/* edge 1 — outer top */}
-            <div className="absolute bg-black/80"
+            <div className="absolute bg-black/40"
                  style={{ left: LEFT_W,  top: 0, width: (totalWidth - OUTER_PAD) - LEFT_W, height: 1 }} />
             {/* edge 2 — outer right */}
-            <div className="absolute bg-black/80"
+            <div className="absolute bg-black/40"
                  style={{ left: totalWidth - OUTER_PAD - 0.5, top: 0, width: 1, height: totalHeight - OUTER_PAD }} />
             {/* edge 3 — outer bottom */}
-            <div className="absolute bg-black/80"
+            <div className="absolute bg-black/40"
                  style={{ left: 0, top: totalHeight - OUTER_PAD - 0.5, width: totalWidth - OUTER_PAD, height: 1 }} />
             {/* edge 4 — outer left */}
-            <div className="absolute bg-black/80"
+            <div className="absolute bg-black/40"
                  style={{ left: 0, top: HEADER_H, width: 1, height: (totalHeight - OUTER_PAD) - HEADER_H }} />
             {/* edge 5 — inner horizontal (top of row-label gutter) */}
-            <div className="absolute bg-black/80"
+            <div className="absolute bg-black/40"
                  style={{ left: 0, top: HEADER_H - 0.5, width: LEFT_W, height: 1 }} />
             {/* edge 6 — inner vertical (left of column-header strip) */}
-            <div className="absolute bg-black/80"
+            <div className="absolute bg-black/40"
                  style={{ left: LEFT_W - 0.5, top: 0, width: 1, height: HEADER_H }} />
 
             {/* SVG pathway lines (curated learning pathways — empty for Semi after the
