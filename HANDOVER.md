@@ -118,12 +118,14 @@ Most likely an abuse pattern: someone is sending many chat requests from one IP.
 
 | # | Issue | Impact | Plan |
 |---|---|---|---|
-| 1 | Save-PDF on role detail uses browser print, not server-side PDF rendering | Output looks fine but column layout cramps on small print viewports | Phase H — deferred; estimated half session of work |
-| 2 | Matcher rejection rate has been historically high — most scraped jobs landed in `rejected` rather than `pending` | Admin queue stays empty even when the pipeline runs | Phase E scoring and threshold fixes are now live (Jun 2026); the matcher is now expected to route many borderline jobs to `pending` instead. Verify after the next pipeline run. |
-| 3 | Extraction was previously losing ~⅔ of scraped jobs to silent Gemini rate-limit errors | Fewer matches showed up than expected | Phase E retry-with-backoff + 3s pacing now live |
-| 4 | "Pay range" in the role detail Quick Facts shows exact `$X,XXX - $Y,YYY` for AM and Space (client research), but Semiconductors falls back to rounded `$Xk–$Yk` | Cosmetic — Semi never had the exact research strings | Acceptable; can be backfilled later if Semi research is published |
-| 5 | Pathways table in Supabase is empty (seeder loads industries + roles but not pathways) | Cosmetic — pathways display correctly from the JSON; only an issue if the pipeline ever needs them | Phase G+ polish; non-blocking |
-| 6 | Python pipeline uses the deprecated `google.generativeai` package | Works today, but future deprecation will require migration to `google.genai` | Schedule before EOL date Google announces |
+| 1 | Save-PDF on role detail pages uses the browser's print dialog, not server-side PDF rendering | Output looks fine but column layout cramps on small print viewports; behavior varies slightly across browsers | Server-side render via `@react-pdf/renderer` — deferred to v2; estimated half-day of work |
+| 2 | **AM adjacency data is hand-curated and not workforce-SME validated.** Edges were authored from public role-similarity heuristics, not BLS / America-Makes / AM-USA research | Click-chain paths on the AM map are plausible but not citation-grade. Senior reviewers may flag specific edges | v2: workforce-SME validation pass; budget ~1 week of domain-expert time |
+| 3 | **Space adjacency data is hybrid: 22 of 38 roles use AI-generated forward-directional edges (Gemini), 16 fall back to hand-curated edges.** | Same quality caveat as #2. The 16 fallback roles can have backward-direction edges (mid → entry) which read as demotions | v2: re-run the AI migration once free-tier Gemini quota resets OR with paid OpenAI key, then SME validation |
+| 4 | **Semi roles (84 from the reference taxonomy) have only `title` / `salary` / `degree` populated** — `description`, `skills`, `certifications` are empty | Role detail modal looks sparse on Semi vs AM/Space | Backfill from SEMI workforce hub / SIA reports; ~2 days per cluster |
+| 5 | Curated `pathways` (the curved-arrow learning-path overlay) are intentionally empty on AM and Semi, retained on Space | None visible (we removed the overlay per UX feedback) — pathways still exist in the JSON shape, just empty arrays | Re-populate if the learning-paths UI is reintroduced |
+| 6 | `AgentChat` citation regex `\[[a-z]+-r-\d+\]` matches AM/Space role IDs (e.g. `am-r-01`) but NOT descriptive Semi IDs (e.g. `chief-product-architect`) | Chat still answers correctly; auto-linking from cited role names is broken for Semi only | Broaden regex to `\[[a-z][a-z0-9-]+\]`, scope-checked against `roleById` so non-role square-brackets don't render as links |
+| 7 | Python pipeline uses the deprecated `google.generativeai` package (FutureWarning in pipeline logs) | Works today; will need migration when Google removes the legacy SDK | Migrate to `google.genai` ahead of Google's EOL date |
+| 8 | Supabase `pathways` table is empty (seeder loads `industries` + `canonical_roles` only) | None visible — pathways render directly from JSON, no DB roundtrip | Add pathways INSERT to `seed_taxonomy.py` if the pipeline ever needs them |
 
 ---
 

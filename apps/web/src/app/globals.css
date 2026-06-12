@@ -101,6 +101,20 @@ html, body {
   a[href]:after { content: " (" attr(href) ")"; font-size: 10px; color: #666; }
 }
 
+/* ── Career-map: animated path "roads" ─────────────────────────────────────── */
+/* Each <line class="path-chain-draw"> is rendered with
+   stroke-dasharray = stroke-dashoffset = line-length (set inline), so the
+   stroke is initially fully clipped.  This animation eases the offset to 0,
+   which makes the line appear to "draw" itself from source to destination.
+   Triggered every time React re-mounts the element (when the source role
+   changes, the keys change, the elements re-mount, the animation fires). */
+@keyframes path-chain-draw {
+  to { stroke-dashoffset: 0; }
+}
+.path-chain-draw {
+  animation: path-chain-draw 700ms ease-out forwards;
+}
+
 /* ── Keyboard shortcut styling ──────────────────────────────────────────────── */
 kbd {
   font-family: ui-monospace, monospace;

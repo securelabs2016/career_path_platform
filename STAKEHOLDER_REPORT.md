@@ -15,7 +15,7 @@ This is a 5-section report covering what was built, how it works, what it costs,
 A live web platform that gives anyone — students, career changers, workforce advisors, policy makers — a way to **explore the U.S. workforce landscape in three strategic industries**:
 
 - **Additive Manufacturing** — 36 roles across 5 functional clusters
-- **Semiconductors** — ~45 roles across 5 clusters
+- **Semiconductors** — 84 roles across 5 clusters (reference-grade taxonomy)
 - **Space Industry** — 38 roles across 6 clusters
 
 Each industry is rendered as an interactive career lattice (a 2-D map: functional clusters across the top, seniority tiers down the side). Users can:
@@ -29,7 +29,7 @@ Each industry is rendered as an interactive career lattice (a 2-D map: functiona
 | Metric | Value |
 |---|---|
 | Live industries | **3** (Additive Manufacturing, Semiconductors, Space) |
-| Total canonical roles | **119** |
+| Total canonical roles | **158** |
 | Career pathways | **16** |
 | AI providers configured | **3** (Gemini primary, OpenAI fallback, Claude when key available) |
 | Job-board sources scraped | **2** (Greenhouse + Lever) |

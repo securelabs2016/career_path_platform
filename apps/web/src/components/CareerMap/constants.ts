@@ -26,12 +26,12 @@ export const CLUSTER_COLORS: Record<string, {
   'Post-Processing & Quality':         { dot: 'bg-[#8ec48d]', ring: 'ring-[#8ec48d]', light: '#8ec48d', band: '#8ec48d', tint: '#8ec48d14' },
   'Business, Sales & Supply Chain':    { dot: 'bg-[#f0a868]', ring: 'ring-[#f0a868]', light: '#f0a868', band: '#f0a868', tint: '#f0a86814' },
 
-  // ── Semiconductors (5 clusters) ────────────────────────────────────────
-  'Process R&D':                       { dot: 'bg-[#1f6f7a]', ring: 'ring-[#1f6f7a]', light: '#1f6f7a', band: '#1f6f7a', tint: '#1f6f7a14' },
-  'Design & Verification':             { dot: 'bg-[#3a8a8a]', ring: 'ring-[#3a8a8a]', light: '#3a8a8a', band: '#3a8a8a', tint: '#3a8a8a14' },
-  'Fabrication Operations':            { dot: 'bg-[#5fa896]', ring: 'ring-[#5fa896]', light: '#5fa896', band: '#5fa896', tint: '#5fa89614' },
-  'Equipment Engineering':             { dot: 'bg-[#8ec48d]', ring: 'ring-[#8ec48d]', light: '#8ec48d', band: '#8ec48d', tint: '#8ec48d14' },
-  'Test, Package & Quality':           { dot: 'bg-[#f0a868]', ring: 'ring-[#f0a868]', light: '#f0a868', band: '#f0a868', tint: '#f0a86814' },
+  // ── Semiconductors (5 clusters — reference site names, post-v3 migration) ─
+  'Research, Design & Engineering':                  { dot: 'bg-[#1f6f7a]', ring: 'ring-[#1f6f7a]', light: '#1f6f7a', band: '#1f6f7a', tint: '#1f6f7a14' },
+  'Wafer Fabrication':                               { dot: 'bg-[#3a8a8a]', ring: 'ring-[#3a8a8a]', light: '#3a8a8a', band: '#3a8a8a', tint: '#3a8a8a14' },
+  'Assembly, Packaging & Testing':                   { dot: 'bg-[#5fa896]', ring: 'ring-[#5fa896]', light: '#5fa896', band: '#5fa896', tint: '#5fa89614' },
+  'Facilities & Equipment Maintenance':              { dot: 'bg-[#8ec48d]', ring: 'ring-[#8ec48d]', light: '#8ec48d', band: '#8ec48d', tint: '#8ec48d14' },
+  'Supply Chain, Logistics & Business Operations':   { dot: 'bg-[#f0a868]', ring: 'ring-[#f0a868]', light: '#f0a868', band: '#f0a868', tint: '#f0a86814' },
 
   // ── Space Industry (6 clusters) ────────────────────────────────────────
   'Spacecraft Design & Engineering':     { dot: 'bg-[#1f6f7a]', ring: 'ring-[#1f6f7a]', light: '#1f6f7a', band: '#1f6f7a', tint: '#1f6f7a14' },

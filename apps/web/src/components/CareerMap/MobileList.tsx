@@ -8,10 +8,9 @@ interface Props {
   roles: Role[];
   clusters: string[];
   industrySlug: string;
-  industryColor: string;
 }
 
-export default function MobileList({ roles, clusters, industrySlug, industryColor }: Props) {
+export default function MobileList({ roles, clusters, industrySlug }: Props) {
   const byCluster = clusters.map(cluster => ({
     cluster,
     roles: roles.filter(r => r.cluster === cluster),

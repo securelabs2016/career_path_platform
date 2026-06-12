@@ -48,7 +48,8 @@
         "sp-r-02",
         "sp-r-03",
         "sp-r-04",
-        "sp-r-05"
+        "sp-r-05",
+        "sp-r-34"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -79,11 +80,11 @@
         "sp-p-01"
       ],
       "adjacent_role_ids": [
-        "sp-r-01",
+        "sp-r-06",
         "sp-r-03",
-        "sp-r-04",
-        "sp-r-05",
-        "sp-r-06"
+        "sp-r-23",
+        "sp-r-25",
+        "sp-r-36"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -114,11 +115,11 @@
         "sp-p-01"
       ],
       "adjacent_role_ids": [
-        "sp-r-01",
+        "sp-r-06",
         "sp-r-02",
-        "sp-r-04",
         "sp-r-05",
-        "sp-r-06"
+        "sp-r-23",
+        "sp-r-36"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -149,11 +150,10 @@
         "sp-p-01"
       ],
       "adjacent_role_ids": [
-        "sp-r-01",
-        "sp-r-02",
+        "sp-r-06",
         "sp-r-03",
-        "sp-r-05",
-        "sp-r-06"
+        "sp-r-11",
+        "sp-r-23"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -184,11 +184,11 @@
         "sp-p-01"
       ],
       "adjacent_role_ids": [
-        "sp-r-01",
+        "sp-r-06",
         "sp-r-02",
         "sp-r-03",
-        "sp-r-04",
-        "sp-r-06"
+        "sp-r-23",
+        "sp-r-34"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -218,12 +218,9 @@
         "sp-p-01"
       ],
       "adjacent_role_ids": [
-        "sp-r-02",
-        "sp-r-03",
-        "sp-r-04",
-        "sp-r-05",
         "sp-r-07",
-        "sp-r-36"
+        "sp-r-36",
+        "sp-r-38"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -254,7 +251,9 @@
         "sp-p-01"
       ],
       "adjacent_role_ids": [
-        "sp-r-06"
+        "sp-r-38",
+        "sp-r-27",
+        "sp-r-32"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -287,7 +286,9 @@
       "adjacent_role_ids": [
         "sp-r-09",
         "sp-r-10",
-        "sp-r-11"
+        "sp-r-11",
+        "sp-r-29",
+        "sp-r-34"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -319,11 +320,12 @@
         "sp-p-02"
       ],
       "adjacent_role_ids": [
-        "sp-r-08",
-        "sp-r-10",
-        "sp-r-11",
         "sp-r-12",
-        "sp-r-13"
+        "sp-r-13",
+        "sp-r-06",
+        "sp-r-03",
+        "sp-r-29",
+        "sp-r-34"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -354,11 +356,11 @@
         "sp-p-02"
       ],
       "adjacent_role_ids": [
-        "sp-r-08",
-        "sp-r-09",
-        "sp-r-11",
         "sp-r-12",
-        "sp-r-13"
+        "sp-r-13",
+        "sp-r-31",
+        "sp-r-29",
+        "sp-r-37"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -389,12 +391,11 @@
         "sp-p-02"
       ],
       "adjacent_role_ids": [
-        "sp-r-08",
-        "sp-r-09",
-        "sp-r-10",
+        "sp-r-06",
+        "sp-r-03",
         "sp-r-12",
-        "sp-r-13",
-        "sp-r-03"
+        "sp-r-36",
+        "sp-r-23"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -425,10 +426,10 @@
         "sp-p-02"
       ],
       "adjacent_role_ids": [
-        "sp-r-09",
-        "sp-r-10",
-        "sp-r-11",
-        "sp-r-13"
+        "sp-r-13",
+        "sp-r-07",
+        "sp-r-36",
+        "sp-r-38"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -459,10 +460,11 @@
         "sp-p-02"
       ],
       "adjacent_role_ids": [
-        "sp-r-09",
-        "sp-r-10",
-        "sp-r-11",
-        "sp-r-12"
+        "sp-r-07",
+        "sp-r-27",
+        "sp-r-32",
+        "sp-r-36",
+        "sp-r-38"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -496,7 +498,8 @@
         "sp-r-15",
         "sp-r-16",
         "sp-r-17",
-        "sp-r-18"
+        "sp-r-18",
+        "sp-r-29"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -527,10 +530,11 @@
         "sp-p-03"
       ],
       "adjacent_role_ids": [
-        "sp-r-14",
         "sp-r-16",
         "sp-r-17",
-        "sp-r-18"
+        "sp-r-18",
+        "sp-r-29",
+        "sp-r-34"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -561,12 +565,10 @@
         "sp-p-03"
       ],
       "adjacent_role_ids": [
-        "sp-r-14",
-        "sp-r-15",
         "sp-r-17",
         "sp-r-18",
         "sp-r-19",
-        "sp-r-20"
+        "sp-r-36"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -597,12 +599,10 @@
         "sp-p-03"
       ],
       "adjacent_role_ids": [
-        "sp-r-14",
-        "sp-r-15",
-        "sp-r-16",
-        "sp-r-18",
         "sp-r-19",
-        "sp-r-20"
+        "sp-r-20",
+        "sp-r-36",
+        "sp-r-37"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -633,12 +633,11 @@
         "sp-p-03"
       ],
       "adjacent_role_ids": [
-        "sp-r-14",
-        "sp-r-15",
-        "sp-r-16",
-        "sp-r-17",
         "sp-r-19",
-        "sp-r-20"
+        "sp-r-20",
+        "sp-r-06",
+        "sp-r-23",
+        "sp-r-36"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -669,10 +668,9 @@
         "sp-p-03"
       ],
       "adjacent_role_ids": [
-        "sp-r-16",
-        "sp-r-17",
-        "sp-r-18",
-        "sp-r-20"
+        "sp-r-20",
+        "sp-r-36",
+        "sp-r-37"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -703,9 +701,9 @@
         "sp-p-03"
       ],
       "adjacent_role_ids": [
-        "sp-r-16",
-        "sp-r-17",
-        "sp-r-18",
+        "sp-r-36",
+        "sp-r-38",
+        "sp-r-13",
         "sp-r-19"
       ],
       "open_jobs_count": 0,
@@ -737,10 +735,10 @@
         "sp-p-04"
       ],
       "adjacent_role_ids": [
-        "sp-r-22",
         "sp-r-23",
         "sp-r-24",
-        "sp-r-25"
+        "sp-r-22",
+        "sp-r-34"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -771,11 +769,11 @@
         "sp-p-04"
       ],
       "adjacent_role_ids": [
-        "sp-r-21",
-        "sp-r-23",
-        "sp-r-24",
-        "sp-r-25",
-        "sp-r-26"
+        "sp-r-26",
+        "sp-r-27",
+        "sp-r-03",
+        "sp-r-34",
+        "sp-r-36"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -1320,92 +1318,5 @@
       "grid_row": 3
     }
   ],
-  "pathways": [
-    {
-      "id": "sp-p-01",
-      "industry_id": "space",
-      "name": "Spacecraft Design & Engineering Pathway",
-      "description": "Progression of roles within the Spacecraft Design & Engineering cluster, from entry through lead.",
-      "role_ids": [
-        "sp-r-01",
-        "sp-r-02",
-        "sp-r-05",
-        "sp-r-03",
-        "sp-r-04",
-        "sp-r-06",
-        "sp-r-07"
-      ]
-    },
-    {
-      "id": "sp-p-02",
-      "industry_id": "space",
-      "name": "Propulsion & Systems Pathway",
-      "description": "Progression of roles within the Propulsion & Systems cluster, from entry through lead.",
-      "role_ids": [
-        "sp-r-08",
-        "sp-r-11",
-        "sp-r-09",
-        "sp-r-10",
-        "sp-r-13",
-        "sp-r-12"
-      ]
-    },
-    {
-      "id": "sp-p-03",
-      "industry_id": "space",
-      "name": "Manufacturing & Assembly (AIT) Pathway",
-      "description": "Progression of roles within the Manufacturing & Assembly (AIT) cluster, from entry through lead.",
-      "role_ids": [
-        "sp-r-14",
-        "sp-r-15",
-        "sp-r-18",
-        "sp-r-16",
-        "sp-r-17",
-        "sp-r-20",
-        "sp-r-19"
-      ]
-    },
-    {
-      "id": "sp-p-04",
-      "industry_id": "space",
-      "name": "Mission Operations & Ground Systems Pathway",
-      "description": "Progression of roles within the Mission Operations & Ground Systems cluster, from entry through lead.",
-      "role_ids": [
-        "sp-r-21",
-        "sp-r-25",
-        "sp-r-22",
-        "sp-r-23",
-        "sp-r-24",
-        "sp-r-26",
-        "sp-r-27"
-      ]
-    },
-    {
-      "id": "sp-p-05",
-      "industry_id": "space",
-      "name": "Launch & Test Operations Pathway",
-      "description": "Progression of roles within the Launch & Test Operations cluster, from entry through lead.",
-      "role_ids": [
-        "sp-r-28",
-        "sp-r-30",
-        "sp-r-29",
-        "sp-r-31",
-        "sp-r-32"
-      ]
-    },
-    {
-      "id": "sp-p-06",
-      "industry_id": "space",
-      "name": "Business, Policy & Supply Chain Pathway",
-      "description": "Progression of roles within the Business, Policy & Supply Chain cluster, from entry through lead.",
-      "role_ids": [
-        "sp-r-33",
-        "sp-r-35",
-        "sp-r-34",
-        "sp-r-37",
-        "sp-r-36",
-        "sp-r-38"
-      ]
-    }
-  ]
+  "pathways": []
 }

@@ -31,8 +31,7 @@ function makePath(a: CardPosition, b: CardPosition): string {
 export default function PathwayLines({
   roles, pathways, positions, highlightedPathwayIds, hasSelection, width, height, industryColor,
 }: Props) {
-  // Build role lookup
-  const roleById = new Map(roles.map(r => [r.id, r]));
+  void roles; // accept the prop but currently unused — kept for API stability with future pathway labels
 
   const lines: Array<{
     id: string;
@@ -93,18 +92,20 @@ export default function PathwayLines({
 
       {lines.map(line => {
         const highlighted = line.isHighlighted;
-        const faded = hasSelection && !highlighted;
+        // Lines are hidden by default (matches the Critical Materials reference
+        // which only draws connecting edges once a role is selected/hovered).
+        // Only highlighted pathways show, and only when something is selected.
+        const visible = hasSelection && highlighted;
 
         return (
           <path
             key={line.id}
             d={line.path}
             fill="none"
-            stroke={highlighted ? line.color : '#cbd5e1'}
-            strokeWidth={highlighted ? 2.5 : 1.5}
-            strokeOpacity={faded ? 0.12 : highlighted ? 0.75 : 0.3}
-            strokeDasharray={highlighted ? 'none' : '0'}
-            markerEnd={highlighted ? 'url(#arrowhead)' : 'url(#arrowhead-faint)'}
+            stroke={line.color}
+            strokeWidth={visible ? 2.5 : 1.5}
+            strokeOpacity={visible ? 0.75 : 0}
+            markerEnd={visible ? 'url(#arrowhead)' : undefined}
             style={{ transition: 'stroke-opacity 200ms, stroke-width 200ms' }}
           />
         );

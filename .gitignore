@@ -26,6 +26,8 @@ Thumbs.db
 # Editor
 .vscode/settings.json
 .idea/
+.*.swp
+.*.swo
 
 # Vercel
 .vercel
@@ -41,3 +43,6 @@ yarn-debug.log*
 
 # Client-provided materials (prototype + Excel) — kept local, not in git
 from_client/
+
+# Local-only safety backups of taxonomy JSON (used during migration scripts)
+*.bak
