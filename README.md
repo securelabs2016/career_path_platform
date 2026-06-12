@@ -42,7 +42,6 @@ career_path/
 ├── .github/workflows/
 │   ├── ingest.yml              # Weekly ingestion pipeline cron (Mondays 10:00 UTC)
 │   └── seed.yml                # Manual taxonomy seeder
-├── LICENSE
 └── README.md                   # You are here
 ```
 
@@ -177,6 +176,3 @@ The admin `/admin` UI changes `status` between buckets and writes audit rows to 
 
 ---
 
-## License
-
-See `LICENSE` at the repo root.
