@@ -30,6 +30,7 @@ from supabase import create_client, Client
 
 from scrapers.greenhouse import run_greenhouse
 from scrapers.lever      import run_lever
+from scrapers.workday    import run_workday
 from extractor           import run_extractor
 from matcher             import run_matcher
 
@@ -42,7 +43,7 @@ logging.basicConfig(
 )
 log = logging.getLogger("pipeline")
 
-INDUSTRIES = ["additive-manufacturing", "semiconductors"]
+INDUSTRIES = ["additive-manufacturing", "semiconductors", "space"]
 
 
 def get_clients() -> tuple[Client, Optional[Anthropic]]:
@@ -109,7 +110,8 @@ def run(
         log.info("STEP 1 — Scrapers")
         gh_totals = run_greenhouse(supabase, target)
         lv_totals = run_lever(supabase, target)
-        total_new = sum(gh_totals.values()) + sum(lv_totals.values())
+        wd_totals = run_workday(supabase, target)
+        total_new = sum(gh_totals.values()) + sum(lv_totals.values()) + sum(wd_totals.values())
         log.info(f"Scrapers done: {total_new} new raw jobs")
     else:
         log.info("STEP 1 — Skipped (--skip-scrape)")

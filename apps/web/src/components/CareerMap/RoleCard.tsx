@@ -33,6 +33,8 @@ interface Props {
   isAdjacent:     boolean;
   isRecommended:  boolean;
   industryColor:  string;
+  /** Live open-jobs count from the pipeline (Phase 2.4). 0 = hide badge. */
+  liveCount?:     number;
   onClick:        (id: string) => void;
   onDoubleClick?: (id: string) => void;
   onShowDetails:  (id: string) => void;
@@ -123,7 +125,7 @@ function FourArrows({ size, zone }: { size: number; zone: ArrowZone }) {
 }
 
 export default function RoleCard({
-  role, position, isSelected, isLastInPath, isDimmed, isAdjacent, onClick, onDoubleClick, onShowDetails,
+  role, position, isSelected, isLastInPath, isDimmed, isAdjacent, liveCount, onClick, onDoubleClick, onShowDetails,
 }: Props) {
   const [hovered, setHovered] = useState(false);
   const [zone, setZone] = useState<ArrowZone>('neutral');
@@ -372,6 +374,15 @@ export default function RoleCard({
             {role.title}
           </span>
         )}
+
+        {/* Phase 2.4 skeleton — live open-jobs count from the pipeline. Plain
+            text label below the title when count > 0. UI polish (amber badge,
+            dot indicator) deferred to a later phase. */}
+        {!showActive && liveCount && liveCount > 0 ? (
+          <span className="text-[10px] text-gray-600 leading-none">
+            +{liveCount} open job{liveCount === 1 ? '' : 's'}
+          </span>
+        ) : null}
       </button>
     </div>
   );

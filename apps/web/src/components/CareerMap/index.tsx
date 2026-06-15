@@ -23,6 +23,9 @@ interface Props {
   data: IndustryData;
 }
 
+/** Map keyed by lowercased role title → live count + hiring company list. */
+type LiveCounts = Record<string, { count: number; companies: string[] }>;
+
 export default function CareerMap({ data }: Props) {
   const router       = useRouter();
   const pathname     = usePathname();
@@ -45,6 +48,23 @@ export default function CareerMap({ data }: Props) {
   const [saveOpen,      setSaveOpen]      = useState(false);
   const [errorOpen,     setErrorOpen]     = useState(false);
   const [detailRoleId,  setDetailRoleId]  = useState<string | null>(null);
+  const [liveCounts,    setLiveCounts]    = useState<LiveCounts>({});
+
+  // Phase 2.4 — fetch live job counts from the pipeline once on mount.
+  // Degrades silently to empty {} if the DB isn't reachable; UI still works.
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`/api/jobs/counts?industry=${encodeURIComponent(industry.slug)}`)
+      .then(r => (r.ok ? r.json() : {}))
+      .then((data: LiveCounts) => { if (!cancelled) setLiveCounts(data || {}); })
+      .catch(() => { /* swallow — counts will stay {} and UI shows no badges */ });
+    return () => { cancelled = true; };
+  }, [industry.slug]);
+
+  const getLiveCount = useCallback(
+    (title: string) => liveCounts[title.toLowerCase().trim()],
+    [liveCounts],
+  );
 
   const layout = useMemo(() => computeLayout(roles), [roles]);
   const { positions, totalWidth, totalHeight, rowStartY, rowBandHeight, colW: COL_W } = layout;
@@ -436,6 +456,7 @@ export default function CareerMap({ data }: Props) {
                   isAdjacent={vis === 'adjacent'}
                   isRecommended={false}
                   industryColor={industry.color}
+                  liveCount={getLiveCount(role.title)?.count ?? 0}
                   onClick={handleRoleClick}
                   onDoubleClick={handleRoleDoubleClick}
                   onShowDetails={setDetailRoleId}
@@ -503,6 +524,7 @@ export default function CareerMap({ data }: Props) {
       <ErrorModal     open={errorOpen} onClose={() => setErrorOpen(false)} />
       <RoleDetailModal
         role={detailRoleId ? roleById.get(detailRoleId) ?? null : null}
+        liveCount={detailRoleId ? getLiveCount(roleById.get(detailRoleId)?.title ?? '') : undefined}
         onClose={() => setDetailRoleId(null)}
       />
     </div>

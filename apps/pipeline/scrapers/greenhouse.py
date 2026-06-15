@@ -2,6 +2,8 @@
 Greenhouse public API scraper.
 Pulls job postings from companies that use Greenhouse ATS.
 API docs: https://developers.greenhouse.io/job-board.html
+
+Company list is loaded from ../companies.json (single source of truth).
 """
 
 import requests
@@ -10,29 +12,21 @@ import logging
 from datetime import datetime, timezone
 from supabase import Client
 
-log = logging.getLogger(__name__)
+from companies_loader import grouped_by_industry
 
-# Companies to scrape per industry.
-# Verified to use Greenhouse public job board API.
-GREENHOUSE_COMPANIES = {
-    "additive-manufacturing": [
-        "velo3d", "carbon", "desktopmetal", "markforged",
-        "relativityspace", "stratasys", "sintavia",
-        "carpenteradditive", "6kadditive", "divergent3d",
-    ],
-    "semiconductors": [
-        "intel", "amd", "appliedmaterials", "lamresearch",
-        "kla", "globalfoundries", "skywatertechnology",
-        "wolfspeed", "onto", "axcelis",
-    ],
-}
+log = logging.getLogger(__name__)
 
 BASE_URL = "https://boards-api.greenhouse.io/v1/boards/{company}/jobs"
 HEADERS  = {"User-Agent": "CareerPathwaysPlatform/1.0 (workforce-research)"}
 
 
-def scrape_company(company_slug: str, supabase: Client, industry: str) -> int:
-    """Fetch all jobs for a Greenhouse company and upsert to raw_jobs."""
+def scrape_company(company_slug: str, supabase: Client, industry: str, dead_slugs: list[str]) -> int:
+    """Fetch all jobs for a Greenhouse company and upsert to raw_jobs.
+
+    `dead_slugs` is a shared list the caller passes in; we append to it when
+    we get a 404 so the orchestrator can summarise dead boards at the end
+    of the run (the 404 summary required by Phase 2.3).
+    """
     url = BASE_URL.format(company=company_slug)
     try:
         resp = requests.get(url, headers=HEADERS, timeout=15)
@@ -40,6 +34,7 @@ def scrape_company(company_slug: str, supabase: Client, industry: str) -> int:
     except requests.exceptions.HTTPError as e:
         if resp.status_code == 404:
             log.warning(f"Greenhouse board not found for {company_slug!r}")
+            dead_slugs.append(company_slug)
         else:
             log.error(f"HTTP error for {company_slug!r}: {e}")
         return 0
@@ -78,19 +73,27 @@ def scrape_company(company_slug: str, supabase: Client, industry: str) -> int:
 
 
 def run_greenhouse(supabase: Client, industries: list[str] | None = None) -> dict[str, int]:
-    """Run the Greenhouse scraper for all configured companies."""
-    totals = {}
-    target = industries or list(GREENHOUSE_COMPANIES.keys())
+    """Run the Greenhouse scraper for all companies in companies.json."""
+    totals: dict[str, int] = {}
+    dead_slugs: list[str] = []
+    by_industry = grouped_by_industry("greenhouse", industries)
 
-    for industry in target:
-        companies = GREENHOUSE_COMPANIES.get(industry, [])
+    for industry, rows in by_industry.items():
         total = 0
-        log.info(f"Scraping Greenhouse for {industry} ({len(companies)} companies)…")
-        for company in companies:
-            n = scrape_company(company, supabase, industry)
+        log.info(f"Scraping Greenhouse for {industry} ({len(rows)} companies)…")
+        for row in rows:
+            slug = row["slug"]
+            n = scrape_company(slug, supabase, industry, dead_slugs)
             total += n
             time.sleep(1)  # be polite to the API
         totals[industry] = total
         log.info(f"  {industry} total: {total} new jobs")
+
+    if dead_slugs:
+        log.warning(
+            f"Greenhouse 404 summary — {len(dead_slugs)} slug(s) not found: "
+            f"{', '.join(dead_slugs)}. "
+            f"These companies appear to have moved off Greenhouse — update companies.json."
+        )
 
     return totals

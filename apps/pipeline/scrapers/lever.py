@@ -2,6 +2,8 @@
 Lever public postings API scraper.
 Used for AM and semi startups that use Lever instead of Greenhouse.
 API: https://github.com/lever/postings-api
+
+Company list is loaded from ../companies.json (single source of truth).
 """
 
 import requests
@@ -10,24 +12,15 @@ import logging
 from datetime import datetime, timezone
 from supabase import Client
 
-log = logging.getLogger(__name__)
+from companies_loader import grouped_by_industry
 
-LEVER_COMPANIES = {
-    "additive-manufacturing": [
-        "formlabs", "materialise", "nikon-slm-solutions",
-        "renishaw", "optomec", "exone",
-    ],
-    "semiconductors": [
-        "micron", "qorvo", "macom", "akoustis",
-        "indie-semiconductor", "pdf-solutions",
-    ],
-}
+log = logging.getLogger(__name__)
 
 BASE_URL = "https://api.lever.co/v0/postings/{company}?mode=json"
 HEADERS  = {"User-Agent": "CareerPathwaysPlatform/1.0 (workforce-research)"}
 
 
-def scrape_company(company_slug: str, supabase: Client) -> int:
+def scrape_company(company_slug: str, supabase: Client, dead_slugs: list[str]) -> int:
     url = BASE_URL.format(company=company_slug)
     try:
         resp = requests.get(url, headers=HEADERS, timeout=15)
@@ -35,6 +28,7 @@ def scrape_company(company_slug: str, supabase: Client) -> int:
     except requests.exceptions.HTTPError as e:
         if resp.status_code == 404:
             log.warning(f"Lever board not found for {company_slug!r}")
+            dead_slugs.append(company_slug)
         else:
             log.error(f"HTTP error for {company_slug!r}: {e}")
         return 0
@@ -75,18 +69,26 @@ def scrape_company(company_slug: str, supabase: Client) -> int:
 
 
 def run_lever(supabase: Client, industries: list[str] | None = None) -> dict[str, int]:
-    totals = {}
-    target = industries or list(LEVER_COMPANIES.keys())
+    totals: dict[str, int] = {}
+    dead_slugs: list[str] = []
+    by_industry = grouped_by_industry("lever", industries)
 
-    for industry in target:
-        companies = LEVER_COMPANIES.get(industry, [])
+    for industry, rows in by_industry.items():
         total = 0
-        log.info(f"Scraping Lever for {industry} ({len(companies)} companies)…")
-        for company in companies:
-            n = scrape_company(company, supabase)
+        log.info(f"Scraping Lever for {industry} ({len(rows)} companies)…")
+        for row in rows:
+            slug = row["slug"]
+            n = scrape_company(slug, supabase, dead_slugs)
             total += n
             time.sleep(1)
         totals[industry] = total
         log.info(f"  {industry} total: {total} new jobs")
+
+    if dead_slugs:
+        log.warning(
+            f"Lever 404 summary — {len(dead_slugs)} slug(s) not found: "
+            f"{', '.join(dead_slugs)}. "
+            f"These companies appear to have moved off Lever — update companies.json."
+        )
 
     return totals

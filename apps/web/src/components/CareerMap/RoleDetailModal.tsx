@@ -6,6 +6,8 @@ import { CLUSTER_COLORS, formatSalary } from './constants';
 
 interface Props {
   role:    Role | null;
+  /** Live job count + hiring companies fetched from /api/jobs/counts (Phase 2.4). */
+  liveCount?: { count: number; companies: string[] };
   onClose: () => void;
 }
 
@@ -29,10 +31,14 @@ const TIER_LABEL: Record<string, string> = {
  * Polished typography pass per user feedback (point 6): bigger body text,
  * stronger heading hierarchy, more breathing room.
  */
-export default function RoleDetailModal({ role, onClose }: Props) {
+export default function RoleDetailModal({ role, liveCount, onClose }: Props) {
   if (!role) {
     return <Modal open={false} onClose={onClose}>{null}</Modal>;
   }
+
+  // Phase 2.4 skeleton — pipeline-sourced live hiring data, if any.
+  const hiringCount     = liveCount?.count ?? 0;
+  const hiringCompanies = liveCount?.companies ?? [];
 
   const clusterColor = CLUSTER_COLORS[role.cluster];
   const bandHex      = clusterColor?.band ?? '#374151';
@@ -110,6 +116,34 @@ export default function RoleDetailModal({ role, onClose }: Props) {
                     </li>
                   ))}
                 </ul>
+              </div>
+            )}
+
+            {/* Phase 2.4 skeleton — currently hiring (live data from pipeline).
+                Plain text list. UI polish (logos, job cards, apply buttons) deferred. */}
+            {hiringCount > 0 && (
+              <div>
+                <h3 className="text-base font-bold text-gray-900 mb-3 pb-2 border-b border-gray-200">
+                  Currently hiring ({hiringCount})
+                </h3>
+                {hiringCompanies.length > 0 ? (
+                  <ul className="space-y-2 text-[14px] text-gray-800 leading-relaxed">
+                    {hiringCompanies.map(company => (
+                      <li key={company} className="flex items-start gap-2.5">
+                        <span
+                          className="mt-2 w-1.5 h-1.5 rounded-full flex-shrink-0"
+                          style={{ backgroundColor: bandHex }}
+                          aria-hidden="true"
+                        />
+                        <span>{company}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-[13px] text-gray-600 italic">
+                    {hiringCount} open posting{hiringCount === 1 ? '' : 's'} matched — company list updates on next pipeline run.
+                  </p>
+                )}
               </div>
             )}
           </div>

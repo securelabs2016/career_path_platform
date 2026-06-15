@@ -284,7 +284,7 @@ def run_matcher(
 
     extracted_result = (
         supabase.table("extracted_jobs")
-        .select("id, normalized_title, skills, seniority, location")
+        .select("id, normalized_title, skills, seniority, location, raw_jobs(company)")
         .limit(batch_size)
         .execute()
     )
@@ -337,9 +337,42 @@ def run_matcher(
             "status":            status,
         }).execute()
 
-        # Auto-approved: update job count on canonical role
+        # Auto-approved: update job count + hiring company on the canonical role
         if status == "approved":
             supabase.rpc("increment_job_count", {"role_id": best["id"]}).execute()
+            # Phase 2.3 — doc Step 5 requires "company list" on each canonical role
+            company = ((job.get("raw_jobs") or {}).get("company") or "").strip()
+            if company:
+                _add_hiring_company(supabase, best["id"], company)
 
     log.info(f"  {industry_slug}: {stats}")
     return stats
+
+
+def _add_hiring_company(supabase: Client, role_id: str, company: str) -> None:
+    """Append `company` to canonical_roles.hiring_companies if not already present.
+
+    Read-then-write keeps the array deduplicated. Postgres has no native
+    array_distinct, and the matcher is single-threaded per industry so there's
+    no race here. If concurrency is added later, switch to a SQL RPC that does
+    DISTINCT-style append atomically.
+    """
+    try:
+        row = (
+            supabase.table("canonical_roles")
+            .select("hiring_companies")
+            .eq("id", role_id)
+            .single()
+            .execute()
+        )
+        current = (row.data or {}).get("hiring_companies") or []
+        if company in current:
+            return
+        updated = current + [company]
+        supabase.table("canonical_roles").update(
+            {"hiring_companies": updated}
+        ).eq("id", role_id).execute()
+    except Exception as e:
+        # Don't crash the pipeline if this one update fails — the job count
+        # already incremented and the match is still recorded.
+        log.warning(f"Could not update hiring_companies for role {role_id}: {e}")
