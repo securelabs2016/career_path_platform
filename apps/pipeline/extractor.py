@@ -241,16 +241,24 @@ def run_extractor(supabase: Client, anthropic: Anthropic | None, batch_size: int
         log.info("No raw jobs found.")
         return 0
 
-    # Filter already-extracted
+    # Filter already-extracted.
+    # PostgREST rejects an .in_ list with ~1000 UUIDs because the resulting URL
+    # exceeds ~4 KB. We chunk the lookup into batches of CHUNK_SIZE IDs so each
+    # request stays well within URL limits.
+    CHUNK_SIZE = 100
     raw_ids = [r["id"] for r in all_raw]
-    extracted_result = (
-        supabase.table("extracted_jobs")
-        .select("raw_job_id")
-        .in_("raw_job_id", raw_ids)
-        .execute()
-    )
-    already_done = {r["raw_job_id"] for r in (extracted_result.data or [])}
-    to_process   = [r for r in all_raw if r["id"] not in already_done]
+    already_done: set[str] = set()
+    for i in range(0, len(raw_ids), CHUNK_SIZE):
+        chunk = raw_ids[i:i + CHUNK_SIZE]
+        extracted_result = (
+            supabase.table("extracted_jobs")
+            .select("raw_job_id")
+            .in_("raw_job_id", chunk)
+            .execute()
+        )
+        for r in (extracted_result.data or []):
+            already_done.add(r["raw_job_id"])
+    to_process = [r for r in all_raw if r["id"] not in already_done]
 
     log.info(f"Extracting {len(to_process)} new jobs (skipping {len(already_done)} already done)…")
 
