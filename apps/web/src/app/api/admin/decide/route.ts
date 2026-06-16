@@ -45,22 +45,26 @@ export async function POST(request: Request) {
 
   // If approved: increment open_jobs_count + append source company to hiring_companies.
   // Doc Step 5 (Section 3) calls for both — count and company list — on the canonical role.
+  // Phase 3 — only increment the cached US count when the job is in the US;
+  // worldwide totals are computed live from role_matches at API time.
   if (decision === 'approved') {
     const { data: match } = await supabase
       .from('role_matches')
-      .select('canonical_role_id, extracted_jobs(raw_jobs(company))')
+      .select('canonical_role_id, extracted_jobs(country,raw_jobs(company))')
       .eq('id', matchId)
       .single();
 
     const roleId  = match?.canonical_role_id;
-    // The embedded select gives us match.extracted_jobs.raw_jobs.company.
+    // The embedded select gives us match.extracted_jobs.{country,raw_jobs.company}.
     // Supabase typings narrow embedded relations to objects/arrays — cast loosely
     // here since the shape is well-known from the schema FKs.
-    const company = (((match as unknown) as {
-      extracted_jobs?: { raw_jobs?: { company?: string } } | null;
-    })?.extracted_jobs?.raw_jobs?.company || '').trim();
+    const ej = ((match as unknown) as {
+      extracted_jobs?: { country?: string; raw_jobs?: { company?: string } } | null;
+    })?.extracted_jobs;
+    const country = (ej?.country || '').toUpperCase();
+    const company = (ej?.raw_jobs?.company || '').trim();
 
-    if (roleId) {
+    if (roleId && country === 'US') {
       await supabase.rpc('increment_job_count', { role_id: roleId });
 
       if (company) {

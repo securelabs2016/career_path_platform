@@ -34,11 +34,73 @@ Required fields:
 - skills: array of strings — specific technical skills mentioned (max 10)
 - seniority: one of "entry", "mid", "senior", "lead" — infer from title/requirements
 - location: string — city/state or "Remote" or "Hybrid" (null if not found)
+- country: 2-letter ISO code where the job is located ("US" for United States including Remote-US, "GB", "DE", "IN", "IL", etc.) — use "XX" if ambiguous like "Multiple Locations" or truly remote-anywhere
 
 Job posting:
 TITLE: {title}
 COMPANY: {company}
 DESCRIPTION: {description}"""
+
+# ── US-location fast-path classifier ──────────────────────────────────────────
+# Recognise obvious US-located jobs WITHOUT a separate AI call so the country
+# tag is reliable even when the AI extractor misses it. Used as a safety net
+# after the AI returns — if it didn't answer or guessed wrong on something
+# obviously US, this overrides to "US".
+
+import re as _re  # local alias to avoid shadowing top-of-file imports
+
+_US_STATE_ABBREVS = (
+    "AL AK AZ AR CA CO CT DE FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN MS "
+    "MO MT NE NV NH NJ NM NY NC ND OH OK OR PA RI SC SD TN TX UT VT VA WA WV "
+    "WI WY DC PR"
+).split()
+_US_STATE_NAMES = {
+    "alabama","alaska","arizona","arkansas","california","colorado","connecticut",
+    "delaware","florida","georgia","hawaii","idaho","illinois","indiana","iowa",
+    "kansas","kentucky","louisiana","maine","maryland","massachusetts","michigan",
+    "minnesota","mississippi","missouri","montana","nebraska","nevada",
+    "new hampshire","new jersey","new mexico","new york","north carolina",
+    "north dakota","ohio","oklahoma","oregon","pennsylvania","rhode island",
+    "south carolina","south dakota","tennessee","texas","utah","vermont","virginia",
+    "washington","west virginia","wisconsin","wyoming","district of columbia",
+    "puerto rico",
+}
+_US_PATTERNS = _re.compile(
+    r"\b(united states|u\.?s\.?a?\.?|remote\s*[-—–]\s*u\.?s\.?|remote\s*-\s*united\s*states)\b",
+    _re.IGNORECASE,
+)
+_AMBIGUOUS_PATTERNS = _re.compile(
+    r"\b(multiple\s+locations|remote\s*[-—–]\s*anywhere|various)\b",
+    _re.IGNORECASE,
+)
+
+
+def classify_us_country(location_text: str) -> str | None:
+    """
+    Fast deterministic classifier. Returns:
+      "US" if the text clearly names a US state, city+state, or US patterns
+      "XX" if obviously ambiguous ("Multiple Locations", "Remote — Anywhere")
+      None if can't tell — caller should fall back to the AI's answer
+    """
+    if not location_text:
+        return None
+    text = location_text.strip()
+
+    if _AMBIGUOUS_PATTERNS.search(text):
+        return "XX"
+    if _US_PATTERNS.search(text):
+        return "US"
+
+    # State name appears as a word (case-insensitive)
+    text_lower = text.lower()
+    if any(state in text_lower for state in _US_STATE_NAMES):
+        return "US"
+
+    # State abbreviation right after a comma — "Hillsboro, OR" or "Austin, TX"
+    if _re.search(rf",\s*({'|'.join(_US_STATE_ABBREVS)})\b", text):
+        return "US"
+
+    return None
 
 
 def _parse_json_response(text: str) -> dict | None:
@@ -205,12 +267,20 @@ def run_extractor(supabase: Client, anthropic: Anthropic | None, batch_size: int
             log.warning(f"Skipping job {raw['id']} — all extraction attempts failed")
             continue
 
+        # Country tagging — fast-path classifier overrides AI guess on obvious cases.
+        # "US" if clearly located in the United States, "XX" if obviously ambiguous,
+        # otherwise trust the AI's 2-letter ISO answer (defaulting to "XX").
+        ai_country = (fields.get("country") or "").strip().upper()[:2] or None
+        fast_country = classify_us_country(fields.get("location") or "")
+        country = fast_country or ai_country or "XX"
+
         row = {
             "raw_job_id":       raw["id"],
             "normalized_title": fields.get("normalized_title") or raw["raw_title"],
             "skills":           fields.get("skills", [])[:10],
             "seniority":        fields.get("seniority", "mid"),
             "location":         fields.get("location"),
+            "country":          country,
         }
         try:
             supabase.table("extracted_jobs").insert(row).execute()

@@ -10,6 +10,7 @@ import {
 import { roleMatchesFilter } from '@/lib/role-utils';
 import { CLUSTER_COLORS } from './constants';
 import FilterBar from './FilterBar';
+import LocationFilter, { type RegionFilter } from './LocationFilter';
 import MobileList from './MobileList';
 import RoleCard from './RoleCard';
 import PathwayLines from './PathwayLines';
@@ -50,16 +51,31 @@ export default function CareerMap({ data }: Props) {
   const [detailRoleId,  setDetailRoleId]  = useState<string | null>(null);
   const [liveCounts,    setLiveCounts]    = useState<LiveCounts>({});
 
-  // Phase 2.4 — fetch live job counts from the pipeline once on mount.
+  // Phase 3.4 — region filter. Hydrated from URL ?region= on first render.
+  const [region, setRegion] = useState<RegionFilter>(() => {
+    const raw = searchParams.get('region');
+    return raw === 'worldwide' ? 'worldwide' : 'US';
+  });
+
+  const handleRegionChange = useCallback((next: RegionFilter) => {
+    setRegion(next);
+    const params = new URLSearchParams(searchParams.toString());
+    if (next === 'US') params.delete('region');
+    else                params.set('region', next);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  }, [searchParams, router, pathname]);
+
+  // Phase 2.4 + 3.4 — fetch live job counts whenever industry or region changes.
   // Degrades silently to empty {} if the DB isn't reachable; UI still works.
   useEffect(() => {
     let cancelled = false;
-    fetch(`/api/jobs/counts?industry=${encodeURIComponent(industry.slug)}`)
+    const qs = new URLSearchParams({ industry: industry.slug, country: region });
+    fetch(`/api/jobs/counts?${qs.toString()}`)
       .then(r => (r.ok ? r.json() : {}))
       .then((data: LiveCounts) => { if (!cancelled) setLiveCounts(data || {}); })
       .catch(() => { /* swallow — counts will stay {} and UI shows no badges */ });
     return () => { cancelled = true; };
-  }, [industry.slug]);
+  }, [industry.slug, region]);
 
   const getLiveCount = useCallback(
     (title: string) => liveCounts[title.toLowerCase().trim()],
@@ -202,8 +218,9 @@ export default function CareerMap({ data }: Props) {
             <li>(3) Click &quot;Clear Map&quot; to start over.</li>
           </ol>
         </div>
-        <div className="md:flex-shrink-0 md:w-[400px]">
+        <div className="md:flex-shrink-0 md:w-[400px] flex flex-col gap-2 items-end">
           <FilterBar searchQuery={searchQuery} onSearch={setSearchQuery} />
+          <LocationFilter value={region} onChange={handleRegionChange} />
         </div>
       </div>
 

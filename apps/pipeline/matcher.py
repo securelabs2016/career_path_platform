@@ -284,7 +284,7 @@ def run_matcher(
 
     extracted_result = (
         supabase.table("extracted_jobs")
-        .select("id, normalized_title, skills, seniority, location, raw_jobs(company)")
+        .select("id, normalized_title, skills, seniority, location, country, raw_jobs(company)")
         .limit(batch_size)
         .execute()
     )
@@ -337,8 +337,11 @@ def run_matcher(
             "status":            status,
         }).execute()
 
-        # Auto-approved: update job count + hiring company on the canonical role
-        if status == "approved":
+        # Auto-approved: update job count + hiring company on the canonical role.
+        # Phase 3 — canonical_roles.open_jobs_count and hiring_companies are
+        # the cached US-only view used by the default UI. Worldwide counts are
+        # computed live from role_matches at API time.
+        if status == "approved" and (job.get("country") or "").upper() == "US":
             supabase.rpc("increment_job_count", {"role_id": best["id"]}).execute()
             # Phase 2.3 — doc Step 5 requires "company list" on each canonical role
             company = ((job.get("raw_jobs") or {}).get("company") or "").strip()

@@ -1,22 +1,28 @@
 /**
- * GET /api/jobs/counts?industry=<slug>
+ * GET /api/jobs/counts?industry=<slug>&country=US
  *
  * Returns live open-job counts and hiring-company lists per canonical role
- * for a given industry. The website reads this on map mount and merges
- * counts into the rendered role nodes.
+ * for a given industry, filtered by location.
  *
- * Mapping: roles are keyed by lowercased title because the website's static
- * JSON IDs (e.g. "am-r-01") are NOT preserved through the seeder — only the
- * title is shared between the two. Titles are unique per industry in this
- * project's taxonomy.
+ * Query params:
+ *   industry  (required) — industry slug, e.g. "additive-manufacturing"
+ *   country   (optional, default "US") — one of:
+ *                "US"           — only US jobs (cached fast path)
+ *                "worldwide"    — every approved job regardless of country
+ *                "US,GB,CA"     — comma-separated ISO codes
  *
- * Cache: 60s in-memory per industry. The pipeline updates these numbers at
- * most weekly, so 60s is generous freshness with cheap response time for
- * concurrent page loads.
+ * Mapping: roles keyed by lowercased title — the website's static JSON IDs
+ * are NOT preserved through the seeder, so title is the join key.
  *
- * Degrades gracefully:
- *   - Supabase env vars missing → empty {} response, 200. UI shows zero counts.
- *   - DB error                  → empty {} response, 200. UI shows zero counts.
+ * Fast path (country=US):
+ *   Read canonical_roles.open_jobs_count + .hiring_companies directly.
+ *   These are kept current by the matcher (Phase 3.2) as a US-only cache.
+ *
+ * Slow path (country=worldwide or specific list ≠ US):
+ *   Live aggregate from role_matches → extracted_jobs → raw_jobs.
+ *   Counts and companies are computed at query time.
+ *
+ * Cache: 60s in-memory per (industry, countryFilter) combo.
  */
 
 import { getSupabaseAdmin } from '@/lib/supabase';
@@ -31,23 +37,45 @@ type CountsByTitle = Record<string, RoleCount>;
 const CACHE_TTL_MS = 60_000;
 const cache = new Map<string, { at: number; data: CountsByTitle }>();
 
+function parseCountryParam(raw: string | null): {
+  mode: 'us-cached' | 'worldwide' | 'list';
+  list: string[];
+} {
+  const trimmed = (raw ?? '').trim();
+  if (!trimmed || trimmed.toUpperCase() === 'US') {
+    return { mode: 'us-cached', list: ['US'] };
+  }
+  if (trimmed.toLowerCase() === 'worldwide') {
+    return { mode: 'worldwide', list: [] };
+  }
+  // Comma list — uppercase, dedupe, keep only 2-letter codes (or 'XX')
+  const list = Array.from(new Set(
+    trimmed.split(',')
+      .map(s => s.trim().toUpperCase())
+      .filter(s => /^[A-Z]{2}$/.test(s)),
+  ));
+  if (list.length === 1 && list[0] === 'US') {
+    return { mode: 'us-cached', list: ['US'] };
+  }
+  return { mode: 'list', list };
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const industrySlug = (searchParams.get('industry') ?? '').trim();
-
   if (!industrySlug) {
     return Response.json({}, { status: 400 });
   }
 
-  // ── 1. Cache hit?
-  const hit = cache.get(industrySlug);
+  const filter = parseCountryParam(searchParams.get('country'));
+  const cacheKey = `${industrySlug}::${filter.mode}::${filter.list.join(',')}`;
+
+  // ── Cache hit?
+  const hit = cache.get(cacheKey);
   if (hit && Date.now() - hit.at < CACHE_TTL_MS) {
-    return Response.json(hit.data, {
-      headers: { 'X-Cache': 'HIT' },
-    });
+    return Response.json(hit.data, { headers: { 'X-Cache': 'HIT' } });
   }
 
-  // ── 2. Fetch fresh
   const supabase = getSupabaseAdmin();
   if (!supabase) {
     return Response.json({}, { headers: { 'X-Cache': 'BYPASS-NO-DB' } });
@@ -64,22 +92,73 @@ export async function GET(request: Request) {
       return Response.json({});
     }
 
-    const { data: roles } = await supabase
-      .from('canonical_roles')
-      .select('title, open_jobs_count, hiring_companies')
-      .eq('industry_id', industry.id);
+    let out: CountsByTitle = {};
 
-    const out: CountsByTitle = {};
-    for (const r of roles ?? []) {
-      const title = (r.title ?? '').toLowerCase().trim();
-      if (!title) continue;
-      out[title] = {
-        count:     r.open_jobs_count ?? 0,
-        companies: r.hiring_companies ?? [],
-      };
+    if (filter.mode === 'us-cached') {
+      // Fast path: use cached US-only counts written by the matcher.
+      const { data: roles } = await supabase
+        .from('canonical_roles')
+        .select('title, open_jobs_count, hiring_companies')
+        .eq('industry_id', industry.id);
+
+      for (const r of roles ?? []) {
+        const title = (r.title ?? '').toLowerCase().trim();
+        if (!title) continue;
+        out[title] = {
+          count:     r.open_jobs_count ?? 0,
+          companies: r.hiring_companies ?? [],
+        };
+      }
+    } else {
+      // Slow path: live aggregation across role_matches with country filter.
+      const { data: roles } = await supabase
+        .from('canonical_roles')
+        .select('id, title')
+        .eq('industry_id', industry.id);
+
+      const idToTitle = new Map<string, string>();
+      for (const r of roles ?? []) {
+        if (r.title) idToTitle.set(r.id, r.title.toLowerCase().trim());
+      }
+      if (idToTitle.size === 0) {
+        return Response.json({});
+      }
+
+      const { data: matches } = await supabase
+        .from('role_matches')
+        .select('canonical_role_id, extracted_jobs(country, raw_jobs(company))')
+        .eq('status', 'approved')
+        .in('canonical_role_id', Array.from(idToTitle.keys()));
+
+      // Aggregate
+      type Bucket = { count: number; companies: Set<string> };
+      const byRoleId = new Map<string, Bucket>();
+      const wantedCountries = filter.mode === 'list' ? new Set(filter.list) : null;
+
+      for (const m of (matches ?? []) as Array<{
+        canonical_role_id: string;
+        extracted_jobs?: { country?: string; raw_jobs?: { company?: string } } | null;
+      }>) {
+        const ej = m.extracted_jobs;
+        const country = (ej?.country || 'XX').toUpperCase();
+        if (wantedCountries && !wantedCountries.has(country)) continue;
+
+        const bucket = byRoleId.get(m.canonical_role_id)
+          ?? { count: 0, companies: new Set<string>() };
+        bucket.count += 1;
+        const company = (ej?.raw_jobs?.company || '').trim();
+        if (company) bucket.companies.add(company);
+        byRoleId.set(m.canonical_role_id, bucket);
+      }
+
+      for (const [roleId, bucket] of byRoleId) {
+        const title = idToTitle.get(roleId);
+        if (!title) continue;
+        out[title] = { count: bucket.count, companies: Array.from(bucket.companies) };
+      }
     }
 
-    cache.set(industrySlug, { at: Date.now(), data: out });
+    cache.set(cacheKey, { at: Date.now(), data: out });
     return Response.json(out, { headers: { 'X-Cache': 'MISS' } });
   } catch (err) {
     console.warn('[api/jobs/counts] DB error:', (err as Error)?.message);
