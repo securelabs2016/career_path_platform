@@ -232,7 +232,7 @@ def run_extractor(supabase: Client, anthropic: Anthropic | None, batch_size: int
     """
     raw_result = (
         supabase.table("raw_jobs")
-        .select("id, raw_title, company, raw_description")
+        .select("id, raw_title, company, raw_description, industry")
         .limit(batch_size)
         .execute()
     )
@@ -281,6 +281,7 @@ def run_extractor(supabase: Client, anthropic: Anthropic | None, batch_size: int
             "seniority":        fields.get("seniority", "mid"),
             "location":         fields.get("location"),
             "country":          country,
+            "industry":         raw.get("industry"),  # Phase 3.6 — propagate from raw_jobs
         }
         try:
             supabase.table("extracted_jobs").insert(row).execute()

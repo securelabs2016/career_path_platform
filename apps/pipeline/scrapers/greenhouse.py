@@ -56,6 +56,7 @@ def scrape_company(company_slug: str, supabase: Client, industry: str, dead_slug
             "raw_title":        job.get("title", "").strip(),
             "raw_description":  job.get("content", "")[:8000],  # truncate to stay under limits
             "url":              job_url,
+            "industry":         industry,
             "scraped_at":       datetime.now(timezone.utc).isoformat(),
         }
 

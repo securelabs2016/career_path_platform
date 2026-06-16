@@ -146,6 +146,7 @@ def scrape_company(company: dict, supabase: Client, dead_slugs: list[str]) -> in
                     posting.get("postedOn") or "",
                 )[:8000],
                 "url":             _build_human_url(tenant, wd, site, external_path),
+                "industry":        company.get("industry"),
                 "scraped_at":      datetime.now(timezone.utc).isoformat(),
             }
 

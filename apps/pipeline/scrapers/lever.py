@@ -20,7 +20,7 @@ BASE_URL = "https://api.lever.co/v0/postings/{company}?mode=json"
 HEADERS  = {"User-Agent": "CareerPathwaysPlatform/1.0 (workforce-research)"}
 
 
-def scrape_company(company_slug: str, supabase: Client, dead_slugs: list[str]) -> int:
+def scrape_company(company_slug: str, supabase: Client, industry: str, dead_slugs: list[str]) -> int:
     url = BASE_URL.format(company=company_slug)
     try:
         resp = requests.get(url, headers=HEADERS, timeout=15)
@@ -53,6 +53,7 @@ def scrape_company(company_slug: str, supabase: Client, dead_slugs: list[str]) -
             "raw_title":        posting.get("text", "").strip(),
             "raw_description":  description[:8000],
             "url":              job_url,
+            "industry":         industry,
             "scraped_at":       datetime.now(timezone.utc).isoformat(),
         }
 
@@ -78,7 +79,7 @@ def run_lever(supabase: Client, industries: list[str] | None = None) -> dict[str
         log.info(f"Scraping Lever for {industry} ({len(rows)} companies)…")
         for row in rows:
             slug = row["slug"]
-            n = scrape_company(slug, supabase, dead_slugs)
+            n = scrape_company(slug, supabase, industry, dead_slugs)
             total += n
             time.sleep(1)
         totals[industry] = total

@@ -245,7 +245,7 @@ def run_matcher(
     supabase: Client,
     anthropic: Anthropic | None,
     industry_slug: str,
-    batch_size: int = 30,
+    batch_size: int = 500,
 ) -> dict:
     """Match unmatched extracted_jobs against canonical_roles for one industry."""
 
@@ -282,9 +282,14 @@ def run_matcher(
     )
     already_matched = {r["extracted_job_id"] for r in (matched_result.data or [])}
 
+    # Phase 3.6 — filter extracted_jobs by industry. Without this filter the
+    # matcher's per-industry loop ran into a "first-industry-wins" bug: AM
+    # would consume every job in the queue (rejecting most as non-AM), leaving
+    # Semi and Space matchers with zero jobs to judge.
     extracted_result = (
         supabase.table("extracted_jobs")
-        .select("id, normalized_title, skills, seniority, location, country, raw_jobs(company)")
+        .select("id, normalized_title, skills, seniority, location, country, industry, raw_jobs(company)")
+        .eq("industry", industry_slug)
         .limit(batch_size)
         .execute()
     )
