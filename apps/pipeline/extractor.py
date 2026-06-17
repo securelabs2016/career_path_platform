@@ -132,7 +132,7 @@ def _extract_with_claude(raw_job: dict, client: Anthropic) -> dict | None:
     prompt = EXTRACTION_PROMPT.format(
         title=raw_job.get("raw_title", ""),
         company=raw_job.get("company", ""),
-        description=(raw_job.get("raw_description", "") or "")[:3000],
+        description=(raw_job.get("raw_description", "") or "")[:800],
     )
     message = client.messages.create(
         model="claude-haiku-4-5-20251001",
@@ -171,7 +171,7 @@ def _extract_with_gemini(raw_job: dict, max_retries: int = 3) -> dict | None:
     prompt = EXTRACTION_PROMPT.format(
         title=raw_job.get("raw_title", ""),
         company=raw_job.get("company", ""),
-        description=(raw_job.get("raw_description", "") or "")[:3000],
+        description=(raw_job.get("raw_description", "") or "")[:800],
     )
 
     for attempt in range(max_retries):
@@ -218,7 +218,7 @@ def _extract_with_groq(raw_job: dict, max_retries: int = 3) -> dict | None:
     prompt = EXTRACTION_PROMPT.format(
         title=raw_job.get("raw_title", ""),
         company=raw_job.get("company", ""),
-        description=(raw_job.get("raw_description", "") or "")[:3000],
+        description=(raw_job.get("raw_description", "") or "")[:800],
     )
 
     for attempt in range(max_retries):

@@ -16,6 +16,11 @@ from companies_loader import grouped_by_industry
 
 log = logging.getLogger(__name__)
 
+# Cap per company per cron run — matches the Workday scraper. Keeps total
+# weekly job volume in the free-tier-friendly range (~500/week across all
+# sources). Raise when paid AI credit is available.
+MAX_JOBS_PER_COMPANY = 25
+
 BASE_URL = "https://boards-api.greenhouse.io/v1/boards/{company}/jobs"
 HEADERS  = {"User-Agent": "CareerPathwaysPlatform/1.0 (workforce-research)"}
 
@@ -42,7 +47,7 @@ def scrape_company(company_slug: str, supabase: Client, industry: str, dead_slug
         log.error(f"Request failed for {company_slug!r}: {e}")
         return 0
 
-    jobs = resp.json().get("jobs", [])
+    jobs = resp.json().get("jobs", [])[:MAX_JOBS_PER_COMPANY]
     inserted = 0
 
     for job in jobs:

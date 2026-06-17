@@ -40,10 +40,10 @@ from companies_loader import companies_for
 
 log = logging.getLogger(__name__)
 
-# Cap per company per cron run. Adjust if you have AI budget for more.
-# At 100 × 8 companies = 800 Workday jobs/week, alongside ~3000 from
-# Greenhouse/Lever — total ~3800 raw_jobs/week, well within the cost target.
-MAX_JOBS_PER_COMPANY = 100
+# Cap per company per cron run. Sized for free-tier AI compatibility — at
+# 25 × 8 companies = 200 Workday jobs/week. Raise when paid AI credit is
+# available; the rest of the pipeline scales with this number.
+MAX_JOBS_PER_COMPANY = 25
 
 # Workday paginates with a small limit. 20 is the typical default they use.
 PAGE_SIZE = 20

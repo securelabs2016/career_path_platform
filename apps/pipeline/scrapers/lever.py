@@ -16,6 +16,10 @@ from companies_loader import grouped_by_industry
 
 log = logging.getLogger(__name__)
 
+# Cap per company per cron run — matches greenhouse + workday. Keeps total
+# weekly job volume in the free-tier-friendly range.
+MAX_JOBS_PER_COMPANY = 25
+
 BASE_URL = "https://api.lever.co/v0/postings/{company}?mode=json"
 HEADERS  = {"User-Agent": "CareerPathwaysPlatform/1.0 (workforce-research)"}
 
@@ -36,7 +40,8 @@ def scrape_company(company_slug: str, supabase: Client, industry: str, dead_slug
         log.error(f"Request failed for {company_slug!r}: {e}")
         return 0
 
-    postings = resp.json() if isinstance(resp.json(), list) else []
+    raw = resp.json()
+    postings = (raw if isinstance(raw, list) else [])[:MAX_JOBS_PER_COMPANY]
     inserted = 0
 
     for posting in postings:

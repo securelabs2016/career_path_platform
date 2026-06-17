@@ -118,27 +118,27 @@ def run(
         log.info("STEP 1 — Skipped (--skip-scrape)")
 
     # ── Step 2: Extract ───────────────────────────────────────────────────────
-    # Phase 3.6 — batch raised from 100 → 1000 so the existing ~4000-job
-    # backlog clears in a few cron cycles instead of months. Still fits within
-    # GitHub Actions' 6-hour run limit even with Gemini's 15 RPM free-tier cap.
+    # Phase 3.8 — sized to fit one run inside the combined Groq (100K tokens/day)
+    # + Gemini free-tier token budget. 200 extractions × ~1.1K tokens ≈ 220K
+    # tokens. Run one or two pipelines per day to drain the backlog cleanly.
     if not skip_extract:
         log.info("=" * 50)
         log.info("STEP 2 — Extractor")
-        extracted = run_extractor(supabase, anthropic, batch_size=1000)
+        extracted = run_extractor(supabase, anthropic, batch_size=200)
         log.info(f"Extractor done: {extracted} jobs extracted")
     else:
         log.info("STEP 2 — Skipped (--skip-extract)")
 
     # ── Step 3+4: Match & Route ───────────────────────────────────────────────
-    # Phase 3.6 — matcher batch_size raised to 500 per industry; matcher now
-    # filters extracted_jobs by industry so the three industry passes operate
-    # on disjoint job sets.
+    # Phase 3.8 — 100 per industry × 3 = 300 judgments per run. With matching
+    # prompts at ~600 input tokens each, total ~240K tokens for the matcher
+    # step. Pairs cleanly with the extractor size above.
     if not skip_match:
         log.info("=" * 50)
         log.info("STEP 3+4 — Ontology Matcher + Routing")
         all_stats = {"matched": 0, "pending": 0, "rejected": 0}
         for industry in target:
-            stats = run_matcher(supabase, anthropic, industry, batch_size=500)
+            stats = run_matcher(supabase, anthropic, industry, batch_size=100)
             for k in all_stats:
                 all_stats[k] += stats.get(k, 0)
         log.info(f"Matcher done: {all_stats}")
