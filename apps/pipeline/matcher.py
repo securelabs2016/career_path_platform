@@ -145,14 +145,18 @@ def _is_rate_limit_error(err: Exception) -> bool:
 def _judge_with_gemini(prompt: str, max_retries: int = 3) -> dict | None:
     """Gemini fallback — only used if GEMINI_API_KEY is set.
     Retries on rate-limit errors so we don't silently drop every other judgment
-    once we hit the free tier's 15 RPM ceiling."""
+    once we hit the free tier's 15 RPM ceiling.
+
+    Model pinned to gemini-2.0-flash (1500/day free) — gemini-2.5-flash dropped
+    to 20/day on the free tier in June 2026 which makes it unusable for a
+    real backlog."""
     gemini_key = os.environ.get("GEMINI_API_KEY")
     if not gemini_key:
         return None
     try:
         import google.generativeai as genai
         genai.configure(api_key=gemini_key)
-        model = genai.GenerativeModel("gemini-2.5-flash")
+        model = genai.GenerativeModel("gemini-2.0-flash")
     except ImportError:
         return None
 
@@ -179,6 +183,45 @@ def _judge_with_gemini(prompt: str, max_retries: int = 3) -> dict | None:
     return None
 
 
+def _judge_with_groq(prompt: str, max_retries: int = 3) -> dict | None:
+    """Groq fallback — Llama 3.3 70B. Free tier ~14k/day, much better than Gemini free."""
+    groq_key = os.environ.get("GROQ_API_KEY")
+    if not groq_key:
+        return None
+    try:
+        from groq import Groq
+        client = Groq(api_key=groq_key)
+    except ImportError:
+        return None
+
+    for attempt in range(max_retries):
+        try:
+            response = client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                max_tokens=200,
+                messages=[{"role": "user", "content": prompt}],
+            )
+            text = response.choices[0].message.content if response.choices else ""
+            parsed = _parse_judgment(text)
+            if parsed is None and attempt < max_retries - 1:
+                log.warning(
+                    f"Groq judgment unparseable (attempt {attempt+1}): "
+                    f"{(text or '')[:200]!r}"
+                )
+                time.sleep(2)
+                continue
+            return parsed
+        except Exception as e:
+            if _is_rate_limit_error(e) and attempt < max_retries - 1:
+                wait = 5 * (2 ** attempt)
+                log.warning(f"Groq rate-limited (attempt {attempt+1}), waiting {wait}s…")
+                time.sleep(wait)
+                continue
+            log.warning(f"Groq judgment failed (attempt {attempt+1}): {e}")
+            return None
+    return None
+
+
 def claude_judge(
     extracted_job: dict,
     candidate_role: dict,
@@ -186,9 +229,8 @@ def claude_judge(
     max_retries: int = 3,
 ) -> dict | None:
     """
-    Judge whether a job matches a canonical role.
-    If Claude is configured: tries Claude with retries, falls back to Gemini.
-    If not: goes straight to Gemini.
+    Judge whether a job matches a canonical role. Provider order:
+      Claude (if client passed) → Groq (if GROQ_API_KEY) → Gemini (if GEMINI_API_KEY).
     Returns None if everything fails — caller treats as low-confidence rejection.
     """
     prompt = MATCH_PROMPT.format(
@@ -201,27 +243,32 @@ def claude_judge(
         job_skills=", ".join(extracted_job.get("skills", [])[:8]),
     )
 
-    # No Claude key → skip directly to Gemini
-    if client is None:
-        return _judge_with_gemini(prompt)
+    # 1. Claude first if configured (most accurate, paid)
+    if client is not None:
+        for attempt in range(max_retries):
+            try:
+                result = _judge_with_claude(prompt, client)
+                if result:
+                    return result
+            except AnthropicRateLimit:
+                wait = 2 ** attempt
+                log.warning(f"Claude rate limit on attempt {attempt+1}, waiting {wait}s…")
+                time.sleep(wait)
+            except Exception as e:
+                log.warning(f"Claude judgment error (attempt {attempt+1}): {e}")
+                if attempt == max_retries - 1:
+                    break
+                time.sleep(2)
+        log.info("Claude exhausted — falling back to Groq")
 
-    for attempt in range(max_retries):
-        try:
-            result = _judge_with_claude(prompt, client)
-            if result:
-                return result
-        except AnthropicRateLimit:
-            wait = 2 ** attempt
-            log.warning(f"Claude rate limit on attempt {attempt+1}, waiting {wait}s…")
-            time.sleep(wait)
-        except Exception as e:
-            log.warning(f"Claude judgment error (attempt {attempt+1}): {e}")
-            if attempt == max_retries - 1:
-                break
-            time.sleep(2)
+    # 2. Groq — best free-tier throughput
+    if os.environ.get("GROQ_API_KEY"):
+        result = _judge_with_groq(prompt)
+        if result:
+            return result
+        log.info("Groq returned no result — falling back to Gemini")
 
-    # Fall back to Gemini
-    log.info("Falling back to Gemini for judgment")
+    # 3. Gemini — last resort
     return _judge_with_gemini(prompt)
 
 
@@ -298,11 +345,13 @@ def run_matcher(
     log.info(f"Matching {len(all_extracted)} jobs against {len(canonical_roles)} canonical roles for {industry_slug}…")
 
     stats = {"matched": 0, "pending": 0, "rejected": 0}
-    gemini_only = anthropic is None
+    has_claude = anthropic is not None
+    has_groq   = bool(os.environ.get("GROQ_API_KEY"))
+    needs_pace = not has_claude and not has_groq
 
     for i, job in enumerate(all_extracted):
-        # Pace Gemini-only runs to stay under the free-tier 15 RPM ceiling.
-        if gemini_only and i > 0:
+        # Pace runs only when our primary path is the rate-limited Gemini free tier.
+        if needs_pace and i > 0:
             time.sleep(GEMINI_PACE_SECONDS)
 
         top3 = rank_candidates(job, canonical_roles)

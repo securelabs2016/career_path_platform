@@ -152,6 +152,10 @@ def _extract_with_gemini(raw_job: dict, max_retries: int = 3) -> dict | None:
     Gemini fallback — only used if GEMINI_API_KEY is set.
     Retries on rate-limit errors with exponential backoff so we don't silently
     lose every other job once we hit the free tier's 15 RPM ceiling.
+
+    Model note: pinned to gemini-2.0-flash because gemini-2.5-flash dropped to
+    20 req/day on the free tier (June 2026). 2.0-flash keeps the 1500/day free
+    quota and is more than capable of extraction.
     """
     gemini_key = os.environ.get("GEMINI_API_KEY")
     if not gemini_key:
@@ -159,7 +163,7 @@ def _extract_with_gemini(raw_job: dict, max_retries: int = 3) -> dict | None:
     try:
         import google.generativeai as genai
         genai.configure(api_key=gemini_key)
-        model = genai.GenerativeModel("gemini-2.5-flash")
+        model = genai.GenerativeModel("gemini-2.0-flash")
     except ImportError:
         log.warning("google-generativeai package not installed; Gemini fallback unavailable.")
         return None
@@ -195,33 +199,88 @@ def _extract_with_gemini(raw_job: dict, max_retries: int = 3) -> dict | None:
     return None
 
 
-def extract_job(raw_job: dict, client: Anthropic | None, max_retries: int = 3) -> dict | None:
+def _extract_with_groq(raw_job: dict, max_retries: int = 3) -> dict | None:
     """
-    Extract structured fields from one raw job.
-    If Claude is configured: try Claude first with retry + backoff, fall back to Gemini.
-    If not: go straight to Gemini.
+    Groq fallback — uses Llama 3.3 70B via Groq's free inference API.
+    Free tier (June 2026): ~14,400 req/day, far more generous than Gemini.
+    Same retry-on-rate-limit pattern as the Gemini path.
     """
-    # No Claude key → skip Claude entirely
-    if client is None:
-        return _extract_with_gemini(raw_job)
+    groq_key = os.environ.get("GROQ_API_KEY")
+    if not groq_key:
+        return None
+    try:
+        from groq import Groq
+        client = Groq(api_key=groq_key)
+    except ImportError:
+        log.warning("groq package not installed; Groq fallback unavailable.")
+        return None
+
+    prompt = EXTRACTION_PROMPT.format(
+        title=raw_job.get("raw_title", ""),
+        company=raw_job.get("company", ""),
+        description=(raw_job.get("raw_description", "") or "")[:3000],
+    )
 
     for attempt in range(max_retries):
         try:
-            result = _extract_with_claude(raw_job, client)
-            if result:
-                return result
-        except AnthropicRateLimit:
-            wait = 2 ** attempt  # 2s, 4s, 8s
-            log.warning(f"Claude rate limit on attempt {attempt+1}, waiting {wait}s…")
-            time.sleep(wait)
+            response = client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                max_tokens=512,
+                messages=[{"role": "user", "content": prompt}],
+            )
+            text = response.choices[0].message.content if response.choices else ""
+            parsed = _parse_json_response(text)
+            if parsed is None and attempt < max_retries - 1:
+                log.warning(
+                    f"Groq returned unparseable response (attempt {attempt+1}): "
+                    f"{(text or '')[:200]!r}"
+                )
+                time.sleep(2)
+                continue
+            return parsed
         except Exception as e:
-            log.warning(f"Claude extraction error (attempt {attempt+1}): {e}")
-            if attempt == max_retries - 1:
-                break
-            time.sleep(2)
+            if _is_rate_limit_error(e) and attempt < max_retries - 1:
+                wait = 5 * (2 ** attempt)  # 5s, 10s, 20s
+                log.warning(f"Groq rate-limited (attempt {attempt+1}), waiting {wait}s…")
+                time.sleep(wait)
+                continue
+            log.warning(f"Groq extraction failed (attempt {attempt+1}): {e}")
+            return None
+    return None
 
-    # All Claude attempts failed — try Gemini
-    log.info(f"Falling back to Gemini for job {raw_job.get('id')}")
+
+def extract_job(raw_job: dict, client: Anthropic | None, max_retries: int = 3) -> dict | None:
+    """
+    Extract structured fields from one raw job. Provider order:
+      Claude (if anthropic client passed) → Groq (if GROQ_API_KEY) → Gemini (if GEMINI_API_KEY).
+    Falls through on any provider's exhausted retries.
+    """
+    # 1. Claude first if configured (most accurate, paid)
+    if client is not None:
+        for attempt in range(max_retries):
+            try:
+                result = _extract_with_claude(raw_job, client)
+                if result:
+                    return result
+            except AnthropicRateLimit:
+                wait = 2 ** attempt  # 2s, 4s, 8s
+                log.warning(f"Claude rate limit on attempt {attempt+1}, waiting {wait}s…")
+                time.sleep(wait)
+            except Exception as e:
+                log.warning(f"Claude extraction error (attempt {attempt+1}): {e}")
+                if attempt == max_retries - 1:
+                    break
+                time.sleep(2)
+        log.info(f"Claude exhausted for job {raw_job.get('id')} — falling back")
+
+    # 2. Groq — best free-tier throughput (14k/day)
+    if os.environ.get("GROQ_API_KEY"):
+        result = _extract_with_groq(raw_job)
+        if result:
+            return result
+        log.info(f"Groq returned no result for job {raw_job.get('id')} — falling back to Gemini")
+
+    # 3. Gemini — last resort
     return _extract_with_gemini(raw_job)
 
 
@@ -262,12 +321,15 @@ def run_extractor(supabase: Client, anthropic: Anthropic | None, batch_size: int
 
     log.info(f"Extracting {len(to_process)} new jobs (skipping {len(already_done)} already done)…")
 
-    # Pace Gemini-only runs to stay under the free tier's 15 RPM ceiling.
-    gemini_only = anthropic is None
+    # Pace runs when our primary path is the rate-limited Gemini free tier.
+    # Groq's free tier is ~14k/day with 30 RPM — no pacing needed when it's available.
+    has_claude = anthropic is not None
+    has_groq   = bool(os.environ.get("GROQ_API_KEY"))
+    needs_pace = not has_claude and not has_groq
 
     extracted_count = 0
     for i, raw in enumerate(to_process):
-        if gemini_only and i > 0:
+        if needs_pace and i > 0:
             time.sleep(GEMINI_PACE_SECONDS)
 
         fields = extract_job(raw, anthropic)

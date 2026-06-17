@@ -51,12 +51,13 @@ def get_clients() -> tuple[Client, Optional[Anthropic]]:
     Returns (supabase_client, anthropic_client_or_None).
 
     Required:    SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY
-    Required:    at least one of ANTHROPIC_API_KEY or GEMINI_API_KEY
-    Optional:    ANTHROPIC_API_KEY alone (falls back to Gemini if missing)
+    Required:    at least one of ANTHROPIC_API_KEY, GROQ_API_KEY, or GEMINI_API_KEY
+    Provider chain at runtime: Claude → Groq → Gemini (each step is optional).
     """
     supabase_url  = os.environ.get("SUPABASE_URL")
     supabase_key  = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
     anthropic_key = os.environ.get("ANTHROPIC_API_KEY")
+    groq_key      = os.environ.get("GROQ_API_KEY")
     gemini_key    = os.environ.get("GEMINI_API_KEY")
 
     # Supabase is hard-required
@@ -70,18 +71,18 @@ def get_clients() -> tuple[Client, Optional[Anthropic]]:
         sys.exit(1)
 
     # At least one AI provider must be available
-    if not anthropic_key and not gemini_key:
-        log.error("No AI provider configured. Set ANTHROPIC_API_KEY or GEMINI_API_KEY.")
+    if not (anthropic_key or groq_key or gemini_key):
+        log.error("No AI provider configured. Set ANTHROPIC_API_KEY, GROQ_API_KEY, or GEMINI_API_KEY.")
+        log.error("Get a free Groq key at:   https://console.groq.com")
         log.error("Get a free Gemini key at: https://aistudio.google.com/app/apikey")
         sys.exit(1)
 
-    # Log which providers are active
-    if anthropic_key and gemini_key:
-        log.info("AI providers: Claude (primary) → Gemini (fallback)")
-    elif anthropic_key:
-        log.info("AI provider: Claude only")
-    else:
-        log.info("AI provider: Gemini only (no Claude key set)")
+    # Log the active provider chain
+    chain = []
+    if anthropic_key: chain.append("Claude")
+    if groq_key:      chain.append("Groq")
+    if gemini_key:    chain.append("Gemini")
+    log.info(f"AI provider chain: {' → '.join(chain)}")
 
     anthropic_client = Anthropic(api_key=anthropic_key) if anthropic_key else None
 
