@@ -1,13 +1,18 @@
 'use client';
 
+import Link from 'next/link';
 import type { Role } from '@/lib/types';
 import Modal from '../Modal';
 import { CLUSTER_COLORS, formatSalary } from './constants';
 
 interface Props {
   role:    Role | null;
-  /** Live job count + hiring companies fetched from /api/jobs/counts (Phase 2.4). */
+  /** Live US job count + hiring companies fetched from /api/jobs/counts (Phase 2.4). */
   liveCount?: { count: number; companies: string[] };
+  /** Worldwide approved-match count — drives the "View live openings" button enabled state. */
+  anyCount?: number;
+  /** Industry slug, for routing to /[industry]/role/[id]/openings. */
+  industrySlug?: string;
   onClose: () => void;
 }
 
@@ -31,14 +36,16 @@ const TIER_LABEL: Record<string, string> = {
  * Polished typography pass per user feedback (point 6): bigger body text,
  * stronger heading hierarchy, more breathing room.
  */
-export default function RoleDetailModal({ role, liveCount, onClose }: Props) {
+export default function RoleDetailModal({ role, liveCount, anyCount, industrySlug, onClose }: Props) {
   if (!role) {
     return <Modal open={false} onClose={onClose}>{null}</Modal>;
   }
 
-  // Phase 2.4 skeleton — pipeline-sourced live hiring data, if any.
+  // Phase 2.4 — pipeline-sourced live US hiring data, if any.
   const hiringCount     = liveCount?.count ?? 0;
   const hiringCompanies = liveCount?.companies ?? [];
+  // Phase 5 — worldwide match count drives the View live openings button.
+  const worldwideCount  = anyCount ?? 0;
 
   const clusterColor = CLUSTER_COLORS[role.cluster];
   const bandHex      = clusterColor?.band ?? '#374151';
@@ -119,15 +126,15 @@ export default function RoleDetailModal({ role, liveCount, onClose }: Props) {
               </div>
             )}
 
-            {/* Phase 2.4 skeleton — currently hiring (live data from pipeline).
-                Plain text list. UI polish (logos, job cards, apply buttons) deferred. */}
-            {hiringCount > 0 && (
+            {/* Phase 2.4 — currently hiring (US data from pipeline) + Phase 5
+                "View live openings" CTA when worldwide matches exist. */}
+            {(hiringCount > 0 || worldwideCount > 0) && (
               <div>
                 <h3 className="text-base font-bold text-gray-900 mb-3 pb-2 border-b border-gray-200">
-                  Currently hiring ({hiringCount})
+                  Currently hiring ({hiringCount} US{worldwideCount > hiringCount ? ` · ${worldwideCount} worldwide` : ''})
                 </h3>
-                {hiringCompanies.length > 0 ? (
-                  <ul className="space-y-2 text-[14px] text-gray-800 leading-relaxed">
+                {hiringCount > 0 && hiringCompanies.length > 0 && (
+                  <ul className="space-y-2 text-[14px] text-gray-800 leading-relaxed mb-4">
                     {hiringCompanies.map(company => (
                       <li key={company} className="flex items-start gap-2.5">
                         <span
@@ -139,10 +146,22 @@ export default function RoleDetailModal({ role, liveCount, onClose }: Props) {
                       </li>
                     ))}
                   </ul>
-                ) : (
-                  <p className="text-[13px] text-gray-600 italic">
-                    {hiringCount} open posting{hiringCount === 1 ? '' : 's'} matched — company list updates on next pipeline run.
+                )}
+                {hiringCount > 0 && hiringCompanies.length === 0 && (
+                  <p className="text-[13px] text-gray-600 italic mb-4">
+                    {hiringCount} US opening{hiringCount === 1 ? '' : 's'} matched — company list updates on next pipeline run.
                   </p>
+                )}
+                {worldwideCount > 0 && industrySlug && (
+                  <Link
+                    href={`/${industrySlug}/role/${role.id}/openings`}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold
+                               text-white hover:opacity-90 transition-opacity
+                               focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+                    style={{ backgroundColor: bandHex }}
+                  >
+                    View {worldwideCount} live opening{worldwideCount === 1 ? '' : 's'} →
+                  </Link>
                 )}
               </div>
             )}

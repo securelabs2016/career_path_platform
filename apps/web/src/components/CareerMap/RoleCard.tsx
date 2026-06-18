@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import Link from 'next/link';
 import type { Role } from '@/lib/types';
 import type { CardPosition } from '@/lib/map-layout';
 import { LAYOUT } from '@/lib/map-layout';
@@ -33,8 +34,11 @@ interface Props {
   isAdjacent:     boolean;
   isRecommended:  boolean;
   industryColor:  string;
-  /** Live open-jobs count from the pipeline (Phase 2.4). 0 = hide badge. */
+  industrySlug:   string;
+  /** Live US open-jobs count — controls "Show only hiring" dim logic. */
   liveCount?:     number;
+  /** Worldwide approved-match count — controls the View Openings button enabled state. */
+  anyCount?:      number;
   /** Phase 3.10 — when true, this role is dimmed (50%) if liveCount == 0. */
   hiringOnly?:    boolean;
   onClick:        (id: string) => void;
@@ -127,7 +131,8 @@ function FourArrows({ size, zone }: { size: number; zone: ArrowZone }) {
 }
 
 export default function RoleCard({
-  role, position, isSelected, isLastInPath, isDimmed, isAdjacent, liveCount, hiringOnly,
+  role, position, isSelected, isLastInPath, isDimmed, isAdjacent, industrySlug,
+  liveCount, anyCount, hiringOnly,
   onClick, onDoubleClick, onShowDetails,
 }: Props) {
   const [hovered, setHovered] = useState(false);
@@ -243,34 +248,54 @@ export default function RoleCard({
               <span>{DEGREE_TOOLTIP[role.degree_required] ?? 'College Degree Required'}</span>
             </div>
 
-            <p className="text-[11px] text-gray-700 mb-2">
+            <p className="text-[11px] text-gray-700 mb-3">
               {role.salary_range || `${formatSalary(role.salary_min, role.salary_max)} / year`}
             </p>
 
-            {/* Phase 4 — live hiring summary in the hover tooltip. */}
-            {liveCount && liveCount > 0 ? (
-              <p className="text-[11px] mb-3 flex items-center gap-1.5">
-                <span
-                  className="inline-block w-1.5 h-1.5 rounded-full"
-                  style={{ backgroundColor: '#f59e0b' }}
-                  aria-hidden="true"
-                />
-                <span className="font-semibold text-amber-700">
-                  {liveCount} open job{liveCount === 1 ? '' : 's'} now
-                </span>
-              </p>
-            ) : null}
+            {/* Phase 5 — Details + View Openings, side-by-side. The button
+                indicator replaces the amber dot from Phase 4 (button is itself
+                the cue that openings exist). */}
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={e => { e.stopPropagation(); onShowDetails(role.id); }}
+                className="inline-block px-3 py-1.5 rounded text-[11px] font-semibold uppercase tracking-wide text-white
+                           hover:opacity-90 transition-opacity
+                           focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1"
+                style={{ backgroundColor: clusterHex }}
+              >
+                Details
+              </button>
 
-            <button
-              type="button"
-              onClick={e => { e.stopPropagation(); onShowDetails(role.id); }}
-              className="inline-block px-3 py-1.5 rounded text-[11px] font-semibold uppercase tracking-wide text-white
-                         hover:opacity-90 transition-opacity
-                         focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1"
-              style={{ backgroundColor: clusterHex }}
-            >
-              Details
-            </button>
+              {anyCount && anyCount > 0 ? (
+                <Link
+                  href={`/${industrySlug}/role/${role.id}/openings`}
+                  onClick={e => e.stopPropagation()}
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded text-[11px] font-semibold
+                             uppercase tracking-wide border bg-white hover:bg-gray-50 transition-colors
+                             focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1"
+                  style={{ borderColor: clusterHex, color: clusterHex }}
+                  title={`${anyCount} live opening${anyCount === 1 ? '' : 's'}`}
+                >
+                  View openings
+                  <span
+                    className="inline-block min-w-[16px] h-4 px-1 rounded-full text-[10px] leading-4 text-white text-center"
+                    style={{ backgroundColor: clusterHex }}
+                  >
+                    {anyCount > 9 ? '9+' : anyCount}
+                  </span>
+                </Link>
+              ) : (
+                <span
+                  className="inline-block px-3 py-1.5 rounded text-[11px] font-semibold uppercase tracking-wide
+                             text-gray-400 border border-gray-200 bg-gray-50 cursor-not-allowed"
+                  title="No live openings for this role yet — check back next week"
+                  aria-disabled="true"
+                >
+                  No openings
+                </span>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -368,26 +393,8 @@ export default function RoleCard({
             />
           )}
 
-          {/* Phase 4 — live-hiring indicator. Small amber dot on the upper-right
-              of the node when this role has open jobs in the current region.
-              Count appears in the hover tooltip + role detail modal — never
-              eats into the title text below. */}
-          {!showActive && liveCount && liveCount > 0 ? (
-            <span
-              className="absolute rounded-full pointer-events-none"
-              style={{
-                top:             -2,
-                right:           -2,
-                width:           10,
-                height:          10,
-                backgroundColor: '#f59e0b',           // amber-500
-                boxShadow:       '0 0 0 2px #ffffff', // tight white ring so the dot reads against any tint
-                zIndex:          7,
-              }}
-              aria-label={`${liveCount} open job${liveCount === 1 ? '' : 's'}`}
-              title={`${liveCount} open job${liveCount === 1 ? '' : 's'}`}
-            />
-          ) : null}
+          {/* Phase 5 — amber dot removed. The "View openings" button in the
+              hover tooltip is now the hiring indicator. */}
         </span>
 
         {/* Label area — three modes:
