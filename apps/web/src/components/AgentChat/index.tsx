@@ -18,31 +18,39 @@ interface Props {
 }
 
 // ── Parse [role-id] citations into clickable links ────────────────────────────
+// Phase 4 — broadened regex to match Semi's descriptive IDs like
+// [chief-product-architect] in addition to the original [am-r-21] / [space-r-03]
+// patterns. The captured ID is validated against roleById before being treated
+// as a citation — any [foo-bar] that doesn't resolve to a real role falls back
+// to plain inline text, so over-matching is safe.
 function RichText({ text, data }: { text: string; data: IndustryData }) {
   const roleById = new Map(data.roles.map(r => [r.id, r]));
-  // Match patterns like [am-r-21] or [semi-r-03]
-  const parts = text.split(/(\[[a-z]+-r-\d+\])/g);
+  // Match any lowercase kebab-case identifier in square brackets.
+  const parts = text.split(/(\[[a-z][a-z0-9-]*\])/g);
 
   return (
     <>
       {parts.map((part, i) => {
-        const match = part.match(/^\[([a-z]+-r-\d+)\]$/);
+        const match = part.match(/^\[([a-z][a-z0-9-]*)\]$/);
         if (match) {
           const role = roleById.get(match[1]);
-          return role ? (
-            <Link
-              key={i}
-              href={`/${data.industry.slug}/role/${role.id}`}
-              className="font-semibold text-blue-400 hover:text-blue-300 hover:underline"
-              target="_blank"
-            >
-              {role.title}
-            </Link>
-          ) : (
-            <span key={i} className="text-blue-400">{part}</span>
-          );
+          if (role) {
+            return (
+              <Link
+                key={i}
+                href={`/${data.industry.slug}/role/${role.id}`}
+                className="font-semibold text-blue-400 hover:text-blue-300 hover:underline"
+                target="_blank"
+              >
+                {role.title}
+              </Link>
+            );
+          }
+          // Brackets that don't resolve to a real role render as plain text
+          // — no blue highlight, so dolphIQ's prose still reads cleanly even
+          // when the model invents an ID or formats a non-citation bracket.
+          return <span key={i}>{part}</span>;
         }
-        // Render line breaks
         return <span key={i}>{part}</span>;
       })}
     </>

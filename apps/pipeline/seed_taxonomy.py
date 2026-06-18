@@ -151,11 +151,84 @@ def replace_canonical_roles(supabase: Client, industry_id: str, roles: list[dict
     return len(rows)
 
 
+def replace_pathways(supabase: Client, industry_id: str, data: dict) -> int:
+    """
+    Phase 4 — seed pathways for this industry.
+
+    Translation: each pathway's role_ids in the JSON are static IDs like
+    'am-r-01'. The DB stores UUIDs. We translate via the role's title, which
+    is the natural cross-reference (titles are unique within an industry).
+
+    Idempotent — clears existing pathways for this industry, then inserts fresh.
+    """
+    # 1. Clear existing pathways
+    supabase.table("pathways").delete().eq("industry_id", industry_id).execute()
+    log.info("  cleared existing pathways for this industry")
+
+    pathways = data.get("pathways", [])
+    if not pathways:
+        log.info("  no pathways in JSON — skipping")
+        return 0
+
+    # 2. Build the JSON-role-id → title map (from the JSON we're seeding)
+    json_id_to_title: dict[str, str] = {}
+    for role in data.get("roles", []):
+        jid = role.get("id")
+        title = role.get("title")
+        if jid and title:
+            json_id_to_title[jid] = title
+
+    # 3. Pull the DB title → UUID map we just inserted
+    db_rows = (
+        supabase.table("canonical_roles")
+        .select("id, title")
+        .eq("industry_id", industry_id)
+        .execute()
+    )
+    title_to_uuid: dict[str, str] = {}
+    for r in (db_rows.data or []):
+        if r.get("title") and r.get("id"):
+            title_to_uuid[r["title"].lower().strip()] = r["id"]
+
+    # 4. Build pathway rows with translated role_ids
+    pathway_rows = []
+    for pw in pathways:
+        translated_uuids: list[str] = []
+        for jid in pw.get("role_ids", []):
+            title = json_id_to_title.get(jid)
+            if not title:
+                continue
+            uuid_ = title_to_uuid.get(title.lower().strip())
+            if uuid_:
+                translated_uuids.append(uuid_)
+        # Skip pathways whose entire role list dropped (no matches at all)
+        if not translated_uuids:
+            log.warning(f"  pathway {pw.get('name')!r} has no resolvable roles — skipped")
+            continue
+        pathway_rows.append({
+            "industry_id": industry_id,
+            "name":        pw.get("name", ""),
+            "description": pw.get("description", ""),
+            "role_ids":    translated_uuids,
+        })
+
+    if not pathway_rows:
+        log.info("  no pathways translated successfully — none inserted")
+        return 0
+
+    supabase.table("pathways").insert(pathway_rows).execute()
+    log.info(f"  inserted {len(pathway_rows)} pathways")
+    return len(pathway_rows)
+
+
 def seed_industry(supabase: Client, data: dict) -> int:
     ind = data["industry"]
     log.info(f"Seeding industry: {ind['name']}")
     industry_id = upsert_industry(supabase, ind)
-    return replace_canonical_roles(supabase, industry_id, data["roles"])
+    role_count    = replace_canonical_roles(supabase, industry_id, data["roles"])
+    pathway_count = replace_pathways(supabase, industry_id, data)
+    log.info(f"  {ind['name']}: {role_count} roles + {pathway_count} pathways seeded")
+    return role_count
 
 
 def main() -> int:
