@@ -51,6 +51,10 @@ export default function CareerMap({ data }: Props) {
   const [errorOpen,     setErrorOpen]     = useState(false);
   const [detailRoleId,  setDetailRoleId]  = useState<string | null>(null);
   const [liveCounts,    setLiveCounts]    = useState<LiveCounts>({});
+  // Phase 4 — track whether the first /api/jobs/counts fetch has completed
+  // for the current region so we don't flash "No live openings" while still
+  // waiting for the API response.
+  const [countsLoaded,  setCountsLoaded]  = useState<boolean>(false);
 
   // Phase 3.4 — region filter. Hydrated from URL ?region= on first render.
   const [region, setRegion] = useState<RegionFilter>(() => {
@@ -81,13 +85,23 @@ export default function CareerMap({ data }: Props) {
 
   // Phase 2.4 + 3.4 — fetch live job counts whenever industry or region changes.
   // Degrades silently to empty {} if the DB isn't reachable; UI still works.
+  // Phase 4 — sets countsLoaded so the empty-state banner only shows after
+  // the API has actually answered (no false "No live openings" flash on load).
   useEffect(() => {
     let cancelled = false;
+    setCountsLoaded(false);  // reset on industry/region change
     const qs = new URLSearchParams({ industry: industry.slug, country: region });
     fetch(`/api/jobs/counts?${qs.toString()}`)
       .then(r => (r.ok ? r.json() : {}))
-      .then((data: LiveCounts) => { if (!cancelled) setLiveCounts(data || {}); })
-      .catch(() => { /* swallow — counts will stay {} and UI shows no badges */ });
+      .then((data: LiveCounts) => {
+        if (cancelled) return;
+        setLiveCounts(data || {});
+        setCountsLoaded(true);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setCountsLoaded(true);  // still mark loaded; empty-state will show
+      });
     return () => { cancelled = true; };
   }, [industry.slug, region]);
 
@@ -250,25 +264,41 @@ export default function CareerMap({ data }: Props) {
         </div>
       </div>
 
-      {/* Phase 3.10 — empty-state banner for the "Show only hiring" filter. */}
-      {hiringOnly && !anyRoleHiring && (
-        <div className="rounded border border-amber-200 bg-amber-50 text-amber-900 text-xs px-3 py-2"
-             role="status" aria-live="polite">
-          No live openings in this region.
-          {region === 'US' && (
-            <>
-              {' '}
-              <button
-                type="button"
-                onClick={() => handleRegionChange('worldwide')}
-                className="underline font-semibold hover:text-amber-700
-                           focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded"
-              >
-                Switch to Worldwide
-              </button>
-              {' '}to see all open jobs.
-            </>
-          )}
+      {/* Phase 3.10 + Phase 4 polish — empty-state banner for the "Show only hiring" filter.
+          Gated by countsLoaded so it doesn't flash during the initial API fetch. */}
+      {hiringOnly && countsLoaded && !anyRoleHiring && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50
+                     px-3.5 py-2.5 text-amber-900"
+        >
+          <svg
+            width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+            className="flex-shrink-0 mt-0.5 opacity-70" aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <circle cx="12" cy="16" r="0.5" fill="currentColor" />
+          </svg>
+          <p className="text-xs leading-relaxed">
+            <span className="font-semibold">No live openings in this region.</span>
+            {region === 'US' && (
+              <>
+                {' '}
+                <button
+                  type="button"
+                  onClick={() => handleRegionChange('worldwide')}
+                  className="underline font-semibold hover:text-amber-700
+                             focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded"
+                >
+                  Switch to Worldwide
+                </button>
+                {' '}to see all open jobs across our scraped companies.
+              </>
+            )}
+          </p>
         </div>
       )}
 

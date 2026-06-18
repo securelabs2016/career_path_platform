@@ -243,9 +243,23 @@ export default function RoleCard({
               <span>{DEGREE_TOOLTIP[role.degree_required] ?? 'College Degree Required'}</span>
             </div>
 
-            <p className="text-[11px] text-gray-700 mb-3">
+            <p className="text-[11px] text-gray-700 mb-2">
               {role.salary_range || `${formatSalary(role.salary_min, role.salary_max)} / year`}
             </p>
+
+            {/* Phase 4 — live hiring summary in the hover tooltip. */}
+            {liveCount && liveCount > 0 ? (
+              <p className="text-[11px] mb-3 flex items-center gap-1.5">
+                <span
+                  className="inline-block w-1.5 h-1.5 rounded-full"
+                  style={{ backgroundColor: '#f59e0b' }}
+                  aria-hidden="true"
+                />
+                <span className="font-semibold text-amber-700">
+                  {liveCount} open job{liveCount === 1 ? '' : 's'} now
+                </span>
+              </p>
+            ) : null}
 
             <button
               type="button"
@@ -353,6 +367,27 @@ export default function RoleCard({
               aria-hidden="true"
             />
           )}
+
+          {/* Phase 4 — live-hiring indicator. Small amber dot on the upper-right
+              of the node when this role has open jobs in the current region.
+              Count appears in the hover tooltip + role detail modal — never
+              eats into the title text below. */}
+          {!showActive && liveCount && liveCount > 0 ? (
+            <span
+              className="absolute rounded-full pointer-events-none"
+              style={{
+                top:             -2,
+                right:           -2,
+                width:           10,
+                height:          10,
+                backgroundColor: '#f59e0b',           // amber-500
+                boxShadow:       '0 0 0 2px #ffffff', // tight white ring so the dot reads against any tint
+                zIndex:          7,
+              }}
+              aria-label={`${liveCount} open job${liveCount === 1 ? '' : 's'}`}
+              title={`${liveCount} open job${liveCount === 1 ? '' : 's'}`}
+            />
+          ) : null}
         </span>
 
         {/* Label area — three modes:
@@ -383,14 +418,8 @@ export default function RoleCard({
           </span>
         )}
 
-        {/* Phase 2.4 skeleton — live open-jobs count from the pipeline. Plain
-            text label below the title when count > 0. UI polish (amber badge,
-            dot indicator) deferred to a later phase. */}
-        {!showActive && liveCount && liveCount > 0 ? (
-          <span className="text-[10px] text-gray-600 leading-none">
-            +{liveCount} open job{liveCount === 1 ? '' : 's'}
-          </span>
-        ) : null}
+        {/* Phase 4 — count moved off the card (was crowding the title) into
+            the upper-right amber dot + hover tooltip + role detail modal. */}
       </button>
     </div>
   );

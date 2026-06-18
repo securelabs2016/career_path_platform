@@ -5,6 +5,7 @@ import PrintButton from './PrintButton';
 import type { IndustryData, Role } from '@/lib/types';
 import { computeSkillGap, getSeniorityDelta } from '@/lib/role-utils';
 import { CLUSTER_COLORS, DEGREE_BADGES, formatSalary } from '@/components/CareerMap/constants';
+import { getSupabaseAdmin } from '@/lib/supabase';
 
 import amData    from '@/data/additive-manufacturing.json';
 import semiData  from '@/data/semiconductors.json';
@@ -51,6 +52,43 @@ function DeltaBadge({ delta }: { delta: 'up' | 'lateral' | 'down' }) {
   );
 }
 
+/**
+ * Server-side fetch of live US hiring data for this role.
+ * Mirrors the same title-keyed lookup the /api/jobs/counts route uses,
+ * so the role page stays consistent with the map + modal.
+ * Returns null when Supabase isn't reachable (graceful no-op).
+ */
+async function fetchLiveHiring(industrySlug: string, roleTitle: string):
+  Promise<{ count: number; companies: string[] } | null> {
+  const supabase = getSupabaseAdmin();
+  if (!supabase) return null;
+  try {
+    const { data: industry } = await supabase
+      .from('industries')
+      .select('id')
+      .eq('slug', industrySlug)
+      .single();
+    if (!industry?.id) return null;
+
+    // Case-insensitive title lookup — DB and JSON titles are kept in sync but
+    // ilike protects us against trailing-space / casing drift.
+    const { data: row } = await supabase
+      .from('canonical_roles')
+      .select('open_jobs_count, hiring_companies')
+      .eq('industry_id', industry.id)
+      .ilike('title', roleTitle.trim())
+      .maybeSingle();
+    if (!row) return null;
+    return {
+      count:     row.open_jobs_count ?? 0,
+      companies: row.hiring_companies ?? [],
+    };
+  } catch {
+    return null;
+  }
+}
+
+
 export default async function RoleDetailPage({ params }: Props) {
   const { industry: slug, id } = await params;
   const data = INDUSTRY_MAP[slug];
@@ -62,6 +100,10 @@ export default async function RoleDetailPage({ params }: Props) {
   const roleById       = new Map(data.roles.map(r => [r.id, r]));
   const clusterColor   = CLUSTER_COLORS[role.cluster];
   const degreeBadge    = DEGREE_BADGES[role.degree_required];
+
+  // Phase 4 — server-side live hiring data. Server-rendered so the section
+  // is present in the initial HTML (good for PDF export + print).
+  const liveHiring = await fetchLiveHiring(slug, role.title);
 
   // ── Adjacent roles ─────────────────────────────────────────────────────────
   const adjacentRoles = role.adjacent_role_ids
@@ -389,6 +431,46 @@ export default async function RoleDetailPage({ params }: Props) {
 
           {/* Right sidebar (1/3) */}
           <div className="flex flex-col gap-4">
+
+            {/* Phase 4 — Currently hiring (US, server-rendered). Only shown
+                when at least one approved US match exists. Companies sorted by
+                whatever order the matcher appended them. */}
+            {liveHiring && liveHiring.count > 0 && (
+              <div className="bg-white rounded-2xl border border-amber-200 p-5 shadow-sm">
+                <div className="flex items-center gap-2 mb-3">
+                  <span
+                    className="inline-block w-2 h-2 rounded-full"
+                    style={{ backgroundColor: '#f59e0b' }}
+                    aria-hidden="true"
+                  />
+                  <h3 className="text-sm font-bold text-gray-900">
+                    Currently hiring ({liveHiring.count})
+                  </h3>
+                </div>
+                {liveHiring.companies.length > 0 ? (
+                  <ul className="flex flex-col gap-1.5">
+                    {liveHiring.companies.map(company => (
+                      <li key={company}
+                        className="text-xs text-gray-700 flex items-center gap-2">
+                        <span
+                          className="inline-block w-1 h-1 rounded-full bg-gray-400"
+                          aria-hidden="true"
+                        />
+                        <span>{company}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-xs text-gray-500 italic leading-snug">
+                    {liveHiring.count} live opening{liveHiring.count === 1 ? '' : 's'}
+                    {' '}matched — company list updates on next pipeline run.
+                  </p>
+                )}
+                <p className="text-[10px] text-gray-400 mt-3 leading-relaxed">
+                  US-located jobs only. Updated weekly from our scrapers.
+                </p>
+              </div>
+            )}
 
             {/* Quick facts — icon-led summary */}
             <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
