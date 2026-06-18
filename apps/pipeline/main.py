@@ -41,6 +41,11 @@ logging.basicConfig(
     format="%(asctime)s %(levelname)s %(name)s — %(message)s",
     datefmt="%H:%M:%S",
 )
+# Phase 4 — silence per-request HTTP logging from httpx / httpcore so the
+# pipeline log stays readable. Every Supabase write used to emit an INFO line,
+# burying the actual pipeline progress messages.
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("httpcore").setLevel(logging.WARNING)
 log = logging.getLogger("pipeline")
 
 INDUSTRIES = ["additive-manufacturing", "semiconductors", "space"]

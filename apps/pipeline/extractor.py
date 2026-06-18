@@ -154,18 +154,20 @@ def _extract_with_gemini(raw_job: dict, max_retries: int = 3) -> dict | None:
     Gemini fallback — only used if GEMINI_API_KEY is set AND Gemini isn't
     already marked daily-exhausted by the circuit breaker.
 
-    Model note: pinned to gemini-2.0-flash because gemini-2.5-flash dropped to
+    Model pinned to gemini-2.0-flash because gemini-2.5-flash dropped to
     20 req/day on the free tier (June 2026). 2.0-flash keeps the 1500/day free
     quota and is more than capable of extraction.
+
+    Phase 4 — migrated from the deprecated `google.generativeai` package to
+    `google.genai` (Google ended support for the legacy SDK in 2026).
     """
     if not provider_state.state().can_try("gemini"):
         return None
     try:
-        import google.generativeai as genai
-        genai.configure(api_key=os.environ["GEMINI_API_KEY"])
-        model = genai.GenerativeModel("gemini-2.0-flash")
+        from google import genai
+        client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
     except ImportError:
-        log.warning("google-generativeai package not installed; Gemini fallback unavailable.")
+        log.warning("google-genai package not installed; Gemini fallback unavailable.")
         return None
 
     prompt = EXTRACTION_PROMPT.format(
@@ -176,12 +178,16 @@ def _extract_with_gemini(raw_job: dict, max_retries: int = 3) -> dict | None:
 
     for attempt in range(max_retries):
         try:
-            response = model.generate_content(prompt)
-            parsed = _parse_json_response(response.text)
+            response = client.models.generate_content(
+                model="gemini-2.0-flash",
+                contents=prompt,
+            )
+            text = getattr(response, "text", "") or ""
+            parsed = _parse_json_response(text)
             if parsed is None:
                 log.warning(
                     f"Gemini returned unparseable response (attempt {attempt+1}): "
-                    f"{(response.text or '')[:200]!r}"
+                    f"{text[:200]!r}"
                 )
                 if attempt < max_retries - 1:
                     time.sleep(2)

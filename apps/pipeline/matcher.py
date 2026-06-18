@@ -149,24 +149,29 @@ def _judge_with_gemini(prompt: str, max_retries: int = 3) -> dict | None:
 
     Model pinned to gemini-2.0-flash (1500/day free) — gemini-2.5-flash dropped
     to 20/day on the free tier in June 2026 which makes it unusable for a
-    real backlog."""
+    real backlog.
+
+    Phase 4 — migrated from deprecated `google.generativeai` to `google.genai`."""
     if not provider_state.state().can_try("gemini"):
         return None
     try:
-        import google.generativeai as genai
-        genai.configure(api_key=os.environ["GEMINI_API_KEY"])
-        model = genai.GenerativeModel("gemini-2.0-flash")
+        from google import genai
+        client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
     except ImportError:
         return None
 
     for attempt in range(max_retries):
         try:
-            response = model.generate_content(prompt)
-            parsed = _parse_judgment(response.text)
+            response = client.models.generate_content(
+                model="gemini-2.0-flash",
+                contents=prompt,
+            )
+            text = getattr(response, "text", "") or ""
+            parsed = _parse_judgment(text)
             if parsed is None and attempt < max_retries - 1:
                 log.warning(
                     f"Gemini judgment unparseable (attempt {attempt+1}): "
-                    f"{(response.text or '')[:200]!r}"
+                    f"{text[:200]!r}"
                 )
                 time.sleep(2)
                 continue
