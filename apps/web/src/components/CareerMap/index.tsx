@@ -11,6 +11,7 @@ import { roleMatchesFilter } from '@/lib/role-utils';
 import { CLUSTER_COLORS } from './constants';
 import FilterBar from './FilterBar';
 import LocationFilter, { type RegionFilter } from './LocationFilter';
+import HiringFilter from './HiringFilter';
 import MobileList from './MobileList';
 import RoleCard from './RoleCard';
 import PathwayLines from './PathwayLines';
@@ -65,6 +66,19 @@ export default function CareerMap({ data }: Props) {
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   }, [searchParams, router, pathname]);
 
+  // Phase 3.10 — "Show only hiring" toggle. Hydrated from URL ?hiring=1 on first render.
+  const [hiringOnly, setHiringOnly] = useState<boolean>(
+    () => searchParams.get('hiring') === '1',
+  );
+
+  const handleHiringChange = useCallback((next: boolean) => {
+    setHiringOnly(next);
+    const params = new URLSearchParams(searchParams.toString());
+    if (next) params.set('hiring', '1');
+    else      params.delete('hiring');
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  }, [searchParams, router, pathname]);
+
   // Phase 2.4 + 3.4 — fetch live job counts whenever industry or region changes.
   // Degrades silently to empty {} if the DB isn't reachable; UI still works.
   useEffect(() => {
@@ -81,6 +95,17 @@ export default function CareerMap({ data }: Props) {
     (title: string) => liveCounts[title.toLowerCase().trim()],
     [liveCounts],
   );
+
+  // Phase 3.10 — for the "Show only hiring" empty-state banner.
+  // True when the toggle is on AND no rendered role has a live count in the
+  // current region. Used to show "No live openings in this region — try Worldwide".
+  const anyRoleHiring = useMemo(() => {
+    for (const role of roles) {
+      const lc = getLiveCount(role.title);
+      if (lc && lc.count > 0) return true;
+    }
+    return false;
+  }, [roles, getLiveCount]);
 
   const layout = useMemo(() => computeLayout(roles), [roles]);
   const { positions, totalWidth, totalHeight, rowStartY, rowBandHeight, colW: COL_W } = layout;
@@ -221,8 +246,31 @@ export default function CareerMap({ data }: Props) {
         <div className="md:flex-shrink-0 md:w-[400px] flex flex-col gap-2 items-end">
           <FilterBar searchQuery={searchQuery} onSearch={setSearchQuery} />
           <LocationFilter value={region} onChange={handleRegionChange} />
+          <HiringFilter   value={hiringOnly} onChange={handleHiringChange} />
         </div>
       </div>
+
+      {/* Phase 3.10 — empty-state banner for the "Show only hiring" filter. */}
+      {hiringOnly && !anyRoleHiring && (
+        <div className="rounded border border-amber-200 bg-amber-50 text-amber-900 text-xs px-3 py-2"
+             role="status" aria-live="polite">
+          No live openings in this region.
+          {region === 'US' && (
+            <>
+              {' '}
+              <button
+                type="button"
+                onClick={() => handleRegionChange('worldwide')}
+                className="underline font-semibold hover:text-amber-700
+                           focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded"
+              >
+                Switch to Worldwide
+              </button>
+              {' '}to see all open jobs.
+            </>
+          )}
+        </div>
+      )}
 
       {/* Control row: learning-paths anchor (left) · jobs-selected counter (center) · CLEAR MAP (right) */}
       <div className="flex items-center justify-between gap-3 flex-wrap text-sm">
@@ -474,6 +522,7 @@ export default function CareerMap({ data }: Props) {
                   isRecommended={false}
                   industryColor={industry.color}
                   liveCount={getLiveCount(role.title)?.count ?? 0}
+                  hiringOnly={hiringOnly}
                   onClick={handleRoleClick}
                   onDoubleClick={handleRoleDoubleClick}
                   onShowDetails={setDetailRoleId}

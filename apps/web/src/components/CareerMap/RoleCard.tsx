@@ -35,6 +35,8 @@ interface Props {
   industryColor:  string;
   /** Live open-jobs count from the pipeline (Phase 2.4). 0 = hide badge. */
   liveCount?:     number;
+  /** Phase 3.10 — when true, this role is dimmed (50%) if liveCount == 0. */
+  hiringOnly?:    boolean;
   onClick:        (id: string) => void;
   onDoubleClick?: (id: string) => void;
   onShowDetails:  (id: string) => void;
@@ -125,7 +127,8 @@ function FourArrows({ size, zone }: { size: number; zone: ArrowZone }) {
 }
 
 export default function RoleCard({
-  role, position, isSelected, isLastInPath, isDimmed, isAdjacent, liveCount, onClick, onDoubleClick, onShowDetails,
+  role, position, isSelected, isLastInPath, isDimmed, isAdjacent, liveCount, hiringOnly,
+  onClick, onDoubleClick, onShowDetails,
 }: Props) {
   const [hovered, setHovered] = useState(false);
   const [zone, setZone] = useState<ArrowZone>('neutral');
@@ -191,7 +194,12 @@ export default function RoleCard({
   };
 
   // Softer dim than before — reference barely fades non-related roles.
-  const opacityClass = isDimmed ? 'opacity-60' : 'opacity-100';
+  // Phase 3.10 — "Show only hiring" overrides the path-based dim with a slightly
+  // stronger 50% fade for roles that have no live open jobs in the current region.
+  const hiddenForHiring = !!hiringOnly && !(liveCount && liveCount > 0);
+  const opacityClass = hiddenForHiring
+    ? 'opacity-50'
+    : (isDimmed ? 'opacity-60' : 'opacity-100');
 
   // Committed dot — same size as the resting circle (so X shrinks back to its
   // original dimension when Y is clicked, not smaller).
