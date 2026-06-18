@@ -1,13 +1,14 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import type { Role } from '@/lib/types';
+import RoleDetailModal from '@/components/CareerMap/RoleDetailModal';
 
 /**
  * Phase 5 — Openings page client.
- * Renders the country dropdown + filtered job list. All filtering happens in
- * the browser because per-role job counts are small (well under 100 even at
- * full scale), so a single server fetch + JS filter is simpler than a paged
- * API.
+ * Renders the country dropdown + filtered job list, plus a "Role details"
+ * button that opens the same modal that appears on the map. All filtering
+ * happens in the browser because per-role job counts are small.
  */
 
 export interface OpeningJob {
@@ -25,6 +26,7 @@ export interface OpeningJob {
 interface Props {
   openings:  OpeningJob[];
   roleTitle: string;
+  role:      Role;
 }
 
 // Display label for each ISO-2 we know about. Anything else falls back to the
@@ -54,23 +56,9 @@ const SOURCE_BADGE: Record<string, { label: string; cls: string }> = {
   workday:    { label: 'Workday',    cls: 'bg-blue-50    text-blue-700    ring-blue-100' },
 };
 
-function timeAgo(iso: string): string {
-  if (!iso) return '';
-  const then = new Date(iso).getTime();
-  if (Number.isNaN(then)) return '';
-  const ms   = Date.now() - then;
-  const days = Math.floor(ms / 86_400_000);
-  if (days <= 0)  return 'today';
-  if (days === 1) return 'yesterday';
-  if (days <  7)  return `${days} days ago`;
-  if (days < 14)  return '1 week ago';
-  if (days < 30)  return `${Math.floor(days / 7)} weeks ago`;
-  if (days < 60)  return '1 month ago';
-  return `${Math.floor(days / 30)} months ago`;
-}
 
-
-export default function OpeningsPageClient({ openings, roleTitle }: Props) {
+export default function OpeningsPageClient({ openings, roleTitle, role }: Props) {
+  const [detailsOpen, setDetailsOpen] = useState(false);
   // Build the country options dynamically — only show countries that actually
   // have postings for this role. Sorted with US first, then alpha.
   const countryOptions = useMemo(() => {
@@ -104,18 +92,36 @@ export default function OpeningsPageClient({ openings, roleTitle }: Props) {
     return openings.filter(o => o.country === country);
   }, [openings, country]);
 
+  // Shared role-details button — same UX on full state and empty state
+  const roleDetailsButton = (
+    <button
+      type="button"
+      onClick={() => setDetailsOpen(true)}
+      className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide
+                 px-3 py-1.5 rounded-lg border border-gray-300 bg-white text-gray-700
+                 hover:bg-gray-50 transition-colors
+                 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+    >
+      Role details
+    </button>
+  );
+
   // Empty state — no openings at all for this role yet
   if (openings.length === 0) {
     return (
-      <div className="rounded-2xl border border-gray-200 bg-white p-10 text-center shadow-sm">
-        <p className="text-gray-700 font-semibold mb-1">
-          No openings found for {roleTitle} yet.
-        </p>
-        <p className="text-sm text-gray-500 leading-relaxed max-w-md mx-auto">
-          Our pipeline runs weekly. New matches will appear here as companies post
-          jobs and the AI approves the matches.
-        </p>
-      </div>
+      <>
+        <div className="flex justify-end mb-3">{roleDetailsButton}</div>
+        <div className="rounded-2xl border border-gray-200 bg-white p-10 text-center shadow-sm">
+          <p className="text-gray-700 font-semibold mb-1">
+            No openings found for {roleTitle} yet.
+          </p>
+          <p className="text-sm text-gray-500 leading-relaxed max-w-md mx-auto">
+            Our pipeline runs weekly. New matches will appear here as companies post
+            jobs and the AI approves the matches.
+          </p>
+        </div>
+        <RoleDetailModal role={detailsOpen ? role : null} onClose={() => setDetailsOpen(false)} />
+      </>
     );
   }
 
@@ -127,25 +133,28 @@ export default function OpeningsPageClient({ openings, roleTitle }: Props) {
           <span className="font-semibold text-gray-900">{filtered.length}</span>
           {' '}of {openings.length} live opening{openings.length === 1 ? '' : 's'} shown
         </p>
-        {countryOptions.length > 1 && (
-          <label className="inline-flex items-center gap-2 text-xs text-gray-700">
-            <span className="font-semibold uppercase tracking-wide">Country:</span>
-            <select
-              value={country}
-              onChange={e => setCountry(e.target.value)}
-              className="rounded border border-gray-300 bg-white px-2 py-1.5 text-sm
-                         focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-              aria-label="Filter openings by country"
-            >
-              <option value="all">All countries ({openings.length})</option>
-              {countryOptions.map(opt => (
-                <option key={opt.code} value={opt.code}>
-                  {opt.label} ({opt.count})
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
+        <div className="flex items-center gap-3">
+          {countryOptions.length > 1 && (
+            <label className="inline-flex items-center gap-2 text-xs text-gray-700">
+              <span className="font-semibold uppercase tracking-wide">Country:</span>
+              <select
+                value={country}
+                onChange={e => setCountry(e.target.value)}
+                className="rounded border border-gray-300 bg-white px-2 py-1.5 text-sm
+                           focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                aria-label="Filter openings by country"
+              >
+                <option value="all">All countries ({openings.length})</option>
+                {countryOptions.map(opt => (
+                  <option key={opt.code} value={opt.code}>
+                    {opt.label} ({opt.count})
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+          {roleDetailsButton}
+        </div>
       </div>
 
       {/* Empty after filter */}
@@ -183,11 +192,6 @@ export default function OpeningsPageClient({ openings, roleTitle }: Props) {
                           className={`text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full ring-1 ${badge.cls}`}
                         >
                           {badge.label}
-                        </span>
-                      )}
-                      {job.scrapedAt && (
-                        <span className="text-[11px] text-gray-400">
-                          · scraped {timeAgo(job.scrapedAt)}
                         </span>
                       )}
                     </div>
@@ -230,6 +234,8 @@ export default function OpeningsPageClient({ openings, roleTitle }: Props) {
         URLs are unaltered — clicking &quot;Apply at source&quot; opens the company&apos;s
         own posting in a new tab.
       </p>
+
+      <RoleDetailModal role={detailsOpen ? role : null} onClose={() => setDetailsOpen(false)} />
     </div>
   );
 }

@@ -142,7 +142,7 @@ export default async function OpeningsPage({ params }: Props) {
         <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">
           Open jobs — {role.title}
         </h1>
-        <OpeningsPageClient openings={openings} roleTitle={role.title} />
+        <OpeningsPageClient openings={openings} roleTitle={role.title} role={role} />
       </main>
     </div>
   );
