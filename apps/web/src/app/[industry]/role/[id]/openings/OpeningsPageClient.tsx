@@ -195,16 +195,21 @@ export default function OpeningsPageClient({ openings, roleTitle, role }: Props)
                         </span>
                       )}
                     </div>
-                    <p className="text-[15px] font-semibold text-gray-900 leading-snug mb-1">
+                    <p className="text-[15px] font-semibold text-gray-900 leading-snug mb-1.5">
                       {job.title}
                     </p>
-                    {job.location && (
-                      <p className="text-xs text-gray-500">
-                        {job.location}
-                        {' · '}
+                    <p className="text-sm text-gray-600 flex items-center gap-1.5">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                           stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                           className="flex-shrink-0 opacity-70" aria-hidden="true">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                        <circle cx="12" cy="10" r="3" />
+                      </svg>
+                      <span>
+                        {job.location ? `${job.location} · ` : ''}
                         {COUNTRY_LABEL[job.country] ?? job.country}
-                      </p>
-                    )}
+                      </span>
+                    </p>
                   </div>
                   <a
                     href={job.url}
@@ -228,12 +233,6 @@ export default function OpeningsPageClient({ openings, roleTitle, role }: Props)
           })}
         </ul>
       )}
-
-      <p className="text-[11px] text-gray-400 mt-6 leading-relaxed">
-        Postings are scraped from each company&apos;s public job board API. Source
-        URLs are unaltered — clicking &quot;Apply at source&quot; opens the company&apos;s
-        own posting in a new tab.
-      </p>
 
       <RoleDetailModal role={detailsOpen ? role : null} onClose={() => setDetailsOpen(false)} />
     </div>
