@@ -21,6 +21,8 @@ import logging
 from anthropic import Anthropic, RateLimitError as AnthropicRateLimit
 from supabase import Client
 
+import provider_state
+
 # Gemini free tier is 15 requests/min. Pacing 4s ≈ 15 RPM exactly.
 # Slightly aggressive at 3s — relies on retry-with-backoff for the occasional 429.
 GEMINI_PACE_SECONDS = 3.0
@@ -149,20 +151,18 @@ def _is_rate_limit_error(err: Exception) -> bool:
 
 def _extract_with_gemini(raw_job: dict, max_retries: int = 3) -> dict | None:
     """
-    Gemini fallback — only used if GEMINI_API_KEY is set.
-    Retries on rate-limit errors with exponential backoff so we don't silently
-    lose every other job once we hit the free tier's 15 RPM ceiling.
+    Gemini fallback — only used if GEMINI_API_KEY is set AND Gemini isn't
+    already marked daily-exhausted by the circuit breaker.
 
     Model note: pinned to gemini-2.0-flash because gemini-2.5-flash dropped to
     20 req/day on the free tier (June 2026). 2.0-flash keeps the 1500/day free
     quota and is more than capable of extraction.
     """
-    gemini_key = os.environ.get("GEMINI_API_KEY")
-    if not gemini_key:
+    if not provider_state.state().can_try("gemini"):
         return None
     try:
         import google.generativeai as genai
-        genai.configure(api_key=gemini_key)
+        genai.configure(api_key=os.environ["GEMINI_API_KEY"])
         model = genai.GenerativeModel("gemini-2.0-flash")
     except ImportError:
         log.warning("google-generativeai package not installed; Gemini fallback unavailable.")
@@ -179,7 +179,6 @@ def _extract_with_gemini(raw_job: dict, max_retries: int = 3) -> dict | None:
             response = model.generate_content(prompt)
             parsed = _parse_json_response(response.text)
             if parsed is None:
-                # Log first 200 chars so the next run's log shows what failed
                 log.warning(
                     f"Gemini returned unparseable response (attempt {attempt+1}): "
                     f"{(response.text or '')[:200]!r}"
@@ -189,28 +188,31 @@ def _extract_with_gemini(raw_job: dict, max_retries: int = 3) -> dict | None:
                     continue
             return parsed
         except Exception as e:
-            if _is_rate_limit_error(e) and attempt < max_retries - 1:
+            kind = provider_state.classify_rate_limit(e)
+            if kind == "daily":
+                # Don't retry — Gemini won't come back until tomorrow
+                provider_state.state().mark_dead("gemini", str(e)[:200])
+                return None
+            if kind == "per_minute" and attempt < max_retries - 1:
                 wait = 5 * (2 ** attempt)  # 5s, 10s, 20s
-                log.warning(f"Gemini rate-limited (attempt {attempt+1}), waiting {wait}s…")
+                log.warning(f"Gemini per-minute rate limit (attempt {attempt+1}), waiting {wait}s…")
                 time.sleep(wait)
                 continue
-            log.warning(f"Gemini extraction failed (attempt {attempt+1}): {e}")
+            log.warning(f"Gemini extraction failed (attempt {attempt+1}): {str(e)[:200]}")
             return None
     return None
 
 
 def _extract_with_groq(raw_job: dict, max_retries: int = 3) -> dict | None:
     """
-    Groq fallback — uses Llama 3.3 70B via Groq's free inference API.
-    Free tier (June 2026): ~14,400 req/day, far more generous than Gemini.
-    Same retry-on-rate-limit pattern as the Gemini path.
+    Groq Llama 3.3 70B. Free tier: 100K tokens/day across all calls.
+    Circuit breaker skips this entirely once the daily quota is marked dead.
     """
-    groq_key = os.environ.get("GROQ_API_KEY")
-    if not groq_key:
+    if not provider_state.state().can_try("groq"):
         return None
     try:
         from groq import Groq
-        client = Groq(api_key=groq_key)
+        client = Groq(api_key=os.environ["GROQ_API_KEY"])
     except ImportError:
         log.warning("groq package not installed; Groq fallback unavailable.")
         return None
@@ -239,12 +241,16 @@ def _extract_with_groq(raw_job: dict, max_retries: int = 3) -> dict | None:
                 continue
             return parsed
         except Exception as e:
-            if _is_rate_limit_error(e) and attempt < max_retries - 1:
-                wait = 5 * (2 ** attempt)  # 5s, 10s, 20s
-                log.warning(f"Groq rate-limited (attempt {attempt+1}), waiting {wait}s…")
+            kind = provider_state.classify_rate_limit(e)
+            if kind == "daily":
+                provider_state.state().mark_dead("groq", str(e)[:200])
+                return None
+            if kind == "per_minute" and attempt < max_retries - 1:
+                wait = 5 * (2 ** attempt)
+                log.warning(f"Groq per-minute rate limit (attempt {attempt+1}), waiting {wait}s…")
                 time.sleep(wait)
                 continue
-            log.warning(f"Groq extraction failed (attempt {attempt+1}): {e}")
+            log.warning(f"Groq extraction failed (attempt {attempt+1}): {str(e)[:200]}")
             return None
     return None
 
@@ -273,15 +279,17 @@ def extract_job(raw_job: dict, client: Anthropic | None, max_retries: int = 3) -
                 time.sleep(2)
         log.info(f"Claude exhausted for job {raw_job.get('id')} — falling back")
 
-    # 2. Groq — best free-tier throughput (14k/day)
-    if os.environ.get("GROQ_API_KEY"):
+    # 2. Groq — generous free tier but daily token cap. Skip if circuit open.
+    if provider_state.state().can_try("groq"):
         result = _extract_with_groq(raw_job)
         if result:
             return result
-        log.info(f"Groq returned no result for job {raw_job.get('id')} — falling back to Gemini")
 
-    # 3. Gemini — last resort
-    return _extract_with_gemini(raw_job)
+    # 3. Gemini — last resort. Skip if circuit open.
+    if provider_state.state().can_try("gemini"):
+        return _extract_with_gemini(raw_job)
+
+    return None
 
 
 def run_extractor(supabase: Client, anthropic: Anthropic | None, batch_size: int = 50) -> int:
@@ -329,6 +337,18 @@ def run_extractor(supabase: Client, anthropic: Anthropic | None, batch_size: int
 
     extracted_count = 0
     for i, raw in enumerate(to_process):
+        # Phase 3.9 — bail out cleanly when both free providers are out for the day.
+        # Without this, the loop would keep firing dead-provider calls until the
+        # GitHub Actions timeout kills the run.
+        if anthropic is None and provider_state.state().all_free_providers_dead():
+            log.warning(
+                f"All free AI providers exhausted for the day. "
+                f"Stopping extractor early — processed {extracted_count}/{i}. "
+                f"Re-trigger after midnight Pacific for the next quota window. "
+                f"State: {provider_state.state().summary()}"
+            )
+            break
+
         if needs_pace and i > 0:
             time.sleep(GEMINI_PACE_SECONDS)
 

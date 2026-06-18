@@ -22,6 +22,8 @@ import logging
 from anthropic import Anthropic, RateLimitError as AnthropicRateLimit
 from supabase import Client
 
+import provider_state
+
 log = logging.getLogger(__name__)
 
 # Free-tier Gemini pacing — keep matcher under 15 RPM when Claude is absent.
@@ -143,19 +145,16 @@ def _is_rate_limit_error(err: Exception) -> bool:
 
 
 def _judge_with_gemini(prompt: str, max_retries: int = 3) -> dict | None:
-    """Gemini fallback — only used if GEMINI_API_KEY is set.
-    Retries on rate-limit errors so we don't silently drop every other judgment
-    once we hit the free tier's 15 RPM ceiling.
+    """Gemini judgment — skipped if circuit breaker has flipped Gemini dead.
 
     Model pinned to gemini-2.0-flash (1500/day free) — gemini-2.5-flash dropped
     to 20/day on the free tier in June 2026 which makes it unusable for a
     real backlog."""
-    gemini_key = os.environ.get("GEMINI_API_KEY")
-    if not gemini_key:
+    if not provider_state.state().can_try("gemini"):
         return None
     try:
         import google.generativeai as genai
-        genai.configure(api_key=gemini_key)
+        genai.configure(api_key=os.environ["GEMINI_API_KEY"])
         model = genai.GenerativeModel("gemini-2.0-flash")
     except ImportError:
         return None
@@ -173,24 +172,27 @@ def _judge_with_gemini(prompt: str, max_retries: int = 3) -> dict | None:
                 continue
             return parsed
         except Exception as e:
-            if _is_rate_limit_error(e) and attempt < max_retries - 1:
+            kind = provider_state.classify_rate_limit(e)
+            if kind == "daily":
+                provider_state.state().mark_dead("gemini", str(e)[:200])
+                return None
+            if kind == "per_minute" and attempt < max_retries - 1:
                 wait = 5 * (2 ** attempt)
-                log.warning(f"Gemini rate-limited (attempt {attempt+1}), waiting {wait}s…")
+                log.warning(f"Gemini per-minute rate limit (attempt {attempt+1}), waiting {wait}s…")
                 time.sleep(wait)
                 continue
-            log.warning(f"Gemini judgment failed (attempt {attempt+1}): {e}")
+            log.warning(f"Gemini judgment failed (attempt {attempt+1}): {str(e)[:200]}")
             return None
     return None
 
 
 def _judge_with_groq(prompt: str, max_retries: int = 3) -> dict | None:
-    """Groq fallback — Llama 3.3 70B. Free tier ~14k/day, much better than Gemini free."""
-    groq_key = os.environ.get("GROQ_API_KEY")
-    if not groq_key:
+    """Groq Llama 3.3 70B judgment. Skipped if circuit breaker flipped Groq dead."""
+    if not provider_state.state().can_try("groq"):
         return None
     try:
         from groq import Groq
-        client = Groq(api_key=groq_key)
+        client = Groq(api_key=os.environ["GROQ_API_KEY"])
     except ImportError:
         return None
 
@@ -212,12 +214,16 @@ def _judge_with_groq(prompt: str, max_retries: int = 3) -> dict | None:
                 continue
             return parsed
         except Exception as e:
-            if _is_rate_limit_error(e) and attempt < max_retries - 1:
+            kind = provider_state.classify_rate_limit(e)
+            if kind == "daily":
+                provider_state.state().mark_dead("groq", str(e)[:200])
+                return None
+            if kind == "per_minute" and attempt < max_retries - 1:
                 wait = 5 * (2 ** attempt)
-                log.warning(f"Groq rate-limited (attempt {attempt+1}), waiting {wait}s…")
+                log.warning(f"Groq per-minute rate limit (attempt {attempt+1}), waiting {wait}s…")
                 time.sleep(wait)
                 continue
-            log.warning(f"Groq judgment failed (attempt {attempt+1}): {e}")
+            log.warning(f"Groq judgment failed (attempt {attempt+1}): {str(e)[:200]}")
             return None
     return None
 
@@ -261,15 +267,17 @@ def claude_judge(
                 time.sleep(2)
         log.info("Claude exhausted — falling back to Groq")
 
-    # 2. Groq — best free-tier throughput
-    if os.environ.get("GROQ_API_KEY"):
+    # 2. Groq — best free-tier throughput. Circuit-breaker aware.
+    if provider_state.state().can_try("groq"):
         result = _judge_with_groq(prompt)
         if result:
             return result
-        log.info("Groq returned no result — falling back to Gemini")
 
-    # 3. Gemini — last resort
-    return _judge_with_gemini(prompt)
+    # 3. Gemini — last resort. Circuit-breaker aware.
+    if provider_state.state().can_try("gemini"):
+        return _judge_with_gemini(prompt)
+
+    return None
 
 
 def route_confidence(confidence: float) -> str:
@@ -350,6 +358,15 @@ def run_matcher(
     needs_pace = not has_claude and not has_groq
 
     for i, job in enumerate(all_extracted):
+        # Phase 3.9 — bail out cleanly when both free providers are out for the day.
+        if anthropic is None and provider_state.state().all_free_providers_dead():
+            log.warning(
+                f"All free AI providers exhausted for the day. "
+                f"Stopping matcher early — processed {sum(stats.values())}/{i} for {industry_slug}. "
+                f"State: {provider_state.state().summary()}"
+            )
+            break
+
         # Pace runs only when our primary path is the rate-limited Gemini free tier.
         if needs_pace and i > 0:
             time.sleep(GEMINI_PACE_SECONDS)
