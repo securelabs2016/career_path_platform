@@ -47,7 +47,7 @@ export default function MobileList({ roles, clusters, industrySlug }: Props) {
                 return (
                   <Link
                     key={role.id}
-                    href={`/${industrySlug}/role/${role.id}`}
+                    href={`/${industrySlug}/role/${role.id}/openings`}
                     role="listitem"
                     className="block bg-white border border-gray-200 rounded-xl p-4 shadow-sm
                                hover:shadow-md hover:border-gray-300 transition-all duration-150

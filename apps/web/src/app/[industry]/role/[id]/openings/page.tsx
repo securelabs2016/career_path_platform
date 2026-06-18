@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import type { IndustryData } from '@/lib/types';
-import { CLUSTER_COLORS } from '@/components/CareerMap/constants';
+import type { IndustryData, Role } from '@/lib/types';
+import { getSeniorityDelta } from '@/lib/role-utils';
+import { CLUSTER_COLORS, DEGREE_BADGES, formatSalary } from '@/components/CareerMap/constants';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import OpeningsPageClient, { type OpeningJob } from './OpeningsPageClient';
 
@@ -27,20 +28,27 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const role = data.roles.find(r => r.id === id);
   if (!role) return {};
   return {
-    title:       `Open jobs — ${role.title} | ${data.industry.name}`,
-    description: `Live job openings for ${role.title} in the ${data.industry.name} industry, scraped from public ATS APIs and matched by AI.`,
+    title:       `${role.title} — open jobs | ${data.industry.name}`,
+    description: `${role.description?.slice(0, 160) ?? ''}`,
   };
 }
 
+// ── Small arrow component reused for adjacency display ────────────────────────
+function DeltaBadge({ delta }: { delta: 'up' | 'lateral' | 'down' }) {
+  const map = {
+    up:      { icon: '↑', cls: 'bg-green-100 text-green-700' },
+    lateral: { icon: '→', cls: 'bg-blue-100  text-blue-700'  },
+    down:    { icon: '↓', cls: 'bg-gray-100  text-gray-600'  },
+  };
+  const { icon, cls } = map[delta];
+  return (
+    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${cls}`} aria-label={delta}>
+      {icon}
+    </span>
+  );
+}
 
-/**
- * Server-side fetch — pulls every approved role_match for this canonical role,
- * joined to the raw job posting it came from. We do the join via embedded
- * PostgREST selects, then flatten into a clean array the client can filter
- * and render.
- *
- * Returns [] on any DB error so the page degrades gracefully to "No openings".
- */
+// ── Server-side fetch for the openings list ───────────────────────────────────
 async function fetchOpenings(industrySlug: string, roleTitle: string): Promise<OpeningJob[]> {
   const supabase = getSupabaseAdmin();
   if (!supabase) return [];
@@ -53,8 +61,6 @@ async function fetchOpenings(industrySlug: string, roleTitle: string): Promise<O
       .single();
     if (!industry?.id) return [];
 
-    // Look up the canonical role's DB UUID via case-insensitive title match —
-    // same convention used elsewhere (the seeder writes JSON title → DB UUID).
     const { data: roleRow } = await supabase
       .from('canonical_roles')
       .select('id')
@@ -112,7 +118,6 @@ async function fetchOpenings(industrySlug: string, roleTitle: string): Promise<O
         confidence: typeof m.confidence === 'number' ? m.confidence : null,
       });
     }
-    // Sort newest first
     flattened.sort((a, b) => (b.scrapedAt || '').localeCompare(a.scrapedAt || ''));
     return flattened;
   } catch {
@@ -121,20 +126,60 @@ async function fetchOpenings(industrySlug: string, roleTitle: string): Promise<O
 }
 
 
-export default async function OpeningsPage({ params }: Props) {
+export default async function RolePage({ params }: Props) {
   const { industry: slug, id } = await params;
   const data = INDUSTRY_MAP[slug];
   if (!data) notFound();
+
   const role = data.roles.find(r => r.id === id);
   if (!role) notFound();
 
-  const clusterColor = CLUSTER_COLORS[role.cluster];
-  const bandHex      = clusterColor?.band ?? '#374151';
+  const roleById       = new Map(data.roles.map(r => [r.id, r]));
+  const clusterColor   = CLUSTER_COLORS[role.cluster];
+  const bandHex        = clusterColor?.band ?? '#374151';
+  const degreeBadge    = DEGREE_BADGES[role.degree_required];
 
+  const degreeLabel =
+    role.degree_required === 'hs'        ? 'High School Diploma' :
+    role.degree_required === '2yr'       ? "Associate's Degree"  :
+    role.degree_required === '4yr'       ? "Bachelor's Degree"   :
+    role.degree_required === 'sometimes' ? 'Sometimes Required'  :
+                                           'Graduate Degree';
+
+  // Career transitions — pathways AND adjacency based, splitting by seniority delta.
+  const SENIORITY_RANK: Record<string, number> = { entry: 0, mid: 1, senior: 2, lead: 3 };
+  const myRank = SENIORITY_RANK[role.seniority] ?? 0;
+
+  const precedingIds = new Set<string>();
+  const followingIds = new Set<string>();
+  role.pathway_ids
+    .map(pid => data.pathways.find(p => p.id === pid))
+    .forEach(pw => {
+      if (!pw) return;
+      const idx = pw.role_ids.indexOf(role.id);
+      if (idx > 0)                       precedingIds.add(pw.role_ids[idx - 1]);
+      if (idx < pw.role_ids.length - 1)  followingIds.add(pw.role_ids[idx + 1]);
+    });
+  role.adjacent_role_ids.forEach(aid => {
+    const r = roleById.get(aid);
+    if (!r) return;
+    const theirRank = SENIORITY_RANK[r.seniority] ?? 0;
+    if (theirRank < myRank)      precedingIds.add(aid);
+    else if (theirRank > myRank) followingIds.add(aid);
+  });
+  const precedingRoles = [...precedingIds].map(rid => roleById.get(rid)).filter((r): r is Role => !!r);
+  const followingRoles = [...followingIds].map(rid => roleById.get(rid)).filter((r): r is Role => !!r);
+
+  const adjacentRoles = role.adjacent_role_ids
+    .map(aid => roleById.get(aid))
+    .filter((r): r is Role => r !== undefined);
+
+  // Pipeline-sourced live jobs
   const openings = await fetchOpenings(slug, role.title);
 
   return (
     <div className="min-h-screen bg-gray-50">
+
       {/* Sticky header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-20">
         <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between gap-4">
@@ -149,41 +194,315 @@ export default async function OpeningsPage({ params }: Props) {
             <p className="text-sm font-semibold text-gray-700 truncate">{role.title}</p>
           </div>
           <Link
-            href={`/${slug}/role/${role.id}`}
-            className="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold px-3 py-1.5
-                       rounded-lg text-gray-700 border border-gray-200 hover:bg-gray-50 transition-colors
-                       focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            href={`/${slug}?path=${role.id}`}
+            className="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold px-4 py-2
+                       rounded-xl text-white hover:opacity-90 transition-opacity"
+            style={{ backgroundColor: data.industry.color }}
           >
-            View role details →
+            View on map
           </Link>
         </div>
       </header>
 
       <main className="max-w-5xl mx-auto px-6 py-8">
-        {/* Title block */}
-        <div className="mb-6">
-          <div className="flex items-center gap-2 mb-2">
+
+        {/* Hero card */}
+        <div className="bg-white rounded-2xl border border-gray-200 p-6 md:p-8 mb-6 shadow-sm">
+          <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-3 flex-wrap">
+                <span className={`w-3 h-3 rounded-full ${clusterColor?.dot}`} aria-hidden="true" />
+                <span className="text-sm font-semibold text-gray-500">{role.cluster}</span>
+                <span className="text-gray-300">·</span>
+                <span className="text-sm text-gray-500 capitalize">{role.seniority}-level</span>
+                <span className={`ml-2 text-xs font-semibold px-2 py-0.5 rounded-full ${degreeBadge?.className}`}>
+                  {degreeLabel}
+                </span>
+              </div>
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 leading-tight">
+                {role.title}
+              </h1>
+              <p className="text-gray-600 leading-relaxed text-base max-w-2xl">
+                {role.description}
+              </p>
+            </div>
+
+            {/* Salary card */}
+            <div className="flex-shrink-0">
+              <div
+                className="rounded-2xl p-5 text-center min-w-[160px]"
+                style={{ backgroundColor: `${data.industry.color}12` }}
+              >
+                <p className="text-xs font-semibold uppercase tracking-wide mb-1"
+                   style={{ color: data.industry.color }}>
+                  Salary range
+                </p>
+                <p className="text-2xl font-bold text-gray-900">
+                  ${Math.round(role.salary_min / 1000)}k
+                </p>
+                <p className="text-sm font-semibold text-gray-500">
+                  to ${Math.round(role.salary_max / 1000)}k / yr
+                </p>
+                <p className="text-[11px] text-gray-400 mt-2">US market estimate</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Live openings — prominent placement directly under the hero */}
+        <section
+          className="bg-white rounded-2xl border border-gray-200 p-6 md:p-7 mb-6 shadow-sm"
+          aria-labelledby="openings-heading"
+        >
+          <div className="flex items-center gap-2 mb-1">
             <span
               className="inline-block w-2 h-2 rounded-full"
               style={{ backgroundColor: bandHex }}
               aria-hidden="true"
             />
-            <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-              {role.cluster}
-            </span>
-            <span className="text-gray-300">·</span>
-            <span className="text-xs text-gray-500 capitalize">{role.seniority}-level</span>
+            <h2 id="openings-heading" className="text-base font-bold text-gray-900">
+              Live openings
+            </h2>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-            Open jobs — {role.title}
-          </h1>
-          <p className="text-gray-600 text-sm leading-relaxed max-w-2xl">
-            Live postings scraped from public job boards (Greenhouse, Lever, Workday) and
-            matched against this role by our AI. Click any posting to apply at the source.
+          <p className="text-xs text-gray-500 mb-5 leading-relaxed">
+            Scraped from public job-board APIs (Greenhouse, Lever, Workday) and matched to
+            this role by AI. Click any posting to apply at the company source.
           </p>
-        </div>
+          <OpeningsPageClient openings={openings} roleTitle={role.title} />
+        </section>
 
-        <OpeningsPageClient openings={openings} roleTitle={role.title} />
+        {/* Two-column layout — role context */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+          {/* Left column — skills, certifications, career transitions */}
+          <div className="lg:col-span-2 flex flex-col gap-6">
+
+            {role.skills.length > 0 && (
+              <section
+                className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm"
+                aria-labelledby="skills-heading"
+              >
+                <h2 id="skills-heading" className="text-base font-bold text-gray-900 mb-4">
+                  Key skills ({role.skills.length})
+                </h2>
+                <div className="flex flex-wrap gap-2">
+                  {role.skills.map(skill => (
+                    <span
+                      key={skill}
+                      className="text-sm bg-gray-100 text-gray-700 px-3 py-1.5 rounded-full font-medium"
+                    >
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {role.certifications.length > 0 && (
+              <section
+                className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm"
+                aria-labelledby="certs-heading"
+              >
+                <h2 id="certs-heading" className="text-base font-bold text-gray-900 mb-4">
+                  Certifications
+                </h2>
+                <div className="flex flex-wrap gap-2">
+                  {role.certifications.map(cert => (
+                    <span
+                      key={cert}
+                      className="text-sm bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full font-medium ring-1 ring-blue-100"
+                    >
+                      {cert}
+                    </span>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {(precedingRoles.length > 0 || followingRoles.length > 0) && (
+              <section
+                className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm"
+                aria-labelledby="transitions-heading"
+              >
+                <h2 id="transitions-heading" className="text-base font-bold text-gray-900 mb-5">
+                  Career transitions
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                  {/* Prerequisite roles */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="text-xs font-bold text-gray-700 uppercase tracking-wide">
+                        ← Prerequisite roles
+                      </span>
+                      {precedingRoles.length > 0 && (
+                        <span className="text-[10px] font-semibold text-gray-400">
+                          {precedingRoles.length}
+                        </span>
+                      )}
+                    </div>
+                    {precedingRoles.length > 0 ? (
+                      <div className="flex flex-col gap-2">
+                        {precedingRoles.map(r => (
+                          <Link
+                            key={r.id}
+                            href={`/${slug}/role/${r.id}/openings`}
+                            className="flex items-center gap-2 text-sm bg-gray-50 border border-gray-200
+                                       text-gray-700 px-3 py-2 rounded-xl hover:bg-gray-100 transition-colors
+                                       font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                          >
+                            <DeltaBadge delta={getSeniorityDelta(r, role)} />
+                            <span className="truncate">{r.title}</span>
+                          </Link>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-gray-400 italic">
+                        Entry point — no prerequisite role required.
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Next-step roles */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <span
+                        className="text-xs font-bold uppercase tracking-wide"
+                        style={{ color: data.industry.color }}
+                      >
+                        Next-step roles →
+                      </span>
+                      {followingRoles.length > 0 && (
+                        <span className="text-[10px] font-semibold text-gray-400">
+                          {followingRoles.length}
+                        </span>
+                      )}
+                    </div>
+                    {followingRoles.length > 0 ? (
+                      <div className="flex flex-col gap-2">
+                        {followingRoles.map(r => (
+                          <Link
+                            key={r.id}
+                            href={`/${slug}/role/${r.id}/openings`}
+                            className="flex items-center gap-2 text-sm font-semibold px-3 py-2
+                                       rounded-xl text-white hover:opacity-90 transition-opacity
+                                       focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-blue-500"
+                            style={{ backgroundColor: data.industry.color }}
+                          >
+                            <DeltaBadge delta={getSeniorityDelta(role, r)} />
+                            <span className="truncate">{r.title}</span>
+                          </Link>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-gray-400 italic">
+                        A senior endpoint — explore lateral pathways via the map.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </section>
+            )}
+          </div>
+
+          {/* Right sidebar — quick facts + adjacencies */}
+          <div className="flex flex-col gap-4">
+
+            {/* Quick facts */}
+            <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
+              <h3 className="text-sm font-bold text-gray-900 mb-4">Quick facts</h3>
+              <div className="flex flex-col gap-4">
+
+                {/* Education */}
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                      <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+                      <path d="M6 12v5c3 3 9 3 12 0v-5" />
+                    </svg>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 mb-0.5">
+                      Required education
+                    </p>
+                    <p className="text-sm font-semibold text-gray-900">{degreeLabel}</p>
+                    {role.degree_detail && (
+                      <p className="text-xs text-gray-500 mt-0.5 leading-snug">{role.degree_detail}</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Experience */}
+                {role.experience && (
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                        <rect x="2" y="7" width="20" height="14" rx="2" />
+                        <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
+                      </svg>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 mb-0.5">
+                        Work experience
+                      </p>
+                      <p className="text-sm font-semibold text-gray-900">{role.experience}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Pay */}
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                      <line x1="12" y1="1" x2="12" y2="23" />
+                      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                    </svg>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 mb-0.5">
+                      Pay range
+                    </p>
+                    <p className="text-sm font-semibold text-gray-900">
+                      {role.salary_range || formatSalary(role.salary_min, role.salary_max)}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-0.5">U.S. market estimate</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Adjacent roles */}
+            {adjacentRoles.length > 0 && (
+              <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
+                <h3 className="text-sm font-bold text-gray-900 mb-3">Adjacent roles</h3>
+                <div className="flex flex-col divide-y divide-gray-50">
+                  {adjacentRoles.map(r => {
+                    const delta = getSeniorityDelta(role, r);
+                    return (
+                      <Link
+                        key={r.id}
+                        href={`/${slug}/role/${r.id}/openings`}
+                        className="flex items-center gap-2.5 py-2.5 hover:bg-gray-50 rounded-lg px-1
+                                   transition-colors group focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                      >
+                        <DeltaBadge delta={delta} />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-semibold text-gray-900 group-hover:text-blue-600
+                                        truncate transition-colors">
+                            {r.title}
+                          </p>
+                          <p className="text-[10px] text-gray-400">
+                            {formatSalary(r.salary_min, r.salary_max)}
+                          </p>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </main>
     </div>
   );

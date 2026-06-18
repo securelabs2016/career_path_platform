@@ -38,7 +38,7 @@ function RichText({ text, data }: { text: string; data: IndustryData }) {
             return (
               <Link
                 key={i}
-                href={`/${data.industry.slug}/role/${role.id}`}
+                href={`/${data.industry.slug}/role/${role.id}/openings`}
                 className="font-semibold text-blue-400 hover:text-blue-300 hover:underline"
                 target="_blank"
               >
