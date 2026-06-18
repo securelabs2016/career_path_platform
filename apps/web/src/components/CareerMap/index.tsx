@@ -10,7 +10,6 @@ import {
 import { roleMatchesFilter } from '@/lib/role-utils';
 import { CLUSTER_COLORS } from './constants';
 import FilterBar from './FilterBar';
-import HiringFilter from './HiringFilter';
 import MobileList from './MobileList';
 import RoleCard from './RoleCard';
 import PathwayLines from './PathwayLines';
@@ -49,67 +48,27 @@ export default function CareerMap({ data }: Props) {
   const [saveOpen,      setSaveOpen]      = useState(false);
   const [errorOpen,     setErrorOpen]     = useState(false);
   const [detailRoleId,  setDetailRoleId]  = useState<string | null>(null);
-  // Phase 5 — US counts power the "Show only hiring" filter and the modal's
-  // "Currently hiring" section; worldwide counts power the "View Openings"
-  // button's enabled/disabled state on every role card. Both fetched in parallel.
-  const [liveCounts,     setLiveCounts]     = useState<LiveCounts>({});
-  const [anyCounts,      setAnyCounts]      = useState<LiveCounts>({});
-  const [countsLoaded,   setCountsLoaded]   = useState<boolean>(false);
+  // Phase 5 — worldwide counts drive the Openings button on every role card
+  // AND the modal's hiring CTA. Default-worldwide means we don't need a
+  // separate US-cached fetch anymore — country filtering lives on the
+  // /openings page where the user picks a specific country if they want.
+  const [anyCounts, setAnyCounts] = useState<LiveCounts>({});
 
-  // Phase 3.10 — "Show only hiring" toggle. Hydrated from URL ?hiring=1 on first render.
-  const [hiringOnly, setHiringOnly] = useState<boolean>(
-    () => searchParams.get('hiring') === '1',
-  );
-
-  const handleHiringChange = useCallback((next: boolean) => {
-    setHiringOnly(next);
-    const params = new URLSearchParams(searchParams.toString());
-    if (next) params.set('hiring', '1');
-    else      params.delete('hiring');
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-  }, [searchParams, router, pathname]);
-
-  // Phase 5 — fetch US counts (for hiring filter / modal) AND worldwide counts
-  // (for the View Openings button enabled-state) in parallel. Region dropdown
-  // is gone from the map — country selection now lives on the /openings page.
   useEffect(() => {
     let cancelled = false;
-    setCountsLoaded(false);
-
-    const fetchCounts = (country: 'US' | 'worldwide') =>
-      fetch(`/api/jobs/counts?industry=${encodeURIComponent(industry.slug)}&country=${country}`)
-        .then(r => (r.ok ? r.json() : {}))
-        .catch(() => ({}));
-
-    Promise.all([fetchCounts('US'), fetchCounts('worldwide')]).then(
-      ([us, ww]: [LiveCounts, LiveCounts]) => {
-        if (cancelled) return;
-        setLiveCounts(us || {});
-        setAnyCounts(ww || {});
-        setCountsLoaded(true);
-      },
-    );
+    fetch(`/api/jobs/counts?industry=${encodeURIComponent(industry.slug)}&country=worldwide`)
+      .then(r => (r.ok ? r.json() : {}))
+      .then((data: LiveCounts) => {
+        if (!cancelled) setAnyCounts(data || {});
+      })
+      .catch(() => { /* silent — UI just shows "No openings" buttons */ });
     return () => { cancelled = true; };
   }, [industry.slug]);
 
-  const getLiveCount = useCallback(
-    (title: string) => liveCounts[title.toLowerCase().trim()],
-    [liveCounts],
-  );
   const getAnyCount = useCallback(
     (title: string) => anyCounts[title.toLowerCase().trim()]?.count ?? 0,
     [anyCounts],
   );
-
-  // Phase 3.10 — for the "Show only hiring" empty-state banner.
-  // True when the toggle is on AND no rendered role has a live US count.
-  const anyRoleHiring = useMemo(() => {
-    for (const role of roles) {
-      const lc = getLiveCount(role.title);
-      if (lc && lc.count > 0) return true;
-    }
-    return false;
-  }, [roles, getLiveCount]);
 
   const layout = useMemo(() => computeLayout(roles), [roles]);
   const { positions, totalWidth, totalHeight, rowStartY, rowBandHeight, colW: COL_W } = layout;
@@ -249,35 +208,8 @@ export default function CareerMap({ data }: Props) {
         </div>
         <div className="md:flex-shrink-0 md:w-[400px] flex flex-col gap-2 items-end">
           <FilterBar searchQuery={searchQuery} onSearch={setSearchQuery} />
-          <HiringFilter value={hiringOnly} onChange={handleHiringChange} />
         </div>
       </div>
-
-      {/* Phase 3.10 + Phase 5 — empty-state banner for the "Show only hiring" filter.
-          With the region dropdown gone, the suggestion is to open a role's
-          openings page to switch country there. */}
-      {hiringOnly && countsLoaded && !anyRoleHiring && (
-        <div
-          role="status"
-          aria-live="polite"
-          className="flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50
-                     px-3.5 py-2.5 text-amber-900"
-        >
-          <svg
-            width="16" height="16" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-            className="flex-shrink-0 mt-0.5 opacity-70" aria-hidden="true"
-          >
-            <circle cx="12" cy="12" r="10" />
-            <line x1="12" y1="8" x2="12" y2="12" />
-            <circle cx="12" cy="16" r="0.5" fill="currentColor" />
-          </svg>
-          <p className="text-xs leading-relaxed">
-            <span className="font-semibold">No US openings on this map yet.</span>
-            {' '}Open any role&apos;s &quot;View openings&quot; button to see jobs from other countries.
-          </p>
-        </div>
-      )}
 
       {/* Control row: learning-paths anchor (left) · jobs-selected counter (center) · CLEAR MAP (right) */}
       <div className="flex items-center justify-between gap-3 flex-wrap text-sm">
@@ -529,9 +461,7 @@ export default function CareerMap({ data }: Props) {
                   isRecommended={false}
                   industryColor={industry.color}
                   industrySlug={industry.slug}
-                  liveCount={getLiveCount(role.title)?.count ?? 0}
                   anyCount={getAnyCount(role.title)}
-                  hiringOnly={hiringOnly}
                   onClick={handleRoleClick}
                   onDoubleClick={handleRoleDoubleClick}
                   onShowDetails={setDetailRoleId}
@@ -599,7 +529,6 @@ export default function CareerMap({ data }: Props) {
       <ErrorModal     open={errorOpen} onClose={() => setErrorOpen(false)} />
       <RoleDetailModal
         role={detailRoleId ? roleById.get(detailRoleId) ?? null : null}
-        liveCount={detailRoleId ? getLiveCount(roleById.get(detailRoleId)?.title ?? '') : undefined}
         anyCount={detailRoleId ? getAnyCount(roleById.get(detailRoleId)?.title ?? '') : 0}
         industrySlug={industry.slug}
         onClose={() => setDetailRoleId(null)}

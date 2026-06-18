@@ -35,12 +35,8 @@ interface Props {
   isRecommended:  boolean;
   industryColor:  string;
   industrySlug:   string;
-  /** Live US open-jobs count — controls "Show only hiring" dim logic. */
-  liveCount?:     number;
-  /** Worldwide approved-match count — controls the View Openings button enabled state. */
+  /** Worldwide approved-match count — controls the Openings button enabled state. */
   anyCount?:      number;
-  /** Phase 3.10 — when true, this role is dimmed (50%) if liveCount == 0. */
-  hiringOnly?:    boolean;
   onClick:        (id: string) => void;
   onDoubleClick?: (id: string) => void;
   onShowDetails:  (id: string) => void;
@@ -132,7 +128,7 @@ function FourArrows({ size, zone }: { size: number; zone: ArrowZone }) {
 
 export default function RoleCard({
   role, position, isSelected, isLastInPath, isDimmed, isAdjacent, industrySlug,
-  liveCount, anyCount, hiringOnly,
+  anyCount,
   onClick, onDoubleClick, onShowDetails,
 }: Props) {
   const [hovered, setHovered] = useState(false);
@@ -199,12 +195,7 @@ export default function RoleCard({
   };
 
   // Softer dim than before — reference barely fades non-related roles.
-  // Phase 3.10 — "Show only hiring" overrides the path-based dim with a slightly
-  // stronger 50% fade for roles that have no live open jobs in the current region.
-  const hiddenForHiring = !!hiringOnly && !(liveCount && liveCount > 0);
-  const opacityClass = hiddenForHiring
-    ? 'opacity-50'
-    : (isDimmed ? 'opacity-60' : 'opacity-100');
+  const opacityClass = isDimmed ? 'opacity-60' : 'opacity-100';
 
   // Committed dot — same size as the resting circle (so X shrinks back to its
   // original dimension when Y is clicked, not smaller).
@@ -277,7 +268,7 @@ export default function RoleCard({
                   style={{ borderColor: clusterHex, color: clusterHex }}
                   title={`${anyCount} live opening${anyCount === 1 ? '' : 's'}`}
                 >
-                  View openings
+                  Openings
                   <span
                     className="inline-block min-w-[16px] h-4 px-1 rounded-full text-[10px] leading-4 text-white text-center"
                     style={{ backgroundColor: clusterHex }}
