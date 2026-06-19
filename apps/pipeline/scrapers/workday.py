@@ -67,17 +67,19 @@ def _build_human_url(tenant: str, wd: int, site: str, external_path: str) -> str
 def _build_raw_description(title: str, locations: str, bullets: list[str], posted_on: str) -> str:
     """
     Workday's list endpoint has no description, only short metadata.
-    Concatenate what we have into a pseudo-description so the AI extractor
-    has something to work with.
+    Concatenate what we have into a pseudo-description. The LOCATION: prefix
+    matches the format used by greenhouse + lever scrapers so the deterministic
+    extractor can read location with a single regex across all three sources.
     """
-    parts = [f"Title: {title}"]
+    parts = []
     if locations:
-        parts.append(f"Location(s): {locations}")
+        parts.append(f"LOCATION: {locations}")
+    parts.append(f"Title: {title}")
     if bullets:
         parts.append(f"Tags: {', '.join(bullets)}")
     if posted_on:
         parts.append(f"Posted: {posted_on}")
-    return " | ".join(parts)
+    return "\n\n".join(parts)
 
 
 def scrape_company(company: dict, supabase: Client, dead_slugs: list[str]) -> int:

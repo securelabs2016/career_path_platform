@@ -42,7 +42,7 @@ Skills: {role_skills}
 SCRAPED JOB:
 Normalized title: {job_title}
 Seniority: {job_seniority}
-Skills: {job_skills}
+Description excerpt: {job_description}
 
 Rules:
 - "match" = this job is clearly an instance of the canonical role (same function, similar level)
@@ -53,25 +53,21 @@ Respond with ONLY a JSON object, no explanation:
 {{"verdict": "match"|"new_role"|"noise", "confidence": 0.0-1.0, "reason": "one sentence"}}"""
 
 
-def skill_overlap_score(job_skills: list[str], role_skills: list[str]) -> float:
+def description_skill_score(description: str, role_skills: list[str]) -> float:
     """
-    Coverage of the smaller skill set by the intersection (not Jaccard).
-
-    Why not Jaccard: scraped job postings often list 3–5 skills while
-    canonical roles list 8+. Jaccard penalises this gap brutally — a job
-    with 3 skills, 2 of which match a role's 8 skills, gets 2/9 = 0.22.
-    Smaller-set normalisation gives 2/3 = 0.67, which better reflects
-    "most of what the job needs is in this role."
+    Fraction of the canonical role's top skills that literally appear in the
+    job description. Substitute for the old per-job skills array, which is no
+    longer extracted. Cheap substring check (no tokenization) — good enough
+    signal at scale.
     """
-    if not job_skills or not role_skills:
+    if not description or not role_skills:
         return 0.0
-    job_set  = {s.lower().strip() for s in job_skills if s}
-    role_set = {s.lower().strip() for s in role_skills if s}
-    if not job_set or not role_set:
+    text = description.lower()
+    role_terms = [s.lower().strip() for s in role_skills[:8] if s]
+    if not role_terms:
         return 0.0
-    intersection = job_set & role_set
-    smaller = min(len(job_set), len(role_set))
-    return len(intersection) / smaller
+    hits = sum(1 for term in role_terms if term and term in text)
+    return hits / len(role_terms)
 
 
 def title_similarity(job_title: str, role_title: str) -> float:
@@ -99,21 +95,21 @@ def rank_candidates(extracted_job: dict, canonical_roles: list[dict]) -> list[di
     """
     Score all canonical roles and return top-3.
 
-    Weights tuned for workforce taxonomy matching:
-    - Title is the strongest signal humans use (40%)
-    - Skill overlap is noisy but informative (40%)
-    - Seniority alignment graded — adjacent tiers still count (20%)
+    Weights:
+    - Title is the strongest signal (50%)
+    - Description-vs-role-skills substring hit-rate (30%)
+    - Seniority alignment, graded — adjacent tiers still count (20%)
     """
-    job_skills    = extracted_job.get("skills", [])
-    job_title     = extracted_job.get("normalized_title", "")
-    job_seniority = extracted_job.get("seniority", "mid")
+    job_title       = extracted_job.get("normalized_title", "")
+    job_seniority   = extracted_job.get("seniority", "mid")
+    job_description = ((extracted_job.get("raw_jobs") or {}).get("raw_description") or "")
 
     scored = []
     for role in canonical_roles:
-        skill_score = skill_overlap_score(job_skills, role.get("skills", []))
         title_score = title_similarity(job_title, role.get("title", ""))
+        skill_score = description_skill_score(job_description, role.get("skills", []))
         sen_score   = seniority_score(job_seniority, role.get("seniority", "mid"))
-        combined    = title_score * 0.4 + skill_score * 0.4 + sen_score * 0.2
+        combined    = title_score * 0.5 + skill_score * 0.3 + sen_score * 0.2
         scored.append({"role": role, "score": combined})
 
     scored.sort(key=lambda x: x["score"], reverse=True)
@@ -244,6 +240,13 @@ def claude_judge(
       Claude (if client passed) → Groq (if GROQ_API_KEY) → Gemini (if GEMINI_API_KEY).
     Returns None if everything fails — caller treats as low-confidence rejection.
     """
+    # Per-job skills are no longer extracted — feed the matcher a short raw
+    # description excerpt instead so it still has semantic signal beyond the
+    # title. 600 chars keeps token cost low; the description's first paragraph
+    # is usually a role summary which is what we want.
+    raw_description = ((extracted_job.get("raw_jobs") or {}).get("raw_description") or "")
+    description_excerpt = raw_description.strip()[:600]
+
     prompt = MATCH_PROMPT.format(
         role_title=candidate_role.get("title", ""),
         role_cluster=candidate_role.get("cluster", ""),
@@ -251,7 +254,7 @@ def claude_judge(
         role_skills=", ".join(candidate_role.get("skills", [])[:8]),
         job_title=extracted_job.get("normalized_title", ""),
         job_seniority=extracted_job.get("seniority", ""),
-        job_skills=", ".join(extracted_job.get("skills", [])[:8]),
+        job_description=description_excerpt or "(no description available)",
     )
 
     # 1. Claude first if configured (most accurate, paid)
@@ -348,7 +351,7 @@ def run_matcher(
     # Semi and Space matchers with zero jobs to judge.
     extracted_result = (
         supabase.table("extracted_jobs")
-        .select("id, normalized_title, skills, seniority, location, country, industry, raw_jobs(company)")
+        .select("id, normalized_title, seniority, location, country, industry, raw_jobs(company, raw_description)")
         .eq("industry", industry_slug)
         .limit(batch_size)
         .execute()

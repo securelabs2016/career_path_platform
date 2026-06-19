@@ -55,11 +55,17 @@ def scrape_company(company_slug: str, supabase: Client, industry: str, dead_slug
         if not job_url:
             continue
 
+        # Prepend a structured LOCATION: line so the deterministic extractor can
+        # regex it out instead of trying to find location buried in HTML body.
+        location = ((job.get("location") or {}).get("name") or "").strip()
+        content = job.get("content", "")[:7800]
+        raw_description = f"LOCATION: {location}\n\n{content}" if location else content
+
         row = {
             "source":           "greenhouse",
             "company":          company_slug,
             "raw_title":        job.get("title", "").strip(),
-            "raw_description":  job.get("content", "")[:8000],  # truncate to stay under limits
+            "raw_description":  raw_description,
             "url":              job_url,
             "industry":         industry,
             "scraped_at":       datetime.now(timezone.utc).isoformat(),

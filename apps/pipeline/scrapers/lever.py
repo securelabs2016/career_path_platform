@@ -52,11 +52,17 @@ def scrape_company(company_slug: str, supabase: Client, industry: str, dead_slug
         # Lever returns description as HTML — store raw, extractor will clean it
         description = posting.get("descriptionPlain", "") or posting.get("description", "")
 
+        # Prepend a structured LOCATION: line so the deterministic extractor can
+        # regex it out. Lever puts location under categories.location.
+        location = ((posting.get("categories") or {}).get("location") or "").strip()
+        body = description[:7800]
+        raw_description = f"LOCATION: {location}\n\n{body}" if location else body
+
         row = {
             "source":           "lever",
             "company":          company_slug,
             "raw_title":        posting.get("text", "").strip(),
-            "raw_description":  description[:8000],
+            "raw_description":  raw_description,
             "url":              job_url,
             "industry":         industry,
             "scraped_at":       datetime.now(timezone.utc).isoformat(),

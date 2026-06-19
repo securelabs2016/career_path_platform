@@ -1,55 +1,32 @@
 """
 Extractor — Step 2 of the pipeline.
 
-For each unprocessed raw_job, calls an AI model to extract structured fields:
-  normalized_title, skills[], seniority, location
+Deterministic Python (no AI). For each unprocessed raw_job, parses:
+  - normalized_title (strip suffixes / parens / roman numerals)
+  - seniority        (regex on title)
+  - location         (regex on raw_description LOCATION: prefix injected by scrapers)
+  - country          (existing US-state classifier on the parsed location text)
+  - skills           ([] — dropped; matcher works from title + seniority + description excerpt)
 
-Provider order: Claude Haiku (cheap+fast) → Gemini Flash (free tier fallback)
+Why no AI:
+  The previous Claude/Groq/Gemini extractor cost ~1100 tokens per job, which
+  capped daily throughput to ~60 jobs on free tiers. The semantic step is the
+  matcher; extraction is mechanical. Keeping AI here was wasted budget.
 
-Retry policy:
-  - Up to 3 attempts per job
-  - Exponential backoff on rate limit errors (Claude: 2/4/8s, Gemini: 5/10/20s)
-  - Pacing sleep when running Gemini-only (free tier: 15 RPM)
-  - Skip the job if all retries fail (log + continue — don't crash the pipeline)
+The function signature `run_extractor(supabase, anthropic, batch_size)` is
+preserved so main.py still calls it with the anthropic client; the param is
+unused.
 """
 
-import json
 import re
-import time
-import os
 import logging
-from anthropic import Anthropic, RateLimitError as AnthropicRateLimit
 from supabase import Client
-
-import provider_state
-
-# Gemini free tier is 15 requests/min. Pacing 4s ≈ 15 RPM exactly.
-# Slightly aggressive at 3s — relies on retry-with-backoff for the occasional 429.
-GEMINI_PACE_SECONDS = 3.0
 
 log = logging.getLogger(__name__)
 
-EXTRACTION_PROMPT = """Extract structured information from this job posting. Return ONLY a JSON object — no markdown, no explanation.
-
-Required fields:
-- normalized_title: string — clean job title, remove company name / location / level suffixes
-- skills: array of strings — specific technical skills mentioned (max 10)
-- seniority: one of "entry", "mid", "senior", "lead" — infer from title/requirements
-- location: string — city/state or "Remote" or "Hybrid" (null if not found)
-- country: 2-letter ISO code where the job is located ("US" for United States including Remote-US, "GB", "DE", "IN", "IL", etc.) — use "XX" if ambiguous like "Multiple Locations" or truly remote-anywhere
-
-Job posting:
-TITLE: {title}
-COMPANY: {company}
-DESCRIPTION: {description}"""
-
-# ── US-location fast-path classifier ──────────────────────────────────────────
-# Recognise obvious US-located jobs WITHOUT a separate AI call so the country
-# tag is reliable even when the AI extractor misses it. Used as a safety net
-# after the AI returns — if it didn't answer or guessed wrong on something
-# obviously US, this overrides to "US".
-
-import re as _re  # local alias to avoid shadowing top-of-file imports
+# ── Location & country detection ──────────────────────────────────────────────
+# `classify_us_country` returns "US", "XX", or None. Kept verbatim from the
+# previous AI-based extractor — it was already deterministic and proven.
 
 _US_STATE_ABBREVS = (
     "AL AK AZ AR CA CO CT DE FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN MS "
@@ -67,241 +44,185 @@ _US_STATE_NAMES = {
     "washington","west virginia","wisconsin","wyoming","district of columbia",
     "puerto rico",
 }
-_US_PATTERNS = _re.compile(
+_US_PATTERNS = re.compile(
     r"\b(united states|u\.?s\.?a?\.?|remote\s*[-—–]\s*u\.?s\.?|remote\s*-\s*united\s*states)\b",
-    _re.IGNORECASE,
+    re.IGNORECASE,
 )
-_AMBIGUOUS_PATTERNS = _re.compile(
-    r"\b(multiple\s+locations|remote\s*[-—–]\s*anywhere|various)\b",
-    _re.IGNORECASE,
+_AMBIGUOUS_PATTERNS = re.compile(
+    r"\b(multiple\s+locations|remote\s*[-—–]\s*anywhere|various|worldwide|global)\b",
+    re.IGNORECASE,
 )
+# Two-letter country codes the scraped data commonly mentions. Conservative —
+# only adds a hit if the text says "United Kingdom" / "Germany" etc. explicitly.
+_COUNTRY_NAMES: dict[str, str] = {
+    "united kingdom": "GB", "england": "GB", "scotland": "GB", "wales": "GB",
+    "germany": "DE", "france": "FR", "netherlands": "NL", "spain": "ES",
+    "italy": "IT", "ireland": "IE", "switzerland": "CH", "austria": "AT",
+    "belgium": "BE", "sweden": "SE", "norway": "NO", "finland": "FI",
+    "denmark": "DK", "poland": "PL", "portugal": "PT", "czech republic": "CZ",
+    "canada": "CA", "mexico": "MX",
+    "india": "IN", "japan": "JP", "china": "CN", "singapore": "SG",
+    "south korea": "KR", "korea": "KR", "taiwan": "TW", "hong kong": "HK",
+    "australia": "AU", "new zealand": "NZ",
+    "israel": "IL", "united arab emirates": "AE", "saudi arabia": "SA",
+    "brazil": "BR", "argentina": "AR", "chile": "CL",
+    "south africa": "ZA",
+}
 
 
 def classify_us_country(location_text: str) -> str | None:
     """
-    Fast deterministic classifier. Returns:
-      "US" if the text clearly names a US state, city+state, or US patterns
-      "XX" if obviously ambiguous ("Multiple Locations", "Remote — Anywhere")
-      None if can't tell — caller should fall back to the AI's answer
+    Returns "US" if clearly US, "XX" if clearly ambiguous, None otherwise.
+    Caller falls back to other classifiers (other-country detection) on None.
     """
     if not location_text:
         return None
     text = location_text.strip()
-
     if _AMBIGUOUS_PATTERNS.search(text):
         return "XX"
     if _US_PATTERNS.search(text):
         return "US"
-
-    # State name appears as a word (case-insensitive)
     text_lower = text.lower()
     if any(state in text_lower for state in _US_STATE_NAMES):
         return "US"
-
-    # State abbreviation right after a comma — "Hillsboro, OR" or "Austin, TX"
-    if _re.search(rf",\s*({'|'.join(_US_STATE_ABBREVS)})\b", text):
+    if re.search(rf",\s*({'|'.join(_US_STATE_ABBREVS)})\b", text):
         return "US"
-
     return None
 
 
-def _parse_json_response(text: str) -> dict | None:
-    """
-    Strip markdown fences and parse JSON.
-    Falls back to extracting the first {...} block if the model wrapped JSON
-    in explanatory text. Gemini in particular sometimes prepends commentary.
-    """
-    if not text:
+def detect_other_country(location_text: str) -> str | None:
+    """Match explicit non-US country names. Returns ISO-2 or None."""
+    if not location_text:
         return None
-    text = text.strip()
-    if text.startswith("```"):
-        # Strip ```json ... ``` or ``` ... ``` fences
-        text = text.split("\n", 1)[1].rsplit("```", 1)[0].strip()
-    try:
-        return json.loads(text)
-    except json.JSONDecodeError:
-        # Fallback: pull out the first JSON object anywhere in the text
-        match = re.search(r"\{.*\}", text, re.DOTALL)
-        if match:
-            try:
-                return json.loads(match.group())
-            except json.JSONDecodeError:
-                pass
-        return None
-
-
-def _extract_with_claude(raw_job: dict, client: Anthropic) -> dict | None:
-    prompt = EXTRACTION_PROMPT.format(
-        title=raw_job.get("raw_title", ""),
-        company=raw_job.get("company", ""),
-        description=(raw_job.get("raw_description", "") or "")[:800],
-    )
-    message = client.messages.create(
-        model="claude-haiku-4-5-20251001",
-        max_tokens=512,
-        messages=[{"role": "user", "content": prompt}],
-    )
-    return _parse_json_response(message.content[0].text)
-
-
-def _is_rate_limit_error(err: Exception) -> bool:
-    s = str(err).lower()
-    return "429" in s or "rate" in s or "quota" in s or "resourceexhausted" in s
-
-
-def _extract_with_gemini(raw_job: dict, max_retries: int = 3) -> dict | None:
-    """
-    Gemini fallback — only used if GEMINI_API_KEY is set AND Gemini isn't
-    already marked daily-exhausted by the circuit breaker.
-
-    Model pinned to gemini-2.0-flash because gemini-2.5-flash dropped to
-    20 req/day on the free tier (June 2026). 2.0-flash keeps the 1500/day free
-    quota and is more than capable of extraction.
-
-    Phase 4 — migrated from the deprecated `google.generativeai` package to
-    `google.genai` (Google ended support for the legacy SDK in 2026).
-    """
-    if not provider_state.state().can_try("gemini"):
-        return None
-    try:
-        from google import genai
-        client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
-    except ImportError:
-        log.warning("google-genai package not installed; Gemini fallback unavailable.")
-        return None
-
-    prompt = EXTRACTION_PROMPT.format(
-        title=raw_job.get("raw_title", ""),
-        company=raw_job.get("company", ""),
-        description=(raw_job.get("raw_description", "") or "")[:800],
-    )
-
-    for attempt in range(max_retries):
-        try:
-            response = client.models.generate_content(
-                model="gemini-2.0-flash",
-                contents=prompt,
-            )
-            text = getattr(response, "text", "") or ""
-            parsed = _parse_json_response(text)
-            if parsed is None:
-                log.warning(
-                    f"Gemini returned unparseable response (attempt {attempt+1}): "
-                    f"{text[:200]!r}"
-                )
-                if attempt < max_retries - 1:
-                    time.sleep(2)
-                    continue
-            return parsed
-        except Exception as e:
-            kind = provider_state.classify_rate_limit(e)
-            if kind == "daily":
-                # Don't retry — Gemini won't come back until tomorrow
-                provider_state.state().mark_dead("gemini", str(e)[:200])
-                return None
-            if kind == "per_minute" and attempt < max_retries - 1:
-                wait = 5 * (2 ** attempt)  # 5s, 10s, 20s
-                log.warning(f"Gemini per-minute rate limit (attempt {attempt+1}), waiting {wait}s…")
-                time.sleep(wait)
-                continue
-            log.warning(f"Gemini extraction failed (attempt {attempt+1}): {str(e)[:200]}")
-            return None
+    text_lower = location_text.lower()
+    for name, code in _COUNTRY_NAMES.items():
+        if name in text_lower:
+            return code
     return None
 
 
-def _extract_with_groq(raw_job: dict, max_retries: int = 3) -> dict | None:
+# ── Location parsing ──────────────────────────────────────────────────────────
+
+_LOCATION_PREFIX = re.compile(
+    r"^\s*LOCATION:\s*([^\n]+)",
+    re.IGNORECASE | re.MULTILINE,
+)
+
+
+def extract_location(raw_description: str | None) -> str | None:
     """
-    Groq Llama 3.3 70B. Free tier: 100K tokens/day across all calls.
-    Circuit breaker skips this entirely once the daily quota is marked dead.
+    Pull the LOCATION: <text> line that scrapers prepend to raw_description.
+    Returns the first match (the prepended line), trimmed. None if absent —
+    which happens for old rows scraped before the prefix change.
     """
-    if not provider_state.state().can_try("groq"):
+    if not raw_description:
         return None
-    try:
-        from groq import Groq
-        client = Groq(api_key=os.environ["GROQ_API_KEY"])
-    except ImportError:
-        log.warning("groq package not installed; Groq fallback unavailable.")
+    m = _LOCATION_PREFIX.search(raw_description)
+    if not m:
         return None
-
-    prompt = EXTRACTION_PROMPT.format(
-        title=raw_job.get("raw_title", ""),
-        company=raw_job.get("company", ""),
-        description=(raw_job.get("raw_description", "") or "")[:800],
-    )
-
-    for attempt in range(max_retries):
-        try:
-            response = client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
-                max_tokens=512,
-                messages=[{"role": "user", "content": prompt}],
-            )
-            text = response.choices[0].message.content if response.choices else ""
-            parsed = _parse_json_response(text)
-            if parsed is None and attempt < max_retries - 1:
-                log.warning(
-                    f"Groq returned unparseable response (attempt {attempt+1}): "
-                    f"{(text or '')[:200]!r}"
-                )
-                time.sleep(2)
-                continue
-            return parsed
-        except Exception as e:
-            kind = provider_state.classify_rate_limit(e)
-            if kind == "daily":
-                provider_state.state().mark_dead("groq", str(e)[:200])
-                return None
-            if kind == "per_minute" and attempt < max_retries - 1:
-                wait = 5 * (2 ** attempt)
-                log.warning(f"Groq per-minute rate limit (attempt {attempt+1}), waiting {wait}s…")
-                time.sleep(wait)
-                continue
-            log.warning(f"Groq extraction failed (attempt {attempt+1}): {str(e)[:200]}")
-            return None
-    return None
+    text = m.group(1).strip()
+    # Collapse messy whitespace and strip trailing punctuation
+    text = re.sub(r"\s+", " ", text).rstrip(" .,;|")
+    return text or None
 
 
-def extract_job(raw_job: dict, client: Anthropic | None, max_retries: int = 3) -> dict | None:
+# ── Seniority detection ──────────────────────────────────────────────────────
+# Order matters: lead markers checked first because "Senior Staff Engineer"
+# should be lead, not senior. Senior beats entry because "Senior Junior
+# Engineer" doesn't exist but the regexes shouldn't surprise us.
+
+_SENIORITY_PATTERNS: list[tuple[str, re.Pattern]] = [
+    ("lead",   re.compile(r"\b(Principal|Staff|Distinguished|Fellow|Lead|Head\s+of|Director|Chief|VP|Vice\s+President)\b", re.IGNORECASE)),
+    ("senior", re.compile(r"\b(Senior|Sr\.?|Sr\b)\b", re.IGNORECASE)),
+    ("entry",  re.compile(r"\b(Junior|Jr\.?|Intern|Internship|Trainee|Graduate|Apprentice|Entry[\s-]?Level|New\s+Grad)\b", re.IGNORECASE)),
+]
+_ROMAN_LEVEL = {"I": "entry", "II": "mid", "III": "senior", "IV": "lead", "V": "lead"}
+_ROMAN_SUFFIX = re.compile(r"\s+(I{1,3}|IV|V)\s*$")
+
+
+def detect_seniority(title: str) -> str:
+    """Return one of entry|mid|senior|lead, defaulting to mid."""
+    if not title:
+        return "mid"
+    for level, pat in _SENIORITY_PATTERNS:
+        if pat.search(title):
+            return level
+    m = _ROMAN_SUFFIX.search(title)
+    if m:
+        return _ROMAN_LEVEL.get(m.group(1).upper(), "mid")
+    return "mid"
+
+
+# ── Title normalization ──────────────────────────────────────────────────────
+
+_PARENS_TAIL  = re.compile(r"\s*\([^)]*\)\s*$")
+_DASH_TAIL    = re.compile(r"\s*[—–\-]\s*(?:remote|hybrid|on[\s-]?site|us|usa|united states|[^—–\-]+(?:,\s*[A-Z]{2})?)\s*$", re.IGNORECASE)
+_LEAD_TAGS    = re.compile(r"^\s*\[[^\]]+\]\s*", re.IGNORECASE)  # "[Remote] Senior Engineer"
+_TRAILING_LVL = re.compile(r"\s+(I{1,3}|IV|V)\s*$")
+
+
+def normalize_title(raw_title: str) -> str:
+    """Strip location suffixes, brackets, roman-numeral level markers."""
+    if not raw_title:
+        return ""
+    t = raw_title.strip()
+    t = _LEAD_TAGS.sub("", t)
+    # Strip a trailing parenthetical (Remote), (US), (Hybrid - SF), …
+    t = _PARENS_TAIL.sub("", t)
+    # Strip a trailing " — San Francisco, CA" / " - Remote" style suffix
+    t = _DASH_TAIL.sub("", t)
+    # Drop trailing level marker "Engineer III" -> "Engineer"
+    t = _TRAILING_LVL.sub("", t)
+    return re.sub(r"\s+", " ", t).strip()
+
+
+# ── Country resolution (location → ISO-2) ─────────────────────────────────────
+
+def detect_country(location_text: str | None, raw_description: str | None) -> str:
     """
-    Extract structured fields from one raw job. Provider order:
-      Claude (if anthropic client passed) → Groq (if GROQ_API_KEY) → Gemini (if GEMINI_API_KEY).
-    Falls through on any provider's exhausted retries.
+    Resolve country in priority order:
+      1. US/XX fast-path on the explicit location text
+      2. Non-US country name in the location text
+      3. US/XX fast-path on the raw description (catches "Remote - US" buried in body)
+      4. Default "XX"
     """
-    # 1. Claude first if configured (most accurate, paid)
-    if client is not None:
-        for attempt in range(max_retries):
-            try:
-                result = _extract_with_claude(raw_job, client)
-                if result:
-                    return result
-            except AnthropicRateLimit:
-                wait = 2 ** attempt  # 2s, 4s, 8s
-                log.warning(f"Claude rate limit on attempt {attempt+1}, waiting {wait}s…")
-                time.sleep(wait)
-            except Exception as e:
-                log.warning(f"Claude extraction error (attempt {attempt+1}): {e}")
-                if attempt == max_retries - 1:
-                    break
-                time.sleep(2)
-        log.info(f"Claude exhausted for job {raw_job.get('id')} — falling back")
-
-    # 2. Groq — generous free tier but daily token cap. Skip if circuit open.
-    if provider_state.state().can_try("groq"):
-        result = _extract_with_groq(raw_job)
-        if result:
-            return result
-
-    # 3. Gemini — last resort. Skip if circuit open.
-    if provider_state.state().can_try("gemini"):
-        return _extract_with_gemini(raw_job)
-
-    return None
+    if location_text:
+        us = classify_us_country(location_text)
+        if us:
+            return us
+        other = detect_other_country(location_text)
+        if other:
+            return other
+    if raw_description:
+        us = classify_us_country(raw_description[:1000])
+        if us:
+            return us
+    return "XX"
 
 
-def run_extractor(supabase: Client, anthropic: Anthropic | None, batch_size: int = 50) -> int:
+# ── Pipeline entry point ─────────────────────────────────────────────────────
+
+def extract_job(raw_job: dict) -> dict:
+    """Pure function — parse one raw_job into the extracted_jobs row shape."""
+    title       = raw_job.get("raw_title", "") or ""
+    description = raw_job.get("raw_description", "") or ""
+    location    = extract_location(description)
+    return {
+        "normalized_title": normalize_title(title) or title,
+        "skills":           [],
+        "seniority":        detect_seniority(title),
+        "location":         location,
+        "country":          detect_country(location, description),
+    }
+
+
+def run_extractor(supabase: Client, anthropic=None, batch_size: int = 200) -> int:
     """
-    Find raw_jobs that have no extracted_job yet, extract each one.
-    Returns the number of jobs successfully extracted.
+    Find raw_jobs that have no extracted_job yet, extract each one
+    deterministically. Returns the number of jobs extracted.
+
+    The `anthropic` parameter is accepted for backward compatibility with
+    main.py's call signature but is no longer used.
     """
     raw_result = (
         supabase.table("raw_jobs")
@@ -314,10 +235,8 @@ def run_extractor(supabase: Client, anthropic: Anthropic | None, batch_size: int
         log.info("No raw jobs found.")
         return 0
 
-    # Filter already-extracted.
-    # PostgREST rejects an .in_ list with ~1000 UUIDs because the resulting URL
-    # exceeds ~4 KB. We chunk the lookup into batches of CHUNK_SIZE IDs so each
-    # request stays well within URL limits.
+    # Filter already-extracted in chunks — PostgREST rejects >~1000-UUID IN
+    # lists because of URL length, so chunk to 100.
     CHUNK_SIZE = 100
     raw_ids = [r["id"] for r in all_raw]
     already_done: set[str] = set()
@@ -335,49 +254,17 @@ def run_extractor(supabase: Client, anthropic: Anthropic | None, batch_size: int
 
     log.info(f"Extracting {len(to_process)} new jobs (skipping {len(already_done)} already done)…")
 
-    # Pace runs when our primary path is the rate-limited Gemini free tier.
-    # Groq's free tier is ~14k/day with 30 RPM — no pacing needed when it's available.
-    has_claude = anthropic is not None
-    has_groq   = bool(os.environ.get("GROQ_API_KEY"))
-    needs_pace = not has_claude and not has_groq
-
     extracted_count = 0
-    for i, raw in enumerate(to_process):
-        # Phase 3.9 — bail out cleanly when both free providers are out for the day.
-        # Without this, the loop would keep firing dead-provider calls until the
-        # GitHub Actions timeout kills the run.
-        if anthropic is None and provider_state.state().all_free_providers_dead():
-            log.warning(
-                f"All free AI providers exhausted for the day. "
-                f"Stopping extractor early — processed {extracted_count}/{i}. "
-                f"Re-trigger after midnight Pacific for the next quota window. "
-                f"State: {provider_state.state().summary()}"
-            )
-            break
-
-        if needs_pace and i > 0:
-            time.sleep(GEMINI_PACE_SECONDS)
-
-        fields = extract_job(raw, anthropic)
-        if not fields:
-            log.warning(f"Skipping job {raw['id']} — all extraction attempts failed")
-            continue
-
-        # Country tagging — fast-path classifier overrides AI guess on obvious cases.
-        # "US" if clearly located in the United States, "XX" if obviously ambiguous,
-        # otherwise trust the AI's 2-letter ISO answer (defaulting to "XX").
-        ai_country = (fields.get("country") or "").strip().upper()[:2] or None
-        fast_country = classify_us_country(fields.get("location") or "")
-        country = fast_country or ai_country or "XX"
-
+    for raw in to_process:
+        fields = extract_job(raw)
         row = {
             "raw_job_id":       raw["id"],
-            "normalized_title": fields.get("normalized_title") or raw["raw_title"],
-            "skills":           fields.get("skills", [])[:10],
-            "seniority":        fields.get("seniority", "mid"),
-            "location":         fields.get("location"),
-            "country":          country,
-            "industry":         raw.get("industry"),  # Phase 3.6 — propagate from raw_jobs
+            "normalized_title": fields["normalized_title"],
+            "skills":           fields["skills"],
+            "seniority":        fields["seniority"],
+            "location":         fields["location"],
+            "country":          fields["country"],
+            "industry":         raw.get("industry"),
         }
         try:
             supabase.table("extracted_jobs").insert(row).execute()
