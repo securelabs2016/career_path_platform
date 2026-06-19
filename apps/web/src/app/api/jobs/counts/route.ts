@@ -124,21 +124,36 @@ export async function GET(request: Request) {
         return Response.json({});
       }
 
-      const { data: matches } = await supabase
-        .from('role_matches')
-        .select('canonical_role_id, extracted_jobs(country, raw_jobs(company))')
-        .eq('status', 'approved')
-        .in('canonical_role_id', Array.from(idToTitle.keys()));
+      // Page through role_matches — Supabase PostgREST silently caps a
+      // single .limit() / unbounded select at 1000 rows. With matches growing
+      // past 1000 across an industry, the worldwide count would be wrong
+      // without pagination.
+      const PAGE = 1000;
+      const matches: Array<{
+        canonical_role_id: string;
+        extracted_jobs?: { country?: string; raw_jobs?: { company?: string } } | null;
+      }> = [];
+      const roleIdList = Array.from(idToTitle.keys());
+      let offset = 0;
+      while (true) {
+        const { data: page } = await supabase
+          .from('role_matches')
+          .select('canonical_role_id, extracted_jobs(country, raw_jobs(company))')
+          .eq('status', 'approved')
+          .in('canonical_role_id', roleIdList)
+          .range(offset, offset + PAGE - 1);
+        const rows = (page ?? []) as typeof matches;
+        matches.push(...rows);
+        if (rows.length < PAGE) break;
+        offset += PAGE;
+      }
 
       // Aggregate
       type Bucket = { count: number; companies: Set<string> };
       const byRoleId = new Map<string, Bucket>();
       const wantedCountries = filter.mode === 'list' ? new Set(filter.list) : null;
 
-      for (const m of (matches ?? []) as Array<{
-        canonical_role_id: string;
-        extracted_jobs?: { country?: string; raw_jobs?: { company?: string } } | null;
-      }>) {
+      for (const m of matches) {
         const ej = m.extracted_jobs;
         const country = (ej?.country || 'XX').toUpperCase();
         if (wantedCountries && !wantedCountries.has(country)) continue;

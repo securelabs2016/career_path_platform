@@ -224,13 +224,25 @@ def run_extractor(supabase: Client, anthropic=None, batch_size: int = 200) -> in
     The `anthropic` parameter is accepted for backward compatibility with
     main.py's call signature but is no longer used.
     """
-    raw_result = (
-        supabase.table("raw_jobs")
-        .select("id, raw_title, company, raw_description, industry")
-        .limit(batch_size)
-        .execute()
-    )
-    all_raw = raw_result.data or []
+    # Page through raw_jobs in 1000-row batches — Supabase PostgREST silently
+    # caps a single .limit() call at 1000 rows regardless of what we ask for,
+    # so we use .range() pagination to get past the cap.
+    PAGE = 1000
+    all_raw: list[dict] = []
+    offset = 0
+    while len(all_raw) < batch_size:
+        result = (
+            supabase.table("raw_jobs")
+            .select("id, raw_title, company, raw_description, industry")
+            .range(offset, offset + PAGE - 1)
+            .execute()
+        )
+        rows = result.data or []
+        all_raw.extend(rows)
+        if len(rows) < PAGE:
+            break
+        offset += PAGE
+    all_raw = all_raw[:batch_size]
     if not all_raw:
         log.info("No raw jobs found.")
         return 0

@@ -57,25 +57,11 @@ async function fetchOpenings(industrySlug: string, roleTitle: string): Promise<O
       .maybeSingle();
     if (!roleRow?.id) return [];
 
-    const { data: matches } = await supabase
-      .from('role_matches')
-      .select(`
-        id,
-        confidence,
-        extracted_jobs(
-          normalized_title,
-          country,
-          location,
-          raw_jobs(company, url, raw_title, source, scraped_at)
-        )
-      `)
-      .eq('canonical_role_id', roleRow.id)
-      .eq('status', 'approved');
-
-    if (!matches) return [];
-
-    const flattened: OpeningJob[] = [];
-    for (const m of matches as Array<{
+    // Page through matches for this role — Supabase silently caps a single
+    // select at 1000 rows. Popular roles (NVIDIA semiconductor matches etc.)
+    // could plausibly exceed that as the matcher drains the backlog.
+    const PAGE = 1000;
+    type MatchRow = {
       id: string;
       confidence?: number;
       extracted_jobs?: {
@@ -90,7 +76,33 @@ async function fetchOpenings(industrySlug: string, roleTitle: string): Promise<O
           scraped_at?: string;
         } | null;
       } | null;
-    }>) {
+    };
+    const matches: MatchRow[] = [];
+    let offset = 0;
+    while (true) {
+      const { data: page } = await supabase
+        .from('role_matches')
+        .select(`
+          id,
+          confidence,
+          extracted_jobs(
+            normalized_title,
+            country,
+            location,
+            raw_jobs(company, url, raw_title, source, scraped_at)
+          )
+        `)
+        .eq('canonical_role_id', roleRow.id)
+        .eq('status', 'approved')
+        .range(offset, offset + PAGE - 1);
+      const rows = (page ?? []) as MatchRow[];
+      matches.push(...rows);
+      if (rows.length < PAGE) break;
+      offset += PAGE;
+    }
+
+    const flattened: OpeningJob[] = [];
+    for (const m of matches) {
       const ej = m.extracted_jobs;
       const rj = ej?.raw_jobs;
       if (!ej || !rj || !rj.url) continue;

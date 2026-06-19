@@ -337,26 +337,52 @@ def run_matcher(
         log.warning(f"No canonical roles found for {industry_slug!r}.")
         return {"matched": 0, "pending": 0, "rejected": 0}
 
-    # Load unmatched extracted_jobs
-    matched_result = (
-        supabase.table("role_matches")
-        .select("extracted_job_id")
-        .execute()
-    )
-    already_matched = {r["extracted_job_id"] for r in (matched_result.data or [])}
+    # Page through role_matches.extracted_job_id — Supabase silently caps a
+    # single .limit() call at 1000 rows. Without pagination this set would
+    # cap out at 1000 and we'd start re-judging old matches once role_matches
+    # crosses that count.
+    PAGE = 1000
+    already_matched: set[str] = set()
+    offset = 0
+    while True:
+        result = (
+            supabase.table("role_matches")
+            .select("extracted_job_id")
+            .range(offset, offset + PAGE - 1)
+            .execute()
+        )
+        rows = result.data or []
+        for r in rows:
+            already_matched.add(r["extracted_job_id"])
+        if len(rows) < PAGE:
+            break
+        offset += PAGE
 
     # Phase 3.6 — filter extracted_jobs by industry. Without this filter the
     # matcher's per-industry loop ran into a "first-industry-wins" bug: AM
     # would consume every job in the queue (rejecting most as non-AM), leaving
     # Semi and Space matchers with zero jobs to judge.
-    extracted_result = (
-        supabase.table("extracted_jobs")
-        .select("id, normalized_title, seniority, location, country, industry, raw_jobs(company, raw_description)")
-        .eq("industry", industry_slug)
-        .limit(batch_size)
-        .execute()
-    )
-    all_extracted = [r for r in (extracted_result.data or []) if r["id"] not in already_matched]
+    # Pagination here works around the same 1000-row PostgREST cap that bit
+    # the extractor. Stops paginating once we have batch_size unmatched jobs.
+    all_extracted: list[dict] = []
+    offset = 0
+    while len(all_extracted) < batch_size:
+        result = (
+            supabase.table("extracted_jobs")
+            .select("id, normalized_title, seniority, location, country, industry, raw_jobs(company, raw_description)")
+            .eq("industry", industry_slug)
+            .range(offset, offset + PAGE - 1)
+            .execute()
+        )
+        rows = result.data or []
+        for r in rows:
+            if r["id"] not in already_matched:
+                all_extracted.append(r)
+                if len(all_extracted) >= batch_size:
+                    break
+        if len(rows) < PAGE:
+            break
+        offset += PAGE
 
     log.info(f"Matching {len(all_extracted)} jobs against {len(canonical_roles)} canonical roles for {industry_slug}…")
 
