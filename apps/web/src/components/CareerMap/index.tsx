@@ -10,6 +10,7 @@ import {
 import { roleMatchesFilter } from '@/lib/role-utils';
 import { CLUSTER_COLORS } from './constants';
 import FilterBar from './FilterBar';
+import HiringFilter from './HiringFilter';
 import MobileList from './MobileList';
 import RoleCard from './RoleCard';
 import PathwayLines from './PathwayLines';
@@ -44,10 +45,11 @@ export default function CareerMap({ data }: Props) {
     }
     return raw.split(',').map(s => s.trim()).filter(id => roleById.has(id));
   });
-  const [searchQuery,   setSearchQuery]   = useState('');
-  const [saveOpen,      setSaveOpen]      = useState(false);
-  const [errorOpen,     setErrorOpen]     = useState(false);
-  const [detailRoleId,  setDetailRoleId]  = useState<string | null>(null);
+  const [searchQuery,    setSearchQuery]    = useState('');
+  const [showOnlyHiring, setShowOnlyHiring] = useState(false);
+  const [saveOpen,       setSaveOpen]       = useState(false);
+  const [errorOpen,      setErrorOpen]      = useState(false);
+  const [detailRoleId,   setDetailRoleId]   = useState<string | null>(null);
   // Phase 5 — worldwide counts drive the Openings button on every role card
   // AND the modal's hiring CTA. Default-worldwide means we don't need a
   // separate US-cached fetch anymore — country filtering lives on the
@@ -68,6 +70,22 @@ export default function CareerMap({ data }: Props) {
   const getAnyCount = useCallback(
     (title: string) => anyCounts[title.toLowerCase().trim()]?.count ?? 0,
     [anyCounts],
+  );
+
+  // Set of role IDs that should be hidden when the "Show only hiring" filter
+  // is on (i.e. roles whose worldwide open-jobs count is zero). Built once per
+  // counts-or-toggle change. When the toggle is off, this is an empty set so
+  // every role renders normally.
+  const hiddenByHiringFilter = useMemo(() => {
+    if (!showOnlyHiring) return new Set<string>();
+    return new Set(roles.filter(r => getAnyCount(r.title) === 0).map(r => r.id));
+  }, [showOnlyHiring, roles, getAnyCount]);
+
+  // Counts shown next to the filter label — "Show only hiring (84/158)".
+  // Uses worldwide counts that the map already fetched.
+  const hiringCount = useMemo(
+    () => roles.filter(r => getAnyCount(r.title) > 0).length,
+    [roles, getAnyCount],
   );
 
   const layout = useMemo(() => computeLayout(roles), [roles]);
@@ -208,6 +226,12 @@ export default function CareerMap({ data }: Props) {
         </div>
         <div className="md:flex-shrink-0 md:w-[400px] flex flex-col gap-2 items-end">
           <FilterBar searchQuery={searchQuery} onSearch={setSearchQuery} />
+          <HiringFilter
+            checked={showOnlyHiring}
+            onChange={setShowOnlyHiring}
+            hiringCount={hiringCount}
+            totalCount={roles.length}
+          />
         </div>
       </div>
 
@@ -253,7 +277,8 @@ export default function CareerMap({ data }: Props) {
       {/* MOBILE: list view */}
       <div className="md:hidden">
         <MobileList
-          roles={filteredIds ? roles.filter(r => filteredIds.has(r.id)) : roles}
+          roles={(filteredIds ? roles.filter(r => filteredIds.has(r.id)) : roles)
+                  .filter(r => !hiddenByHiringFilter.has(r.id))}
           clusters={clusters}
           industrySlug={industry.slug}
         />
@@ -445,6 +470,7 @@ export default function CareerMap({ data }: Props) {
 
             {/* Role cards */}
             {roles.map(role => {
+              if (hiddenByHiringFilter.has(role.id)) return null;
               const pos = positions.get(role.id);
               if (!pos) return null;
               const vis = getVisibility(role.id);
