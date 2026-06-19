@@ -21,11 +21,10 @@ WHAT WE STORE (v1 trade-off):
   If matching quality is poor after the first real cron, the upgrade is to
   do a second detail-fetch per job, capped at the freshest N.
 
-PER-COMPANY CAP:
-  Workday companies post a lot — Leidos has ~2000, NVIDIA ~2000, Boeing ~1000.
-  Without a cap, the AI extractor + matcher would run for hours on the
-  first week alone. We cap at MAX_JOBS_PER_COMPANY to keep the run sane and
-  ramp up gradually. Most-recent jobs are what Workday returns first.
+NO PER-COMPANY CAP:
+  Scraper is deterministic (no AI cost) so we pull every job each Workday
+  board exposes. The matcher's daily AI quota is the real ceiling and is
+  enforced by the circuit breaker downstream — not by pre-capping ingestion.
 
 Company list is loaded from ../companies.json (single source of truth).
 """
@@ -39,11 +38,6 @@ from supabase import Client
 from companies_loader import companies_for
 
 log = logging.getLogger(__name__)
-
-# Cap per company per cron run. Sized for free-tier AI compatibility — at
-# 25 × 8 companies = 200 Workday jobs/week. Raise when paid AI credit is
-# available; the rest of the pipeline scales with this number.
-MAX_JOBS_PER_COMPANY = 25
 
 # Workday paginates with a small limit. 20 is the typical default they use.
 PAGE_SIZE = 20
@@ -83,7 +77,7 @@ def _build_raw_description(title: str, locations: str, bullets: list[str], poste
 
 
 def scrape_company(company: dict, supabase: Client, dead_slugs: list[str]) -> int:
-    """Fetch jobs for one Workday company, capped at MAX_JOBS_PER_COMPANY."""
+    """Fetch every job for one Workday company, paginating until exhausted."""
     slug   = company["slug"]
     tenant = company.get("tenant")
     wd     = company.get("wd")
@@ -97,10 +91,10 @@ def scrape_company(company: dict, supabase: Client, dead_slugs: list[str]) -> in
     offset = 0
     seen_total = None
 
-    while offset < MAX_JOBS_PER_COMPANY:
+    while True:
         body = {
             "appliedFacets": {},
-            "limit":         min(PAGE_SIZE, MAX_JOBS_PER_COMPANY - offset),
+            "limit":         PAGE_SIZE,
             "offset":        offset,
             "searchText":    "",
         }
@@ -127,7 +121,7 @@ def scrape_company(company: dict, supabase: Client, dead_slugs: list[str]) -> in
         postings = payload.get("jobPostings", [])
         if seen_total is None:
             seen_total = payload.get("total", 0)
-            log.info(f"  {slug}: {seen_total} total jobs at source (capped at {MAX_JOBS_PER_COMPANY})")
+            log.info(f"  {slug}: {seen_total} total jobs at source — fetching all")
         if not postings:
             break
 

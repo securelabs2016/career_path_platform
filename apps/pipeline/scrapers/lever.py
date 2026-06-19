@@ -16,9 +16,7 @@ from companies_loader import grouped_by_industry
 
 log = logging.getLogger(__name__)
 
-# Cap per company per cron run — matches greenhouse + workday. Keeps total
-# weekly job volume in the free-tier-friendly range.
-MAX_JOBS_PER_COMPANY = 25
+# No per-company cap. Deterministic scraper — AI cost is downstream.
 
 BASE_URL = "https://api.lever.co/v0/postings/{company}?mode=json"
 HEADERS  = {"User-Agent": "CareerPathwaysPlatform/1.0 (workforce-research)"}
@@ -41,7 +39,7 @@ def scrape_company(company_slug: str, supabase: Client, industry: str, dead_slug
         return 0
 
     raw = resp.json()
-    postings = (raw if isinstance(raw, list) else [])[:MAX_JOBS_PER_COMPANY]
+    postings = raw if isinstance(raw, list) else []
     inserted = 0
 
     for posting in postings:

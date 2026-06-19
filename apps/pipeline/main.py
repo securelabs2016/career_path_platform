@@ -123,27 +123,28 @@ def run(
         log.info("STEP 1 — Skipped (--skip-scrape)")
 
     # ── Step 2: Extract ───────────────────────────────────────────────────────
-    # Phase 3.8 — sized to fit one run inside the combined Groq (100K tokens/day)
-    # + Gemini free-tier token budget. 200 extractions × ~1.1K tokens ≈ 220K
-    # tokens. Run one or two pipelines per day to drain the backlog cleanly.
+    # Deterministic extractor — no AI, no token cost. Process the entire raw_jobs
+    # backlog in one run. 25000 is well above the practical company-board total
+    # (~13–15K jobs from all ATSes combined).
     if not skip_extract:
         log.info("=" * 50)
         log.info("STEP 2 — Extractor")
-        extracted = run_extractor(supabase, anthropic, batch_size=200)
+        extracted = run_extractor(supabase, anthropic, batch_size=25000)
         log.info(f"Extractor done: {extracted} jobs extracted")
     else:
         log.info("STEP 2 — Skipped (--skip-extract)")
 
     # ── Step 3+4: Match & Route ───────────────────────────────────────────────
-    # Phase 3.8 — 100 per industry × 3 = 300 judgments per run. With matching
-    # prompts at ~600 input tokens each, total ~240K tokens for the matcher
-    # step. Pairs cleanly with the extractor size above.
+    # Matcher uses AI per judgment. Daily free-tier token quota (Groq + Gemini)
+    # is the real cap — the circuit breaker in provider_state.py stops the loop
+    # cleanly when quotas are exhausted. So we set batch_size high and let the
+    # breaker do its job rather than pre-capping the batch artificially.
     if not skip_match:
         log.info("=" * 50)
         log.info("STEP 3+4 — Ontology Matcher + Routing")
         all_stats = {"matched": 0, "pending": 0, "rejected": 0}
         for industry in target:
-            stats = run_matcher(supabase, anthropic, industry, batch_size=100)
+            stats = run_matcher(supabase, anthropic, industry, batch_size=10000)
             for k in all_stats:
                 all_stats[k] += stats.get(k, 0)
         log.info(f"Matcher done: {all_stats}")
