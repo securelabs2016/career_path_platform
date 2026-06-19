@@ -266,10 +266,13 @@ def run_extractor(supabase: Client, anthropic=None, batch_size: int = 200) -> in
 
     log.info(f"Extracting {len(to_process)} new jobs (skipping {len(already_done)} already done)…")
 
-    extracted_count = 0
+    # Build all rows up-front (deterministic parsing — no I/O), then batch
+    # insert. Per-row inserts on 15K-row backlogs took 30-60 minutes and risked
+    # hitting Supabase's HTTP/2 stream cap (~20K streams per connection).
+    rows: list[dict] = []
     for raw in to_process:
         fields = extract_job(raw)
-        row = {
+        rows.append({
             "raw_job_id":       raw["id"],
             "normalized_title": fields["normalized_title"],
             "skills":           fields["skills"],
@@ -277,12 +280,30 @@ def run_extractor(supabase: Client, anthropic=None, batch_size: int = 200) -> in
             "location":         fields["location"],
             "country":          fields["country"],
             "industry":         raw.get("industry"),
-        }
+        })
+
+    INSERT_BATCH = 50
+    extracted_count = 0
+    total_batches = (len(rows) + INSERT_BATCH - 1) // INSERT_BATCH
+    for i in range(0, len(rows), INSERT_BATCH):
+        batch = rows[i:i + INSERT_BATCH]
+        batch_no = (i // INSERT_BATCH) + 1
         try:
-            supabase.table("extracted_jobs").insert(row).execute()
-            extracted_count += 1
+            result = supabase.table("extracted_jobs").insert(batch).execute()
+            extracted_count += len(result.data or [])
         except Exception as e:
-            log.error(f"DB insert error for {raw['id']}: {e}")
+            log.error(f"Batch insert failed (batch {batch_no}/{total_batches}): {e}")
+            # Fall back to per-row inserts for this batch so one bad row
+            # doesn't lose the other 49 in the batch.
+            for row in batch:
+                try:
+                    supabase.table("extracted_jobs").insert(row).execute()
+                    extracted_count += 1
+                except Exception as e2:
+                    log.error(f"Row insert failed for {row['raw_job_id']}: {e2}")
+        # Progress log every 10 batches (~500 rows)
+        if batch_no % 10 == 0 or batch_no == total_batches:
+            log.info(f"  extractor progress: {extracted_count} / {len(rows)} ({batch_no}/{total_batches} batches)")
 
     log.info(f"Extracted {extracted_count} / {len(to_process)} jobs.")
     return extracted_count
