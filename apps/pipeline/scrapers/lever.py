@@ -21,6 +21,27 @@ log = logging.getLogger(__name__)
 BASE_URL = "https://api.lever.co/v0/postings/{company}?mode=json"
 HEADERS  = {"User-Agent": "CareerPathwaysPlatform/1.0 (workforce-research)"}
 
+# Batch upserts — see greenhouse.py for rationale.
+UPSERT_BATCH_SIZE = 50
+
+
+def _batch_upsert(supabase: Client, rows: list[dict], company_slug: str) -> int:
+    if not rows:
+        return 0
+    inserted = 0
+    for i in range(0, len(rows), UPSERT_BATCH_SIZE):
+        batch = rows[i:i + UPSERT_BATCH_SIZE]
+        try:
+            result = (
+                supabase.table("raw_jobs")
+                .upsert(batch, on_conflict="url", ignore_duplicates=True)
+                .execute()
+            )
+            inserted += len(result.data or [])
+        except Exception as e:
+            log.error(f"Batch upsert failed for {company_slug} (rows {i}-{i+len(batch)}): {e}")
+    return inserted
+
 
 def scrape_company(company_slug: str, supabase: Client, industry: str, dead_slugs: list[str]) -> int:
     url = BASE_URL.format(company=company_slug)
@@ -40,7 +61,7 @@ def scrape_company(company_slug: str, supabase: Client, industry: str, dead_slug
 
     raw = resp.json()
     postings = raw if isinstance(raw, list) else []
-    inserted = 0
+    rows: list[dict] = []
 
     for posting in postings:
         job_url = posting.get("hostedUrl") or posting.get("applyUrl", "")
@@ -56,7 +77,7 @@ def scrape_company(company_slug: str, supabase: Client, industry: str, dead_slug
         body = description[:7800]
         raw_description = f"LOCATION: {location}\n\n{body}" if location else body
 
-        row = {
+        rows.append({
             "source":           "lever",
             "company":          company_slug,
             "raw_title":        posting.get("text", "").strip(),
@@ -64,16 +85,9 @@ def scrape_company(company_slug: str, supabase: Client, industry: str, dead_slug
             "url":              job_url,
             "industry":         industry,
             "scraped_at":       datetime.now(timezone.utc).isoformat(),
-        }
+        })
 
-        result = (
-            supabase.table("raw_jobs")
-            .upsert(row, on_conflict="url", ignore_duplicates=True)
-            .execute()
-        )
-        if result.data:
-            inserted += 1
-
+    inserted = _batch_upsert(supabase, rows, company_slug)
     log.info(f"  {company_slug}: {len(postings)} jobs, {inserted} new")
     return inserted
 

@@ -42,6 +42,34 @@ log = logging.getLogger(__name__)
 # Workday paginates with a small limit. 20 is the typical default they use.
 PAGE_SIZE = 20
 
+# Hard safety cap on pagination — some Workday boards misbehave and keep
+# returning a full page forever, looping indefinitely. 500 pages × 20 jobs =
+# 10,000 jobs per company is well above the largest legitimate board.
+MAX_PAGES = 500
+
+# Batch upserts so big companies (NVIDIA ~2K, Micron ~3K) don't pile up
+# thousands of HTTP/2 streams on a single Supabase connection — the pooler
+# closes the connection after ~20K streams, which crashed an earlier run.
+UPSERT_BATCH_SIZE = 50
+
+
+def _batch_upsert(supabase: Client, rows: list[dict], company_slug: str) -> int:
+    if not rows:
+        return 0
+    inserted = 0
+    for i in range(0, len(rows), UPSERT_BATCH_SIZE):
+        batch = rows[i:i + UPSERT_BATCH_SIZE]
+        try:
+            result = (
+                supabase.table("raw_jobs")
+                .upsert(batch, on_conflict="url", ignore_duplicates=True)
+                .execute()
+            )
+            inserted += len(result.data or [])
+        except Exception as e:
+            log.error(f"Batch upsert failed for {company_slug} (rows {i}-{i+len(batch)}): {e}")
+    return inserted
+
 HEADERS = {
     "Content-Type": "application/json",
     "Accept":       "application/json",
@@ -90,8 +118,17 @@ def scrape_company(company: dict, supabase: Client, dead_slugs: list[str]) -> in
     inserted = 0
     offset = 0
     seen_total = None
+    pages_fetched = 0
+    buffer: list[dict] = []
 
     while True:
+        if pages_fetched >= MAX_PAGES:
+            log.warning(
+                f"  {slug}: hit MAX_PAGES safety cap ({MAX_PAGES}) at offset {offset}. "
+                f"Stopping pagination — board may be misbehaving."
+            )
+            break
+
         body = {
             "appliedFacets": {},
             "limit":         PAGE_SIZE,
@@ -112,10 +149,10 @@ def scrape_company(company: dict, supabase: Client, dead_slugs: list[str]) -> in
                 dead_slugs.append(slug)
             else:
                 log.error(f"HTTP {status} for {slug!r}: {e}")
-            return inserted
+            break
         except requests.RequestException as e:
             log.error(f"Workday request failed for {slug!r}: {e}")
-            return inserted
+            break
 
         payload = resp.json()
         postings = payload.get("jobPostings", [])
@@ -131,7 +168,7 @@ def scrape_company(company: dict, supabase: Client, dead_slugs: list[str]) -> in
             if not external_path or not title:
                 continue
 
-            row = {
+            buffer.append({
                 "source":          "workday",
                 "company":         slug,
                 "raw_title":       title,
@@ -144,28 +181,30 @@ def scrape_company(company: dict, supabase: Client, dead_slugs: list[str]) -> in
                 "url":             _build_human_url(tenant, wd, site, external_path),
                 "industry":        company.get("industry"),
                 "scraped_at":      datetime.now(timezone.utc).isoformat(),
-            }
-
-            try:
-                result = (
-                    supabase.table("raw_jobs")
-                    .upsert(row, on_conflict="url", ignore_duplicates=True)
-                    .execute()
-                )
-                if result.data:
-                    inserted += 1
-            except Exception as e:
-                log.error(f"DB insert error for {slug} job {external_path}: {e}")
+            })
 
         offset += len(postings)
-        # Stop if Workday returned fewer than we asked for (end of list)
-        if len(postings) < body["limit"]:
+        pages_fetched += 1
+
+        # Flush periodically so a big company doesn't sit on a multi-MB buffer.
+        if len(buffer) >= UPSERT_BATCH_SIZE * 4:  # flush every ~200 rows
+            inserted += _batch_upsert(supabase, buffer, slug)
+            buffer.clear()
+
+        # Termination — we've fetched at least as many as Workday claimed exist
+        if seen_total and offset >= seen_total:
+            break
+        # Partial page = end of list
+        if len(postings) < PAGE_SIZE:
             break
 
-        # Polite pause between paginated calls to one company
         time.sleep(0.5)
 
-    log.info(f"  {slug}: {inserted} new jobs inserted")
+    # Flush whatever's left
+    if buffer:
+        inserted += _batch_upsert(supabase, buffer, slug)
+
+    log.info(f"  {slug}: {inserted} new jobs inserted (pages: {pages_fetched})")
     return inserted
 
 

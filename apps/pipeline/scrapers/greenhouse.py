@@ -23,6 +23,32 @@ log = logging.getLogger(__name__)
 BASE_URL = "https://boards-api.greenhouse.io/v1/boards/{company}/jobs"
 HEADERS  = {"User-Agent": "CareerPathwaysPlatform/1.0 (workforce-research)"}
 
+# Batch upserts to Supabase so one big company (~2K jobs) doesn't pile up 2K
+# HTTP/2 streams on one connection. Supabase's pooler closes the connection
+# after ~20K streams; per-job upserts hit that limit during a full-scale run.
+UPSERT_BATCH_SIZE = 50
+
+
+def _batch_upsert(supabase: Client, rows: list[dict], company_slug: str) -> int:
+    """Upsert rows into raw_jobs in batches of UPSERT_BATCH_SIZE. Returns the
+    number of brand-new rows inserted (ignore_duplicates returns empty data
+    for URL conflicts, so this naturally excludes already-known jobs)."""
+    if not rows:
+        return 0
+    inserted = 0
+    for i in range(0, len(rows), UPSERT_BATCH_SIZE):
+        batch = rows[i:i + UPSERT_BATCH_SIZE]
+        try:
+            result = (
+                supabase.table("raw_jobs")
+                .upsert(batch, on_conflict="url", ignore_duplicates=True)
+                .execute()
+            )
+            inserted += len(result.data or [])
+        except Exception as e:
+            log.error(f"Batch upsert failed for {company_slug} (rows {i}-{i+len(batch)}): {e}")
+    return inserted
+
 
 def scrape_company(company_slug: str, supabase: Client, industry: str, dead_slugs: list[str]) -> int:
     """Fetch all jobs for a Greenhouse company and upsert to raw_jobs.
@@ -47,7 +73,7 @@ def scrape_company(company_slug: str, supabase: Client, industry: str, dead_slug
         return 0
 
     jobs = resp.json().get("jobs", [])
-    inserted = 0
+    rows: list[dict] = []
 
     for job in jobs:
         job_url = job.get("absolute_url") or job.get("url", "")
@@ -60,7 +86,7 @@ def scrape_company(company_slug: str, supabase: Client, industry: str, dead_slug
         content = job.get("content", "")[:7800]
         raw_description = f"LOCATION: {location}\n\n{content}" if location else content
 
-        row = {
+        rows.append({
             "source":           "greenhouse",
             "company":          company_slug,
             "raw_title":        job.get("title", "").strip(),
@@ -68,17 +94,9 @@ def scrape_company(company_slug: str, supabase: Client, industry: str, dead_slug
             "url":              job_url,
             "industry":         industry,
             "scraped_at":       datetime.now(timezone.utc).isoformat(),
-        }
+        })
 
-        # Upsert on URL — avoids duplicates across weekly runs
-        result = (
-            supabase.table("raw_jobs")
-            .upsert(row, on_conflict="url", ignore_duplicates=True)
-            .execute()
-        )
-        if result.data:
-            inserted += 1
-
+    inserted = _batch_upsert(supabase, rows, company_slug)
     log.info(f"  {company_slug}: {len(jobs)} jobs fetched, {inserted} new")
     return inserted
 
