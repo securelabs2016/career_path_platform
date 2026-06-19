@@ -72,11 +72,11 @@ export default function CareerMap({ data }: Props) {
     [anyCounts],
   );
 
-  // Set of role IDs that should be hidden when the "Show only hiring" filter
-  // is on (i.e. roles whose worldwide open-jobs count is zero). Built once per
-  // counts-or-toggle change. When the toggle is off, this is an empty set so
-  // every role renders normally.
-  const hiddenByHiringFilter = useMemo(() => {
+  // Set of role IDs that should be dimmed (half-opacity) when the "Show only
+  // hiring" filter is on — roles whose worldwide open-jobs count is zero.
+  // Dim instead of hide so the map layout stays stable: gaps in the grid
+  // would be more disorienting than a faded card. Empty set when toggle off.
+  const dimmedByHiringFilter = useMemo(() => {
     if (!showOnlyHiring) return new Set<string>();
     return new Set(roles.filter(r => getAnyCount(r.title) === 0).map(r => r.id));
   }, [showOnlyHiring, roles, getAnyCount]);
@@ -131,8 +131,10 @@ export default function CareerMap({ data }: Props) {
   const selectedIdSet = useMemo(() => new Set(selectedIds), [selectedIds]);
 
   function getVisibility(roleId: string): 'selected' | 'adjacent' | 'normal' | 'dimmed' {
-    const filteredOut = filteredIds !== null && !filteredIds.has(roleId);
-    if (filteredOut) return 'dimmed';
+    const filteredOut    = filteredIds !== null && !filteredIds.has(roleId);
+    const dimmedByHiring = dimmedByHiringFilter.has(roleId);
+    if (filteredOut)    return 'dimmed';
+    if (dimmedByHiring) return 'dimmed';
     if (selectedIdSet.has(roleId)) return 'selected';
     if (selectedIds.length > 0 && possibleNextIds.has(roleId)) return 'adjacent';
     if (selectedIds.length > 0) return 'dimmed';
@@ -278,7 +280,7 @@ export default function CareerMap({ data }: Props) {
       <div className="md:hidden">
         <MobileList
           roles={(filteredIds ? roles.filter(r => filteredIds.has(r.id)) : roles)
-                  .filter(r => !hiddenByHiringFilter.has(r.id))}
+                  .filter(r => !dimmedByHiringFilter.has(r.id))}
           clusters={clusters}
           industrySlug={industry.slug}
         />
@@ -470,7 +472,6 @@ export default function CareerMap({ data }: Props) {
 
             {/* Role cards */}
             {roles.map(role => {
-              if (hiddenByHiringFilter.has(role.id)) return null;
               const pos = positions.get(role.id);
               if (!pos) return null;
               const vis = getVisibility(role.id);
