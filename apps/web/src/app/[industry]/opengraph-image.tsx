@@ -1,19 +1,23 @@
 import { ImageResponse } from 'next/og';
-import type { IndustryData } from '@/lib/types';
 
-import amData    from '@/data/additive-manufacturing.json';
-import semiData  from '@/data/semiconductors.json';
-import spaceData from '@/data/space.json';
+// Use a tiny per-industry meta file (≈1 KB) instead of importing the full
+// 1 MB+ industry JSONs. Edge functions on Vercel's Hobby plan cap at 1 MB
+// of bundled code/data, so we cannot ship the full taxonomy into this route.
+// Keep industry-meta.json in sync with the source JSONs when adding industries
+// (regenerate via scripts/gen-industry-meta.py — or just edit by hand).
+import meta from '@/data/industry-meta.json';
+
+interface IndustryMeta {
+  name: string;
+  description: string;
+  color: string;
+  role_count: number;
+  pathway_count: number;
+}
 
 export const runtime = 'edge';
 export const size    = { width: 1200, height: 630 };
 export const contentType = 'image/png';
-
-const INDUSTRY_MAP: Record<string, IndustryData> = {
-  'additive-manufacturing': amData    as IndustryData,
-  'semiconductors':         semiData  as IndustryData,
-  'space':                  spaceData as IndustryData,
-};
 
 export default async function OGImage({
   params,
@@ -21,13 +25,13 @@ export default async function OGImage({
   params: Promise<{ industry: string }>;
 }) {
   const { industry: slug } = await params;
-  const data = INDUSTRY_MAP[slug];
+  const entry = (meta as Record<string, IndustryMeta>)[slug];
 
-  const name        = data?.industry.name        ?? 'Career Pathways';
-  const description = data?.industry.description ?? '';
-  const color       = data?.industry.color       ?? '#2563eb';
-  const roleCount   = data?.roles.length         ?? 0;
-  const pathwayCount= data?.pathways.length      ?? 0;
+  const name        = entry?.name          ?? 'Career Pathways';
+  const description = entry?.description   ?? '';
+  const color       = entry?.color         ?? '#2563eb';
+  const roleCount   = entry?.role_count    ?? 0;
+  const pathwayCount= entry?.pathway_count ?? 0;
 
   return new ImageResponse(
     (
