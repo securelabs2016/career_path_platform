@@ -367,8 +367,11 @@ export default function RoleCard({
           {/* ◆ degree marker — CSS-rotated square, pixel-centered inside the white
               core. Visible whenever the white inner circle is visible (resting,
               adjacent, hover, last-in-path). Hidden only on committed-non-active
-              roles where the white core is replaced by the cluster-colored dot. */}
-          {(!isCommitted || showActive) && (
+              roles where the white core is replaced by the cluster-colored dot.
+              Only roles requiring a 4-year degree or higher get the diamond;
+              HS / 2yr / "sometimes" roles render with a plain white core. */}
+          {(!isCommitted || showActive) &&
+            (role.degree_required === '4yr' || role.degree_required === 'graduate') && (
             <span
               className="absolute pointer-events-none"
               style={{

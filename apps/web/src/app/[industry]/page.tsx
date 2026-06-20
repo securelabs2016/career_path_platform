@@ -64,7 +64,7 @@ export default async function IndustryMapPage({ params }: Props) {
       {/* Brand header — minimal, single-row.
           When client supplies their own logo we swap the wordmark below. */}
       <header className="bg-white border-b border-gray-200" role="banner">
-        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
+        <div className="max-w-[1508px] mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
           <Link
             href="/"
             className="text-sm font-bold uppercase tracking-wide text-gray-900 hover:text-gray-700 transition-colors
@@ -95,7 +95,7 @@ export default async function IndustryMapPage({ params }: Props) {
       </header>
 
       {/* Main content */}
-      <main id="main-content" className="flex-1 max-w-[1320px] mx-auto w-full px-4 sm:px-6 py-8">
+      <main id="main-content" className="flex-1 max-w-[1508px] mx-auto w-full px-4 sm:px-6 py-8">
 
         {/* Page title — matches reference site format "{Industry} Career Map" */}
         <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
@@ -110,7 +110,7 @@ export default async function IndustryMapPage({ params }: Props) {
 
       {/* Minimal footer — matches reference site */}
       <footer className="border-t border-gray-100 bg-white" role="contentinfo">
-        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 py-3 flex items-center justify-center gap-3 text-xs text-gray-500">
+        <div className="max-w-[1508px] mx-auto px-4 sm:px-6 py-3 flex items-center justify-center gap-3 text-xs text-gray-500">
           <a href="#" className="hover:text-gray-800 transition-colors">Privacy Policy</a>
           <span aria-hidden="true">|</span>
           <a href="#" className="hover:text-gray-800 transition-colors">Terms of Service</a>

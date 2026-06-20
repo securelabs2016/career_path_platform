@@ -3,7 +3,7 @@
     "id": "space",
     "name": "Space Industry",
     "slug": "space",
-    "description": "Spacecraft design, propulsion, launch operations, mission control, and the commercial space economy. 38 roles across 6 clusters.",
+    "description": "Spacecraft design, propulsion, launch operations, mission control, and the commercial space economy. 90 roles across 6 clusters.",
     "color": "#7c3aed"
   },
   "clusters": [
@@ -17,8 +17,7 @@
   "seniority_levels": [
     "entry",
     "mid",
-    "senior",
-    "lead"
+    "senior"
   ],
   "roles": [
     {
@@ -31,7 +30,7 @@
       "salary_max": 102000,
       "salary_range": "$74,000 - $102,000",
       "degree_required": "4yr",
-      "degree_detail": "Yes \u2014 BS Aerospace/Mechanical Eng",
+      "degree_detail": "Yes — BS Aerospace/Mechanical Eng",
       "experience": "0-2 years",
       "skills": [
         "CAD",
@@ -49,7 +48,11 @@
         "sp-r-03",
         "sp-r-04",
         "sp-r-05",
-        "sp-r-34"
+        "sp-r-34",
+        "sp-r-39",
+        "sp-r-40",
+        "sp-r-41",
+        "sp-r-42"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -66,7 +69,7 @@
       "salary_max": 135000,
       "salary_range": "$95,000 - $135,000",
       "degree_required": "4yr",
-      "degree_detail": "Yes \u2014 BS Electrical/Aerospace Eng",
+      "degree_detail": "Yes — BS Electrical/Aerospace Eng",
       "experience": "3-7 years",
       "skills": [
         "Flight electronics",
@@ -75,7 +78,7 @@
         "radiation-hardened design"
       ],
       "certifications": [],
-      "description": "Designs and tests the electronic systems \u2014 flight computers, power, sensors \u2014 that control spacecraft.",
+      "description": "Designs and tests the electronic systems — flight computers, power, sensors — that control spacecraft.",
       "pathway_ids": [
         "sp-p-01"
       ],
@@ -84,7 +87,9 @@
         "sp-r-03",
         "sp-r-23",
         "sp-r-25",
-        "sp-r-36"
+        "sp-r-36",
+        "sp-r-40",
+        "sp-r-43"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -101,7 +106,7 @@
       "salary_max": 150000,
       "salary_range": "$105,000 - $150,000",
       "degree_required": "4yr",
-      "degree_detail": "Yes \u2014 BS/MS Aerospace Eng",
+      "degree_detail": "Yes — BS/MS Aerospace Eng",
       "experience": "5-10 years",
       "skills": [
         "Systems integration",
@@ -119,7 +124,8 @@
         "sp-r-02",
         "sp-r-05",
         "sp-r-23",
-        "sp-r-36"
+        "sp-r-36",
+        "sp-r-43"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -136,7 +142,7 @@
       "salary_max": 135000,
       "salary_range": "$95,000 - $135,000",
       "degree_required": "4yr",
-      "degree_detail": "Yes \u2014 BS/MS Mechanical/Aerospace",
+      "degree_detail": "Yes — BS/MS Mechanical/Aerospace",
       "experience": "3-8 years",
       "skills": [
         "Thermal analysis",
@@ -170,7 +176,7 @@
       "salary_max": 155000,
       "salary_range": "$110,000 - $155,000",
       "degree_required": "graduate",
-      "degree_detail": "Yes \u2014 MS Aerospace/Controls Eng",
+      "degree_detail": "Yes — MS Aerospace/Controls Eng",
       "experience": "3-8 years",
       "skills": [
         "Guidance navigation & control",
@@ -188,7 +194,8 @@
         "sp-r-02",
         "sp-r-03",
         "sp-r-23",
-        "sp-r-34"
+        "sp-r-34",
+        "sp-r-43"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -205,7 +212,7 @@
       "salary_max": 190000,
       "salary_range": "$140,000 - $190,000",
       "degree_required": "graduate",
-      "degree_detail": "Yes \u2014 MS Aerospace Eng",
+      "degree_detail": "Yes — MS Aerospace Eng",
       "experience": "10-15 years",
       "skills": [
         "Full-lifecycle systems leadership",
@@ -220,7 +227,10 @@
       "adjacent_role_ids": [
         "sp-r-07",
         "sp-r-36",
-        "sp-r-38"
+        "sp-r-38",
+        "sp-r-44",
+        "sp-r-45",
+        "sp-r-46"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -232,12 +242,12 @@
       "industry_id": "space",
       "title": "Chief Engineer (Spacecraft)",
       "cluster": "Spacecraft Design & Engineering",
-      "seniority": "lead",
+      "seniority": "senior",
       "salary_min": 175000,
       "salary_max": 250000,
       "salary_range": "$175,000 - $250,000",
       "degree_required": "graduate",
-      "degree_detail": "Yes \u2014 MS/PhD Aerospace Eng",
+      "degree_detail": "Yes — MS/PhD Aerospace Eng",
       "experience": "15+ years",
       "skills": [
         "Technical authority",
@@ -253,12 +263,15 @@
       "adjacent_role_ids": [
         "sp-r-38",
         "sp-r-27",
-        "sp-r-32"
+        "sp-r-32",
+        "sp-r-44",
+        "sp-r-45",
+        "sp-r-46"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
       "grid_col": 0,
-      "grid_row": 3
+      "grid_row": 2
     },
     {
       "id": "sp-r-08",
@@ -270,7 +283,7 @@
       "salary_max": 105000,
       "salary_range": "$78,000 - $105,000",
       "degree_required": "4yr",
-      "degree_detail": "Yes \u2014 BS Aerospace/Mechanical Eng",
+      "degree_detail": "Yes — BS Aerospace/Mechanical Eng",
       "experience": "0-2 years",
       "skills": [
         "Propulsion fundamentals",
@@ -288,7 +301,11 @@
         "sp-r-10",
         "sp-r-11",
         "sp-r-29",
-        "sp-r-34"
+        "sp-r-34",
+        "sp-r-47",
+        "sp-r-48",
+        "sp-r-49",
+        "sp-r-50"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -305,7 +322,7 @@
       "salary_max": 145000,
       "salary_range": "$100,000 - $145,000",
       "degree_required": "4yr",
-      "degree_detail": "Yes \u2014 BS/MS Aerospace/Mechanical",
+      "degree_detail": "Yes — BS/MS Aerospace/Mechanical",
       "experience": "3-8 years",
       "skills": [
         "Rocket engine design",
@@ -325,7 +342,9 @@
         "sp-r-06",
         "sp-r-03",
         "sp-r-29",
-        "sp-r-34"
+        "sp-r-34",
+        "sp-r-51",
+        "sp-r-52"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -342,7 +361,7 @@
       "salary_max": 135000,
       "salary_range": "$95,000 - $135,000",
       "degree_required": "4yr",
-      "degree_detail": "Yes \u2014 BS Aerospace/Mechanical Eng",
+      "degree_detail": "Yes — BS Aerospace/Mechanical Eng",
       "experience": "3-7 years",
       "skills": [
         "Engine hot-fire testing",
@@ -360,7 +379,8 @@
         "sp-r-13",
         "sp-r-31",
         "sp-r-29",
-        "sp-r-37"
+        "sp-r-37",
+        "sp-r-51"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -377,7 +397,7 @@
       "salary_max": 135000,
       "salary_range": "$95,000 - $135,000",
       "degree_required": "4yr",
-      "degree_detail": "Yes \u2014 BS Electrical/Aerospace Eng",
+      "degree_detail": "Yes — BS Electrical/Aerospace Eng",
       "experience": "3-8 years",
       "skills": [
         "Solar arrays",
@@ -386,7 +406,7 @@
         "spacecraft EPS design"
       ],
       "certifications": [],
-      "description": "Designs the electrical power systems \u2014 solar arrays, batteries, distribution \u2014 that keep spacecraft alive.",
+      "description": "Designs the electrical power systems — solar arrays, batteries, distribution — that keep spacecraft alive.",
       "pathway_ids": [
         "sp-p-02"
       ],
@@ -395,7 +415,9 @@
         "sp-r-03",
         "sp-r-12",
         "sp-r-36",
-        "sp-r-23"
+        "sp-r-23",
+        "sp-r-52",
+        "sp-r-55"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -412,7 +434,7 @@
       "salary_max": 195000,
       "salary_range": "$140,000 - $195,000",
       "degree_required": "graduate",
-      "degree_detail": "Yes \u2014 MS Aerospace Eng",
+      "degree_detail": "Yes — MS Aerospace Eng",
       "experience": "8-14 years",
       "skills": [
         "Propulsion architecture",
@@ -429,7 +451,10 @@
         "sp-r-13",
         "sp-r-07",
         "sp-r-36",
-        "sp-r-38"
+        "sp-r-38",
+        "sp-r-53",
+        "sp-r-54",
+        "sp-r-55"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -446,7 +471,7 @@
       "salary_max": 230000,
       "salary_range": "$160,000 - $230,000",
       "degree_required": "graduate",
-      "degree_detail": "Yes \u2014 MS Aerospace Eng",
+      "degree_detail": "Yes — MS Aerospace Eng",
       "experience": "12+ years",
       "skills": [
         "Propulsion program leadership",
@@ -464,7 +489,9 @@
         "sp-r-27",
         "sp-r-32",
         "sp-r-36",
-        "sp-r-38"
+        "sp-r-38",
+        "sp-r-53",
+        "sp-r-54"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -481,7 +508,7 @@
       "salary_max": 62000,
       "salary_range": "$45,000 - $62,000",
       "degree_required": "hs",
-      "degree_detail": "No \u2014 HS/GED + experience",
+      "degree_detail": "No — HS/GED + experience",
       "experience": "0-2 years",
       "skills": [
         "Electromechanical assembly",
@@ -499,7 +526,10 @@
         "sp-r-16",
         "sp-r-17",
         "sp-r-18",
-        "sp-r-29"
+        "sp-r-29",
+        "sp-r-56",
+        "sp-r-57",
+        "sp-r-58"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -516,7 +546,7 @@
       "salary_max": 75000,
       "salary_range": "$55,000 - $75,000",
       "degree_required": "hs",
-      "degree_detail": "No \u2014 HS/GED + experience",
+      "degree_detail": "No — HS/GED + experience",
       "experience": "2-5 years",
       "skills": [
         "System-level fault finding",
@@ -534,7 +564,10 @@
         "sp-r-17",
         "sp-r-18",
         "sp-r-29",
-        "sp-r-34"
+        "sp-r-34",
+        "sp-r-56",
+        "sp-r-57",
+        "sp-r-58"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -551,7 +584,7 @@
       "salary_max": 95000,
       "salary_range": "$70,000 - $95,000",
       "degree_required": "hs",
-      "degree_detail": "No \u2014 HS/GED + extensive experience",
+      "degree_detail": "No — HS/GED + extensive experience",
       "experience": "5-10 years",
       "skills": [
         "Complex integration",
@@ -585,7 +618,7 @@
       "salary_max": 130000,
       "salary_range": "$90,000 - $130,000",
       "degree_required": "4yr",
-      "degree_detail": "Yes \u2014 BS Manufacturing/Aerospace Eng",
+      "degree_detail": "Yes — BS Manufacturing/Aerospace Eng",
       "experience": "3-8 years",
       "skills": [
         "Manufacturing processes",
@@ -602,7 +635,9 @@
         "sp-r-19",
         "sp-r-20",
         "sp-r-36",
-        "sp-r-37"
+        "sp-r-37",
+        "sp-r-59",
+        "sp-r-60"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -619,7 +654,7 @@
       "salary_max": 135000,
       "salary_range": "$95,000 - $135,000",
       "degree_required": "4yr",
-      "degree_detail": "Yes \u2014 BS Aerospace/Mechanical Eng",
+      "degree_detail": "Yes — BS Aerospace/Mechanical Eng",
       "experience": "3-8 years",
       "skills": [
         "Test procedures",
@@ -637,7 +672,9 @@
         "sp-r-20",
         "sp-r-06",
         "sp-r-23",
-        "sp-r-36"
+        "sp-r-36",
+        "sp-r-59",
+        "sp-r-60"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -654,7 +691,7 @@
       "salary_max": 175000,
       "salary_range": "$130,000 - $175,000",
       "degree_required": "4yr",
-      "degree_detail": "Yes \u2014 BS/MS Engineering",
+      "degree_detail": "Yes — BS/MS Engineering",
       "experience": "8-14 years",
       "skills": [
         "Production scale-up",
@@ -670,7 +707,10 @@
       "adjacent_role_ids": [
         "sp-r-20",
         "sp-r-36",
-        "sp-r-37"
+        "sp-r-37",
+        "sp-r-61",
+        "sp-r-62",
+        "sp-r-63"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -687,7 +727,7 @@
       "salary_max": 175000,
       "salary_range": "$125,000 - $175,000",
       "degree_required": "4yr",
-      "degree_detail": "Yes \u2014 BS Engineering/Operations",
+      "degree_detail": "Yes — BS Engineering/Operations",
       "experience": "10+ years",
       "skills": [
         "Production leadership",
@@ -696,7 +736,7 @@
         "delivery accountability"
       ],
       "certifications": [],
-      "description": "Runs spacecraft or component production \u2014 schedule, capacity, quality, and team \u2014 and is accountable for delivery.",
+      "description": "Runs spacecraft or component production — schedule, capacity, quality, and team — and is accountable for delivery.",
       "pathway_ids": [
         "sp-p-03"
       ],
@@ -704,7 +744,9 @@
         "sp-r-36",
         "sp-r-38",
         "sp-r-13",
-        "sp-r-19"
+        "sp-r-19",
+        "sp-r-61",
+        "sp-r-62"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -721,7 +763,7 @@
       "salary_max": 75000,
       "salary_range": "$55,000 - $75,000",
       "degree_required": "sometimes",
-      "degree_detail": "Sometimes \u2014 Associate/BS preferred",
+      "degree_detail": "Sometimes — Associate/BS preferred",
       "experience": "0-3 years",
       "skills": [
         "Spacecraft monitoring",
@@ -738,7 +780,11 @@
         "sp-r-23",
         "sp-r-24",
         "sp-r-22",
-        "sp-r-34"
+        "sp-r-34",
+        "sp-r-64",
+        "sp-r-65",
+        "sp-r-66",
+        "sp-r-67"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -755,7 +801,7 @@
       "salary_max": 130000,
       "salary_range": "$90,000 - $130,000",
       "degree_required": "4yr",
-      "degree_detail": "Yes \u2014 BS Engineering/CS",
+      "degree_detail": "Yes — BS Engineering/CS",
       "experience": "3-8 years",
       "skills": [
         "Ground station software",
@@ -764,7 +810,7 @@
         "mission planning tools"
       ],
       "certifications": [],
-      "description": "Builds and maintains the ground systems \u2014 software, antennas, data pipelines \u2014 that command and receive data from spacecraft.",
+      "description": "Builds and maintains the ground systems — software, antennas, data pipelines — that command and receive data from spacecraft.",
       "pathway_ids": [
         "sp-p-04"
       ],
@@ -790,7 +836,7 @@
       "salary_max": 145000,
       "salary_range": "$100,000 - $145,000",
       "degree_required": "4yr",
-      "degree_detail": "Yes \u2014 BS Aerospace/Engineering",
+      "degree_detail": "Yes — BS Aerospace/Engineering",
       "experience": "3-8 years",
       "skills": [
         "Spacecraft commanding",
@@ -809,7 +855,8 @@
         "sp-r-24",
         "sp-r-25",
         "sp-r-26",
-        "sp-r-27"
+        "sp-r-27",
+        "sp-r-68"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -826,7 +873,7 @@
       "salary_max": 138000,
       "salary_range": "$95,000 - $138,000",
       "degree_required": "4yr",
-      "degree_detail": "Yes \u2014 BS Electrical/Aerospace Eng",
+      "degree_detail": "Yes — BS Electrical/Aerospace Eng",
       "experience": "3-8 years",
       "skills": [
         "Telemetry tracking & command",
@@ -844,7 +891,8 @@
         "sp-r-22",
         "sp-r-23",
         "sp-r-25",
-        "sp-r-26"
+        "sp-r-26",
+        "sp-r-68"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -861,7 +909,7 @@
       "salary_max": 160000,
       "salary_range": "$110,000 - $160,000",
       "degree_required": "4yr",
-      "degree_detail": "Yes \u2014 BS Computer Science/Eng",
+      "degree_detail": "Yes — BS Computer Science/Eng",
       "experience": "3-9 years",
       "skills": [
         "Embedded C/C++",
@@ -879,7 +927,8 @@
         "sp-r-22",
         "sp-r-23",
         "sp-r-24",
-        "sp-r-26"
+        "sp-r-26",
+        "sp-r-68"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -896,7 +945,7 @@
       "salary_max": 190000,
       "salary_range": "$140,000 - $190,000",
       "degree_required": "4yr",
-      "degree_detail": "Yes \u2014 BS/MS Aerospace Eng",
+      "degree_detail": "Yes — BS/MS Aerospace Eng",
       "experience": "8-14 years",
       "skills": [
         "Operations leadership",
@@ -914,7 +963,10 @@
         "sp-r-23",
         "sp-r-24",
         "sp-r-25",
-        "sp-r-27"
+        "sp-r-27",
+        "sp-r-69",
+        "sp-r-70",
+        "sp-r-71"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -926,12 +978,12 @@
       "industry_id": "space",
       "title": "Mission Director",
       "cluster": "Mission Operations & Ground Systems",
-      "seniority": "lead",
+      "seniority": "senior",
       "salary_min": 160000,
       "salary_max": 220000,
       "salary_range": "$160,000 - $220,000",
       "degree_required": "graduate",
-      "degree_detail": "Yes \u2014 MS Aerospace Eng",
+      "degree_detail": "Yes — MS Aerospace Eng",
       "experience": "12+ years",
       "skills": [
         "Mission leadership",
@@ -945,12 +997,15 @@
         "sp-p-04"
       ],
       "adjacent_role_ids": [
-        "sp-r-26"
+        "sp-r-26",
+        "sp-r-69",
+        "sp-r-70",
+        "sp-r-71"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
       "grid_col": 3,
-      "grid_row": 3
+      "grid_row": 2
     },
     {
       "id": "sp-r-28",
@@ -962,7 +1017,7 @@
       "salary_max": 70000,
       "salary_range": "$50,000 - $70,000",
       "degree_required": "hs",
-      "degree_detail": "No \u2014 HS/GED + training",
+      "degree_detail": "No — HS/GED + training",
       "experience": "0-3 years",
       "skills": [
         "Vehicle processing",
@@ -977,7 +1032,11 @@
       ],
       "adjacent_role_ids": [
         "sp-r-29",
-        "sp-r-30"
+        "sp-r-30",
+        "sp-r-72",
+        "sp-r-73",
+        "sp-r-74",
+        "sp-r-75"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -994,7 +1053,7 @@
       "salary_max": 130000,
       "salary_range": "$90,000 - $130,000",
       "degree_required": "4yr",
-      "degree_detail": "Yes \u2014 BS Aerospace/Mechanical Eng",
+      "degree_detail": "Yes — BS Aerospace/Mechanical Eng",
       "experience": "3-7 years",
       "skills": [
         "Environmental testing",
@@ -1003,14 +1062,17 @@
         "data analysis"
       ],
       "certifications": [],
-      "description": "Plans and runs environmental tests \u2014 vibration, thermal-vacuum, shock \u2014 that qualify hardware for spaceflight.",
+      "description": "Plans and runs environmental tests — vibration, thermal-vacuum, shock — that qualify hardware for spaceflight.",
       "pathway_ids": [
         "sp-p-05"
       ],
       "adjacent_role_ids": [
         "sp-r-28",
         "sp-r-30",
-        "sp-r-31"
+        "sp-r-31",
+        "sp-r-76",
+        "sp-r-77",
+        "sp-r-78"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -1027,7 +1089,7 @@
       "salary_max": 145000,
       "salary_range": "$100,000 - $145,000",
       "degree_required": "4yr",
-      "degree_detail": "Yes \u2014 BS Aerospace Eng",
+      "degree_detail": "Yes — BS Aerospace Eng",
       "experience": "3-8 years",
       "skills": [
         "Launch campaign planning",
@@ -1036,7 +1098,7 @@
         "range coordination"
       ],
       "certifications": [],
-      "description": "Plans and executes launch campaigns \u2014 vehicle integration, countdown procedures, and range coordination.",
+      "description": "Plans and executes launch campaigns — vehicle integration, countdown procedures, and range coordination.",
       "pathway_ids": [
         "sp-p-05"
       ],
@@ -1044,7 +1106,10 @@
         "sp-r-28",
         "sp-r-29",
         "sp-r-31",
-        "sp-r-32"
+        "sp-r-32",
+        "sp-r-76",
+        "sp-r-77",
+        "sp-r-78"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -1061,7 +1126,7 @@
       "salary_max": 175000,
       "salary_range": "$130,000 - $175,000",
       "degree_required": "4yr",
-      "degree_detail": "Yes \u2014 BS/MS Aerospace Eng",
+      "degree_detail": "Yes — BS/MS Aerospace Eng",
       "experience": "8-13 years",
       "skills": [
         "Test program leadership",
@@ -1077,7 +1142,10 @@
       "adjacent_role_ids": [
         "sp-r-29",
         "sp-r-30",
-        "sp-r-32"
+        "sp-r-32",
+        "sp-r-79",
+        "sp-r-80",
+        "sp-r-81"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -1089,12 +1157,12 @@
       "industry_id": "space",
       "title": "Launch Director",
       "cluster": "Launch & Test Operations",
-      "seniority": "lead",
+      "seniority": "senior",
       "salary_min": 165000,
       "salary_max": 235000,
       "salary_range": "$165,000 - $235,000",
       "degree_required": "graduate",
-      "degree_detail": "Yes \u2014 MS Aerospace Eng",
+      "degree_detail": "Yes — MS Aerospace Eng",
       "experience": "12+ years",
       "skills": [
         "Launch authority",
@@ -1103,17 +1171,20 @@
         "risk ownership"
       ],
       "certifications": [],
-      "description": "Holds launch authority \u2014 leads the countdown, makes the final go/no-go call, and owns launch risk.",
+      "description": "Holds launch authority — leads the countdown, makes the final go/no-go call, and owns launch risk.",
       "pathway_ids": [
         "sp-p-05"
       ],
       "adjacent_role_ids": [
-        "sp-r-31"
+        "sp-r-31",
+        "sp-r-79",
+        "sp-r-80",
+        "sp-r-81"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
       "grid_col": 4,
-      "grid_row": 3
+      "grid_row": 2
     },
     {
       "id": "sp-r-33",
@@ -1125,7 +1196,7 @@
       "salary_max": 80000,
       "salary_range": "$58,000 - $80,000",
       "degree_required": "4yr",
-      "degree_detail": "Yes \u2014 BS Supply Chain/Business",
+      "degree_detail": "Yes — BS Supply Chain/Business",
       "experience": "0-3 years",
       "skills": [
         "Procurement",
@@ -1141,7 +1212,11 @@
       ],
       "adjacent_role_ids": [
         "sp-r-34",
-        "sp-r-35"
+        "sp-r-35",
+        "sp-r-82",
+        "sp-r-83",
+        "sp-r-84",
+        "sp-r-85"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -1158,7 +1233,7 @@
       "salary_max": 125000,
       "salary_range": "$85,000 - $125,000",
       "degree_required": "4yr",
-      "degree_detail": "Yes \u2014 BS Engineering/Physics",
+      "degree_detail": "Yes — BS Engineering/Physics",
       "experience": "2-7 years",
       "skills": [
         "Mission analysis",
@@ -1176,7 +1251,10 @@
         "sp-r-33",
         "sp-r-35",
         "sp-r-36",
-        "sp-r-37"
+        "sp-r-37",
+        "sp-r-86",
+        "sp-r-87",
+        "sp-r-88"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -1193,7 +1271,7 @@
       "salary_max": 115000,
       "salary_range": "$75,000 - $115,000",
       "degree_required": "4yr",
-      "degree_detail": "Yes \u2014 BS/MS Policy/Political Science",
+      "degree_detail": "Yes — BS/MS Policy/Political Science",
       "experience": "3-8 years",
       "skills": [
         "Space policy",
@@ -1210,7 +1288,10 @@
         "sp-r-33",
         "sp-r-34",
         "sp-r-36",
-        "sp-r-37"
+        "sp-r-37",
+        "sp-r-86",
+        "sp-r-87",
+        "sp-r-88"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -1227,7 +1308,7 @@
       "salary_max": 200000,
       "salary_range": "$140,000 - $200,000",
       "degree_required": "4yr",
-      "degree_detail": "Yes \u2014 BS Engineering + PMP",
+      "degree_detail": "Yes — BS Engineering + PMP",
       "experience": "10-15 years",
       "skills": [
         "Program management",
@@ -1244,7 +1325,8 @@
         "sp-r-34",
         "sp-r-35",
         "sp-r-37",
-        "sp-r-38"
+        "sp-r-38",
+        "sp-r-89"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -1261,7 +1343,7 @@
       "salary_max": 190000,
       "salary_range": "$130,000 - $190,000 + commission",
       "degree_required": "4yr",
-      "degree_detail": "Yes \u2014 BS/MBA",
+      "degree_detail": "Yes — BS/MBA",
       "experience": "8-14 years",
       "skills": [
         "Capture strategy",
@@ -1278,7 +1360,9 @@
         "sp-r-34",
         "sp-r-35",
         "sp-r-36",
-        "sp-r-38"
+        "sp-r-38",
+        "sp-r-89",
+        "sp-r-90"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
@@ -1290,12 +1374,12 @@
       "industry_id": "space",
       "title": "Director of Space Programs",
       "cluster": "Business, Policy & Supply Chain",
-      "seniority": "lead",
+      "seniority": "senior",
       "salary_min": 180000,
       "salary_max": 280000,
       "salary_range": "$180,000 - $280,000",
       "degree_required": "graduate",
-      "degree_detail": "Yes \u2014 MS Engineering + leadership",
+      "degree_detail": "Yes — MS Engineering + leadership",
       "experience": "15+ years",
       "skills": [
         "Portfolio leadership",
@@ -1310,12 +1394,1569 @@
       ],
       "adjacent_role_ids": [
         "sp-r-36",
+        "sp-r-37",
+        "sp-r-89",
+        "sp-r-90"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 5,
+      "grid_row": 2
+    },
+    {
+      "id": "sp-r-39",
+      "industry_id": "space",
+      "title": "Spacecraft Design Drafter",
+      "cluster": "Spacecraft Design & Engineering",
+      "seniority": "entry",
+      "salary_min": 50000,
+      "salary_max": 72000,
+      "salary_range": "$50,000 - $72,000",
+      "degree_required": "2yr",
+      "degree_detail": "AS Drafting/Eng Tech or equivalent",
+      "experience": "0-2 years",
+      "skills": [
+        "CAD",
+        "technical drawing",
+        "GD&T",
+        "drafting standards"
+      ],
+      "certifications": [],
+      "description": "Produces engineering drawings and CAD models for spacecraft structures under engineer guidance.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-01",
+        "sp-r-42"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 0,
+      "grid_row": 0
+    },
+    {
+      "id": "sp-r-40",
+      "industry_id": "space",
+      "title": "Avionics Design Technician",
+      "cluster": "Spacecraft Design & Engineering",
+      "seniority": "entry",
+      "salary_min": 55000,
+      "salary_max": 78000,
+      "salary_range": "$55,000 - $78,000",
+      "degree_required": "2yr",
+      "degree_detail": "AS Electronics or Avionics",
+      "experience": "0-2 years",
+      "skills": [
+        "schematic capture",
+        "PCB layout",
+        "soldering",
+        "test equipment"
+      ],
+      "certifications": [],
+      "description": "Assists avionics engineers with prototyping, schematic capture, and bench testing of flight electronics.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-02",
+        "sp-r-01"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 0,
+      "grid_row": 0
+    },
+    {
+      "id": "sp-r-41",
+      "industry_id": "space",
+      "title": "Spacecraft CAD Engineer",
+      "cluster": "Spacecraft Design & Engineering",
+      "seniority": "entry",
+      "salary_min": 60000,
+      "salary_max": 78000,
+      "salary_range": "$60,000 - $78,000",
+      "degree_required": "4yr",
+      "degree_detail": "Yes — BS Mechanical/Aerospace Eng",
+      "experience": "0-2 years",
+      "skills": [
+        "parametric CAD",
+        "assembly modeling",
+        "PDM systems",
+        "spacecraft structures"
+      ],
+      "certifications": [],
+      "description": "Builds and maintains parametric CAD models of spacecraft assemblies for design and analysis teams.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-01"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 0,
+      "grid_row": 0
+    },
+    {
+      "id": "sp-r-42",
+      "industry_id": "space",
+      "title": "Spacecraft Structures Drafter",
+      "cluster": "Spacecraft Design & Engineering",
+      "seniority": "entry",
+      "salary_min": 52000,
+      "salary_max": 74000,
+      "salary_range": "$52,000 - $74,000",
+      "degree_required": "2yr",
+      "degree_detail": "AS Drafting or related",
+      "experience": "0-2 years",
+      "skills": [
+        "structural drawing",
+        "CAD",
+        "tolerance analysis",
+        "materials specs"
+      ],
+      "certifications": [],
+      "description": "Drafts structural details and assembly drawings for spacecraft primary structures.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-01",
+        "sp-r-39"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 0,
+      "grid_row": 0
+    },
+    {
+      "id": "sp-r-43",
+      "industry_id": "space",
+      "title": "Flight Controls Engineer",
+      "cluster": "Spacecraft Design & Engineering",
+      "seniority": "mid",
+      "salary_min": 108000,
+      "salary_max": 138000,
+      "salary_range": "$108,000 - $138,000",
+      "degree_required": "4yr",
+      "degree_detail": "Yes — BS Aerospace/Control Eng",
+      "experience": "3-7 years",
+      "skills": [
+        "control systems",
+        "MATLAB/Simulink",
+        "flight dynamics",
+        "actuator design"
+      ],
+      "certifications": [],
+      "description": "Designs flight control laws and stabilization systems for spacecraft attitude and trajectory.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-05",
+        "sp-r-02",
+        "sp-r-03"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 0,
+      "grid_row": 1
+    },
+    {
+      "id": "sp-r-44",
+      "industry_id": "space",
+      "title": "Distinguished Spacecraft Architect",
+      "cluster": "Spacecraft Design & Engineering",
+      "seniority": "senior",
+      "salary_min": 195000,
+      "salary_max": 250000,
+      "salary_range": "$195,000 - $250,000",
+      "degree_required": "4yr",
+      "degree_detail": "Yes — MS/PhD Aerospace Eng preferred",
+      "experience": "15+ years",
+      "skills": [
+        "spacecraft architecture",
+        "mission design",
+        "subsystem trade studies",
+        "technical leadership"
+      ],
+      "certifications": [],
+      "description": "Defines end-to-end spacecraft architecture across multiple programs and mentors senior engineers.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-06",
+        "sp-r-07"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 0,
+      "grid_row": 2
+    },
+    {
+      "id": "sp-r-45",
+      "industry_id": "space",
+      "title": "Director of Spacecraft Engineering",
+      "cluster": "Spacecraft Design & Engineering",
+      "seniority": "senior",
+      "salary_min": 200000,
+      "salary_max": 265000,
+      "salary_range": "$200,000 - $265,000",
+      "degree_required": "4yr",
+      "degree_detail": "Yes — BS/MS Aerospace + MBA common",
+      "experience": "15+ years",
+      "skills": [
+        "engineering management",
+        "program leadership",
+        "budget",
+        "cross-team coordination"
+      ],
+      "certifications": [],
+      "description": "Leads the spacecraft engineering organization, owning hiring, roadmap, and program execution.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-07",
+        "sp-r-06"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 0,
+      "grid_row": 2
+    },
+    {
+      "id": "sp-r-46",
+      "industry_id": "space",
+      "title": "Aerospace Research Engineer",
+      "cluster": "Spacecraft Design & Engineering",
+      "seniority": "senior",
+      "salary_min": 170000,
+      "salary_max": 210000,
+      "salary_range": "$170,000 - $210,000",
+      "degree_required": "4yr",
+      "degree_detail": "Yes — PhD Aerospace/Physics common",
+      "experience": "10+ years",
+      "skills": [
+        "applied research",
+        "experimental design",
+        "technical writing",
+        "advanced propulsion or materials"
+      ],
+      "certifications": [],
+      "description": "Investigates next-generation spacecraft technologies at NASA centers or industry research labs.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-06",
+        "sp-r-07"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 0,
+      "grid_row": 2
+    },
+    {
+      "id": "sp-r-47",
+      "industry_id": "space",
+      "title": "Propulsion Test Technician",
+      "cluster": "Propulsion & Systems",
+      "seniority": "entry",
+      "salary_min": 54000,
+      "salary_max": 76000,
+      "salary_range": "$54,000 - $76,000",
+      "degree_required": "2yr",
+      "degree_detail": "AS Mechanical/Eng Tech",
+      "experience": "0-2 years",
+      "skills": [
+        "test stand operations",
+        "data acquisition",
+        "instrumentation",
+        "cryogenic handling"
+      ],
+      "certifications": [],
+      "description": "Operates propulsion test stands and assists engineers with hot-fire and component testing.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-08",
+        "sp-r-49"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 1,
+      "grid_row": 0
+    },
+    {
+      "id": "sp-r-48",
+      "industry_id": "space",
+      "title": "Power Systems Technician",
+      "cluster": "Propulsion & Systems",
+      "seniority": "entry",
+      "salary_min": 55000,
+      "salary_max": 77000,
+      "salary_range": "$55,000 - $77,000",
+      "degree_required": "2yr",
+      "degree_detail": "AS Electrical/Electronics",
+      "experience": "0-2 years",
+      "skills": [
+        "power distribution",
+        "battery handling",
+        "electrical testing",
+        "harness assembly"
+      ],
+      "certifications": [],
+      "description": "Assembles and tests spacecraft power systems including batteries, solar arrays, and distribution units.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-08",
+        "sp-r-50"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 1,
+      "grid_row": 0
+    },
+    {
+      "id": "sp-r-49",
+      "industry_id": "space",
+      "title": "Propulsion Assembly Technician",
+      "cluster": "Propulsion & Systems",
+      "seniority": "entry",
+      "salary_min": 52000,
+      "salary_max": 74000,
+      "salary_range": "$52,000 - $74,000",
+      "degree_required": "2yr",
+      "degree_detail": "AS Mechanical Eng Tech",
+      "experience": "0-2 years",
+      "skills": [
+        "precision assembly",
+        "torque procedures",
+        "leak testing",
+        "cleanroom protocols"
+      ],
+      "certifications": [],
+      "description": "Assembles propulsion components including valves, manifolds, and thrusters per engineering drawings.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-08",
+        "sp-r-47"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 1,
+      "grid_row": 0
+    },
+    {
+      "id": "sp-r-50",
+      "industry_id": "space",
+      "title": "Avionics Power Technician",
+      "cluster": "Propulsion & Systems",
+      "seniority": "entry",
+      "salary_min": 56000,
+      "salary_max": 78000,
+      "salary_range": "$56,000 - $78,000",
+      "degree_required": "2yr",
+      "degree_detail": "AS Electronics",
+      "experience": "0-2 years",
+      "skills": [
+        "DC/DC converters",
+        "EMI testing",
+        "power testing equipment",
+        "fault diagnosis"
+      ],
+      "certifications": [],
+      "description": "Supports avionics power distribution testing and integration on spacecraft platforms.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-08",
+        "sp-r-48"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 1,
+      "grid_row": 0
+    },
+    {
+      "id": "sp-r-51",
+      "industry_id": "space",
+      "title": "Propulsion Combustion Engineer",
+      "cluster": "Propulsion & Systems",
+      "seniority": "mid",
+      "salary_min": 110000,
+      "salary_max": 138000,
+      "salary_range": "$110,000 - $138,000",
+      "degree_required": "4yr",
+      "degree_detail": "Yes — BS/MS Aerospace/Mechanical Eng",
+      "experience": "3-7 years",
+      "skills": [
+        "combustion modeling",
+        "injector design",
+        "CFD",
+        "high-pressure systems"
+      ],
+      "certifications": [],
+      "description": "Designs and analyzes combustion chambers and injector hardware for liquid rocket engines.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-09",
+        "sp-r-10"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 1,
+      "grid_row": 1
+    },
+    {
+      "id": "sp-r-52",
+      "industry_id": "space",
+      "title": "Power Distribution Engineer",
+      "cluster": "Propulsion & Systems",
+      "seniority": "mid",
+      "salary_min": 105000,
+      "salary_max": 132000,
+      "salary_range": "$105,000 - $132,000",
+      "degree_required": "4yr",
+      "degree_detail": "Yes — BS Electrical Eng",
+      "experience": "3-7 years",
+      "skills": [
+        "power electronics",
+        "EPS architecture",
+        "battery management",
+        "radiation effects"
+      ],
+      "certifications": [],
+      "description": "Designs spacecraft electrical power systems from solar array to load distribution.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-11",
+        "sp-r-09"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 1,
+      "grid_row": 1
+    },
+    {
+      "id": "sp-r-53",
+      "industry_id": "space",
+      "title": "Principal Propulsion Engineer",
+      "cluster": "Propulsion & Systems",
+      "seniority": "senior",
+      "salary_min": 195000,
+      "salary_max": 245000,
+      "salary_range": "$195,000 - $245,000",
+      "degree_required": "4yr",
+      "degree_detail": "Yes — MS/PhD Aerospace Eng",
+      "experience": "12+ years",
+      "skills": [
+        "engine architecture",
+        "propulsion R&D",
+        "technical mentorship",
+        "design review leadership"
+      ],
+      "certifications": [],
+      "description": "Sets technical direction for propulsion programs and is the final authority on engine design.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-12",
+        "sp-r-13"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 1,
+      "grid_row": 2
+    },
+    {
+      "id": "sp-r-54",
+      "industry_id": "space",
+      "title": "Director of Propulsion",
+      "cluster": "Propulsion & Systems",
+      "seniority": "senior",
+      "salary_min": 210000,
+      "salary_max": 270000,
+      "salary_range": "$210,000 - $270,000",
+      "degree_required": "4yr",
+      "degree_detail": "Yes — BS/MS Aerospace + MBA common",
+      "experience": "15+ years",
+      "skills": [
+        "engineering leadership",
+        "P&L responsibility",
+        "propulsion programs",
+        "supplier strategy"
+      ],
+      "certifications": [],
+      "description": "Leads the propulsion organization, owning roadmap, test infrastructure, and program delivery.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-13",
+        "sp-r-12"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 1,
+      "grid_row": 2
+    },
+    {
+      "id": "sp-r-55",
+      "industry_id": "space",
+      "title": "Chief Power Systems Engineer",
+      "cluster": "Propulsion & Systems",
+      "seniority": "senior",
+      "salary_min": 175000,
+      "salary_max": 215000,
+      "salary_range": "$175,000 - $215,000",
+      "degree_required": "4yr",
+      "degree_detail": "Yes — MS Electrical Eng",
+      "experience": "12+ years",
+      "skills": [
+        "EPS architecture",
+        "spacecraft electrical design",
+        "system-level trades",
+        "reliability"
+      ],
+      "certifications": [],
+      "description": "Owns end-to-end electrical power system architecture across spacecraft programs.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-11",
+        "sp-r-12"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 1,
+      "grid_row": 2
+    },
+    {
+      "id": "sp-r-56",
+      "industry_id": "space",
+      "title": "Spacecraft Cleanroom Technician",
+      "cluster": "Manufacturing & Assembly (AIT)",
+      "seniority": "entry",
+      "salary_min": 48000,
+      "salary_max": 68000,
+      "salary_range": "$48,000 - $68,000",
+      "degree_required": "hs",
+      "degree_detail": "HS + cleanroom training",
+      "experience": "0-2 years",
+      "skills": [
+        "ISO cleanroom protocols",
+        "contamination control",
+        "ESD safety",
+        "gowning"
+      ],
+      "certifications": [],
+      "description": "Maintains cleanroom environment and supports spacecraft assembly under contamination-controlled conditions.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-14",
+        "sp-r-15"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 2,
+      "grid_row": 0
+    },
+    {
+      "id": "sp-r-57",
+      "industry_id": "space",
+      "title": "Composites Layup Technician",
+      "cluster": "Manufacturing & Assembly (AIT)",
+      "seniority": "entry",
+      "salary_min": 50000,
+      "salary_max": 70000,
+      "salary_range": "$50,000 - $70,000",
+      "degree_required": "2yr",
+      "degree_detail": "AS Composites or vocational",
+      "experience": "0-2 years",
+      "skills": [
+        "composite layup",
+        "autoclave operation",
+        "carbon fiber handling",
+        "vacuum bagging"
+      ],
+      "certifications": [],
+      "description": "Performs hand layup and bagging operations for spacecraft composite structures.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-14",
+        "sp-r-15"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 2,
+      "grid_row": 0
+    },
+    {
+      "id": "sp-r-58",
+      "industry_id": "space",
+      "title": "Harness Assembly Technician",
+      "cluster": "Manufacturing & Assembly (AIT)",
+      "seniority": "entry",
+      "salary_min": 52000,
+      "salary_max": 72000,
+      "salary_range": "$52,000 - $72,000",
+      "degree_required": "hs",
+      "degree_detail": "HS + IPC training",
+      "experience": "0-2 years",
+      "skills": [
+        "wire harness fabrication",
+        "crimping",
+        "IPC/WHMA-A-620",
+        "cable routing"
+      ],
+      "certifications": [
+        "IPC/WHMA-A-620"
+      ],
+      "description": "Builds spacecraft wire harnesses per IPC standards including crimping, routing, and continuity testing.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-14",
+        "sp-r-15"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 2,
+      "grid_row": 0
+    },
+    {
+      "id": "sp-r-59",
+      "industry_id": "space",
+      "title": "Mechanical Integration & Test Engineer",
+      "cluster": "Manufacturing & Assembly (AIT)",
+      "seniority": "mid",
+      "salary_min": 100000,
+      "salary_max": 132000,
+      "salary_range": "$100,000 - $132,000",
+      "degree_required": "4yr",
+      "degree_detail": "Yes — BS Mechanical/Aerospace Eng",
+      "experience": "3-7 years",
+      "skills": [
+        "mechanical integration",
+        "fixture design",
+        "torque procedures",
+        "alignment metrology"
+      ],
+      "certifications": [],
+      "description": "Plans and executes mechanical integration and test of spacecraft assemblies.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-18",
+        "sp-r-17"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 2,
+      "grid_row": 1
+    },
+    {
+      "id": "sp-r-60",
+      "industry_id": "space",
+      "title": "Payload Integration Engineer",
+      "cluster": "Manufacturing & Assembly (AIT)",
+      "seniority": "mid",
+      "salary_min": 105000,
+      "salary_max": 135000,
+      "salary_range": "$105,000 - $135,000",
+      "degree_required": "4yr",
+      "degree_detail": "Yes — BS Aerospace/Mechanical Eng",
+      "experience": "3-7 years",
+      "skills": [
+        "payload accommodation",
+        "interface control",
+        "integration procedures",
+        "thermal interfaces"
+      ],
+      "certifications": [],
+      "description": "Owns mechanical and electrical integration of payloads onto spacecraft buses.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-18",
+        "sp-r-17"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 2,
+      "grid_row": 1
+    },
+    {
+      "id": "sp-r-61",
+      "industry_id": "space",
+      "title": "AIT Lead Engineer",
+      "cluster": "Manufacturing & Assembly (AIT)",
+      "seniority": "senior",
+      "salary_min": 150000,
+      "salary_max": 180000,
+      "salary_range": "$150,000 - $180,000",
+      "degree_required": "4yr",
+      "degree_detail": "Yes — BS/MS Aerospace Eng",
+      "experience": "10+ years",
+      "skills": [
+        "AIT program leadership",
+        "test campaign planning",
+        "anomaly resolution",
+        "team management"
+      ],
+      "certifications": [],
+      "description": "Leads assembly, integration and test campaigns and is the senior technical authority on the floor.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-19",
+        "sp-r-20",
+        "sp-r-63"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 2,
+      "grid_row": 2
+    },
+    {
+      "id": "sp-r-62",
+      "industry_id": "space",
+      "title": "Director of Spacecraft Manufacturing",
+      "cluster": "Manufacturing & Assembly (AIT)",
+      "seniority": "senior",
+      "salary_min": 175000,
+      "salary_max": 220000,
+      "salary_range": "$175,000 - $220,000",
+      "degree_required": "4yr",
+      "degree_detail": "Yes — BS Eng + MBA common",
+      "experience": "15+ years",
+      "skills": [
+        "manufacturing leadership",
+        "production strategy",
+        "supplier management",
+        "quality systems"
+      ],
+      "certifications": [],
+      "description": "Leads the spacecraft manufacturing organization across multiple production lines and programs.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-20",
+        "sp-r-19"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 2,
+      "grid_row": 2
+    },
+    {
+      "id": "sp-r-63",
+      "industry_id": "space",
+      "title": "Principal Integration Engineer",
+      "cluster": "Manufacturing & Assembly (AIT)",
+      "seniority": "senior",
+      "salary_min": 160000,
+      "salary_max": 200000,
+      "salary_range": "$160,000 - $200,000",
+      "degree_required": "4yr",
+      "degree_detail": "Yes — BS/MS Aerospace Eng",
+      "experience": "12+ years",
+      "skills": [
+        "integration architecture",
+        "test program design",
+        "technical mentorship",
+        "anomaly investigation"
+      ],
+      "certifications": [],
+      "description": "Sets integration and test standards across programs and resolves the toughest hardware issues.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-19",
+        "sp-r-61"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 2,
+      "grid_row": 2
+    },
+    {
+      "id": "sp-r-64",
+      "industry_id": "space",
+      "title": "Spacecraft Controller",
+      "cluster": "Mission Operations & Ground Systems",
+      "seniority": "entry",
+      "salary_min": 55000,
+      "salary_max": 80000,
+      "salary_range": "$55,000 - $80,000",
+      "degree_required": "4yr",
+      "degree_detail": "Yes — BS Aerospace/Eng",
+      "experience": "0-3 years",
+      "skills": [
+        "mission control consoles",
+        "telemetry monitoring",
+        "command uplink",
+        "shift operations"
+      ],
+      "certifications": [],
+      "description": "Monitors spacecraft health on console during operations shifts and executes scheduled commanding.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-21",
+        "sp-r-67"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 3,
+      "grid_row": 0
+    },
+    {
+      "id": "sp-r-65",
+      "industry_id": "space",
+      "title": "Telemetry Analyst",
+      "cluster": "Mission Operations & Ground Systems",
+      "seniority": "entry",
+      "salary_min": 54000,
+      "salary_max": 78000,
+      "salary_range": "$54,000 - $78,000",
+      "degree_required": "4yr",
+      "degree_detail": "Yes — BS Eng/Computer Sci",
+      "experience": "0-3 years",
+      "skills": [
+        "telemetry parsing",
+        "data analysis",
+        "anomaly investigation",
+        "Python"
+      ],
+      "certifications": [],
+      "description": "Analyzes spacecraft telemetry to characterize subsystem behavior and flag anomalies.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-21"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 3,
+      "grid_row": 0
+    },
+    {
+      "id": "sp-r-66",
+      "industry_id": "space",
+      "title": "Ground Systems Technician",
+      "cluster": "Mission Operations & Ground Systems",
+      "seniority": "entry",
+      "salary_min": 50000,
+      "salary_max": 72000,
+      "salary_range": "$50,000 - $72,000",
+      "degree_required": "2yr",
+      "degree_detail": "AS RF/Electronics",
+      "experience": "0-2 years",
+      "skills": [
+        "RF equipment",
+        "ground station maintenance",
+        "antenna alignment",
+        "signal testing"
+      ],
+      "certifications": [],
+      "description": "Maintains ground station hardware including antennas, RF equipment, and supporting infrastructure.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-21"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 3,
+      "grid_row": 0
+    },
+    {
+      "id": "sp-r-67",
+      "industry_id": "space",
+      "title": "Mission Ops Support Technician",
+      "cluster": "Mission Operations & Ground Systems",
+      "seniority": "entry",
+      "salary_min": 52000,
+      "salary_max": 75000,
+      "salary_range": "$52,000 - $75,000",
+      "degree_required": "2yr",
+      "degree_detail": "AS Eng Tech",
+      "experience": "0-2 years",
+      "skills": [
+        "console support",
+        "procedure execution",
+        "shift handover",
+        "logging tools"
+      ],
+      "certifications": [],
+      "description": "Provides backup console coverage and procedure support during mission ops shifts.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-21",
+        "sp-r-64"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 3,
+      "grid_row": 0
+    },
+    {
+      "id": "sp-r-68",
+      "industry_id": "space",
+      "title": "Flight Software Engineer (On-Board)",
+      "cluster": "Mission Operations & Ground Systems",
+      "seniority": "mid",
+      "salary_min": 115000,
+      "salary_max": 145000,
+      "salary_range": "$115,000 - $145,000",
+      "degree_required": "4yr",
+      "degree_detail": "Yes — BS Computer Sci/Aerospace",
+      "experience": "3-7 years",
+      "skills": [
+        "C/C++",
+        "real-time OS",
+        "spacecraft autonomy",
+        "verification & validation"
+      ],
+      "certifications": [],
+      "description": "Develops on-board flight software for spacecraft autonomy, fault management, and command handling.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-25",
+        "sp-r-23",
+        "sp-r-24"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 3,
+      "grid_row": 1
+    },
+    {
+      "id": "sp-r-69",
+      "industry_id": "space",
+      "title": "Flight Operations Director",
+      "cluster": "Mission Operations & Ground Systems",
+      "seniority": "senior",
+      "salary_min": 185000,
+      "salary_max": 230000,
+      "salary_range": "$185,000 - $230,000",
+      "degree_required": "4yr",
+      "degree_detail": "Yes — BS Aerospace + experience",
+      "experience": "12+ years",
+      "skills": [
+        "mission ops leadership",
+        "flight rules",
+        "anomaly command authority",
+        "shift management"
+      ],
+      "certifications": [],
+      "description": "Holds final operational authority over spacecraft commanding and anomaly response during a mission.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-26",
+        "sp-r-27"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 3,
+      "grid_row": 2
+    },
+    {
+      "id": "sp-r-70",
+      "industry_id": "space",
+      "title": "Ground Segment Manager",
+      "cluster": "Mission Operations & Ground Systems",
+      "seniority": "senior",
+      "salary_min": 165000,
+      "salary_max": 205000,
+      "salary_range": "$165,000 - $205,000",
+      "degree_required": "4yr",
+      "degree_detail": "Yes — BS Aerospace/Eng",
+      "experience": "10+ years",
+      "skills": [
+        "ground segment architecture",
+        "vendor management",
+        "ops budget",
+        "ground station network"
+      ],
+      "certifications": [],
+      "description": "Manages the ground segment including station network, mission control center, and operations contracts.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-26",
+        "sp-r-27"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 3,
+      "grid_row": 2
+    },
+    {
+      "id": "sp-r-71",
+      "industry_id": "space",
+      "title": "Spacecraft Operations Manager",
+      "cluster": "Mission Operations & Ground Systems",
+      "seniority": "senior",
+      "salary_min": 170000,
+      "salary_max": 215000,
+      "salary_range": "$170,000 - $215,000",
+      "degree_required": "4yr",
+      "degree_detail": "Yes — BS Aerospace + ops experience",
+      "experience": "10+ years",
+      "skills": [
+        "ops team leadership",
+        "console certification",
+        "ops procedures",
+        "training programs"
+      ],
+      "certifications": [],
+      "description": "Leads the spacecraft operations team and owns console certification, procedures, and on-call rotations.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-26",
+        "sp-r-27"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 3,
+      "grid_row": 2
+    },
+    {
+      "id": "sp-r-72",
+      "industry_id": "space",
+      "title": "Launch Pad Technician",
+      "cluster": "Launch & Test Operations",
+      "seniority": "entry",
+      "salary_min": 50000,
+      "salary_max": 74000,
+      "salary_range": "$50,000 - $74,000",
+      "degree_required": "hs",
+      "degree_detail": "HS + technical training",
+      "experience": "0-2 years",
+      "skills": [
+        "pad operations",
+        "fluid system support",
+        "safety procedures",
+        "hardware handling"
+      ],
+      "certifications": [],
+      "description": "Supports launch pad operations including fueling, hardware integration, and pre-launch checkouts.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-28"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 4,
+      "grid_row": 0
+    },
+    {
+      "id": "sp-r-73",
+      "industry_id": "space",
+      "title": "Cryogenic Fueling Technician",
+      "cluster": "Launch & Test Operations",
+      "seniority": "entry",
+      "salary_min": 54000,
+      "salary_max": 78000,
+      "salary_range": "$54,000 - $78,000",
+      "degree_required": "2yr",
+      "degree_detail": "AS Eng Tech",
+      "experience": "0-2 years",
+      "skills": [
+        "cryogenic handling",
+        "LOX/LH2 procedures",
+        "pressure systems",
+        "leak detection"
+      ],
+      "certifications": [],
+      "description": "Operates cryogenic fueling systems during pre-launch operations and ground tests.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-28"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 4,
+      "grid_row": 0
+    },
+    {
+      "id": "sp-r-74",
+      "industry_id": "space",
+      "title": "Range Safety Technician",
+      "cluster": "Launch & Test Operations",
+      "seniority": "entry",
+      "salary_min": 52000,
+      "salary_max": 76000,
+      "salary_range": "$52,000 - $76,000",
+      "degree_required": "2yr",
+      "degree_detail": "AS Eng Tech",
+      "experience": "0-2 years",
+      "skills": [
+        "telemetry tracking",
+        "range safety procedures",
+        "flight termination support",
+        "comms"
+      ],
+      "certifications": [],
+      "description": "Supports range safety operations including telemetry tracking and flight termination system checks.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-28"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 4,
+      "grid_row": 0
+    },
+    {
+      "id": "sp-r-75",
+      "industry_id": "space",
+      "title": "Flight Test Technician",
+      "cluster": "Launch & Test Operations",
+      "seniority": "entry",
+      "salary_min": 51000,
+      "salary_max": 75000,
+      "salary_range": "$51,000 - $75,000",
+      "degree_required": "2yr",
+      "degree_detail": "AS Aerospace Tech",
+      "experience": "0-2 years",
+      "skills": [
+        "test instrumentation",
+        "data acquisition",
+        "flight prep",
+        "post-test inspection"
+      ],
+      "certifications": [],
+      "description": "Installs and operates instrumentation on flight test vehicles and supports test ops.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-28"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 4,
+      "grid_row": 0
+    },
+    {
+      "id": "sp-r-76",
+      "industry_id": "space",
+      "title": "Range Safety Engineer",
+      "cluster": "Launch & Test Operations",
+      "seniority": "mid",
+      "salary_min": 108000,
+      "salary_max": 138000,
+      "salary_range": "$108,000 - $138,000",
+      "degree_required": "4yr",
+      "degree_detail": "Yes — BS Aerospace/Eng",
+      "experience": "3-7 years",
+      "skills": [
+        "flight termination systems",
+        "trajectory analysis",
+        "range safety regs (FAA AST)",
+        "risk assessment"
+      ],
+      "certifications": [],
+      "description": "Designs and certifies range safety systems and trajectories for launch vehicle missions.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-29",
+        "sp-r-30"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 4,
+      "grid_row": 1
+    },
+    {
+      "id": "sp-r-77",
+      "industry_id": "space",
+      "title": "Flight Termination Systems Engineer",
+      "cluster": "Launch & Test Operations",
+      "seniority": "mid",
+      "salary_min": 112000,
+      "salary_max": 140000,
+      "salary_range": "$112,000 - $140,000",
+      "degree_required": "4yr",
+      "degree_detail": "Yes — BS Aerospace/Electrical Eng",
+      "experience": "3-7 years",
+      "skills": [
+        "FTS hardware",
+        "ordnance interfaces",
+        "telemetry encryption",
+        "system test"
+      ],
+      "certifications": [],
+      "description": "Designs and integrates Flight Termination Systems for launch vehicles meeting range safety standards.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-30",
+        "sp-r-29"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 4,
+      "grid_row": 1
+    },
+    {
+      "id": "sp-r-78",
+      "industry_id": "space",
+      "title": "Launch Vehicle Test Engineer",
+      "cluster": "Launch & Test Operations",
+      "seniority": "mid",
+      "salary_min": 115000,
+      "salary_max": 142000,
+      "salary_range": "$115,000 - $142,000",
+      "degree_required": "4yr",
+      "degree_detail": "Yes — BS Aerospace/Mechanical Eng",
+      "experience": "3-7 years",
+      "skills": [
+        "vehicle-level test",
+        "test campaign planning",
+        "instrumentation",
+        "anomaly resolution"
+      ],
+      "certifications": [],
+      "description": "Plans and runs launch vehicle test campaigns including stage tests, static fires, and rehearsals.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-29",
+        "sp-r-30"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 4,
+      "grid_row": 1
+    },
+    {
+      "id": "sp-r-79",
+      "industry_id": "space",
+      "title": "Launch Pad Lead Engineer",
+      "cluster": "Launch & Test Operations",
+      "seniority": "senior",
+      "salary_min": 165000,
+      "salary_max": 200000,
+      "salary_range": "$165,000 - $200,000",
+      "degree_required": "4yr",
+      "degree_detail": "Yes — BS Aerospace/Mechanical Eng",
+      "experience": "10+ years",
+      "skills": [
+        "pad operations leadership",
+        "ground systems",
+        "launch campaign planning",
+        "anomaly command"
+      ],
+      "certifications": [],
+      "description": "Leads launch pad engineering across multiple campaigns and is the on-pad senior technical authority.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-31",
+        "sp-r-32"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 4,
+      "grid_row": 2
+    },
+    {
+      "id": "sp-r-80",
+      "industry_id": "space",
+      "title": "Director of Launch Operations",
+      "cluster": "Launch & Test Operations",
+      "seniority": "senior",
+      "salary_min": 200000,
+      "salary_max": 250000,
+      "salary_range": "$200,000 - $250,000",
+      "degree_required": "4yr",
+      "degree_detail": "Yes — BS Aerospace + experience",
+      "experience": "15+ years",
+      "skills": [
+        "launch program leadership",
+        "range relations",
+        "cadence management",
+        "P&L"
+      ],
+      "certifications": [],
+      "description": "Leads the launch operations organization, owning cadence, range relationships, and program delivery.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-32",
+        "sp-r-31"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 4,
+      "grid_row": 2
+    },
+    {
+      "id": "sp-r-81",
+      "industry_id": "space",
+      "title": "Range Safety Lead",
+      "cluster": "Launch & Test Operations",
+      "seniority": "senior",
+      "salary_min": 155000,
+      "salary_max": 195000,
+      "salary_range": "$155,000 - $195,000",
+      "degree_required": "4yr",
+      "degree_detail": "Yes — BS Aerospace/Eng",
+      "experience": "10+ years",
+      "skills": [
+        "range safety leadership",
+        "FAA AST liaison",
+        "FTS architecture",
+        "safety risk authority"
+      ],
+      "certifications": [],
+      "description": "Owns end-to-end range safety strategy across launch programs and represents the company to range authorities.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-31",
+        "sp-r-32"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 4,
+      "grid_row": 2
+    },
+    {
+      "id": "sp-r-82",
+      "industry_id": "space",
+      "title": "Space Procurement Analyst",
+      "cluster": "Business, Policy & Supply Chain",
+      "seniority": "entry",
+      "salary_min": 58000,
+      "salary_max": 80000,
+      "salary_range": "$58,000 - $80,000",
+      "degree_required": "4yr",
+      "degree_detail": "Yes — BS Business/Supply Chain",
+      "experience": "0-3 years",
+      "skills": [
+        "procurement",
+        "supplier evaluation",
+        "purchase orders",
+        "ERP systems"
+      ],
+      "certifications": [],
+      "description": "Issues purchase orders and evaluates suppliers for spacecraft components and ground systems.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-33"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 5,
+      "grid_row": 0
+    },
+    {
+      "id": "sp-r-83",
+      "industry_id": "space",
+      "title": "Space Contracts Specialist",
+      "cluster": "Business, Policy & Supply Chain",
+      "seniority": "entry",
+      "salary_min": 62000,
+      "salary_max": 84000,
+      "salary_range": "$62,000 - $84,000",
+      "degree_required": "4yr",
+      "degree_detail": "Yes — BS Business/Law-adjacent",
+      "experience": "0-3 years",
+      "skills": [
+        "FAR/DFARS basics",
+        "contract review",
+        "government contracting",
+        "documentation"
+      ],
+      "certifications": [],
+      "description": "Drafts and administers space industry contracts including NASA, DoD, and commercial agreements.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-33"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 5,
+      "grid_row": 0
+    },
+    {
+      "id": "sp-r-84",
+      "industry_id": "space",
+      "title": "Space Operations Analyst",
+      "cluster": "Business, Policy & Supply Chain",
+      "seniority": "entry",
+      "salary_min": 56000,
+      "salary_max": 78000,
+      "salary_range": "$56,000 - $78,000",
+      "degree_required": "4yr",
+      "degree_detail": "Yes — BS Business/Operations",
+      "experience": "0-3 years",
+      "skills": [
+        "operations metrics",
+        "Excel",
+        "process improvement",
+        "scheduling"
+      ],
+      "certifications": [],
+      "description": "Tracks operational KPIs across space programs and supports planning and reporting cadence.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-33"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 5,
+      "grid_row": 0
+    },
+    {
+      "id": "sp-r-85",
+      "industry_id": "space",
+      "title": "Mission Cost Analyst",
+      "cluster": "Business, Policy & Supply Chain",
+      "seniority": "entry",
+      "salary_min": 60000,
+      "salary_max": 82000,
+      "salary_range": "$60,000 - $82,000",
+      "degree_required": "4yr",
+      "degree_detail": "Yes — BS Finance/Business",
+      "experience": "0-3 years",
+      "skills": [
+        "cost estimation",
+        "earned value",
+        "financial modeling",
+        "budget tracking"
+      ],
+      "certifications": [],
+      "description": "Builds mission cost estimates and tracks earned value across spacecraft programs.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-33"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 5,
+      "grid_row": 0
+    },
+    {
+      "id": "sp-r-86",
+      "industry_id": "space",
+      "title": "Space Program Analyst",
+      "cluster": "Business, Policy & Supply Chain",
+      "seniority": "mid",
+      "salary_min": 90000,
+      "salary_max": 115000,
+      "salary_range": "$90,000 - $115,000",
+      "degree_required": "4yr",
+      "degree_detail": "Yes — BS Business/Eng",
+      "experience": "3-7 years",
+      "skills": [
+        "program management",
+        "risk tracking",
+        "schedule analysis",
+        "stakeholder reporting"
+      ],
+      "certifications": [],
+      "description": "Owns program analytics, risk registers, and stakeholder reporting for one or more space programs.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-34",
+        "sp-r-35"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 5,
+      "grid_row": 1
+    },
+    {
+      "id": "sp-r-87",
+      "industry_id": "space",
+      "title": "Space Compliance Manager",
+      "cluster": "Business, Policy & Supply Chain",
+      "seniority": "mid",
+      "salary_min": 100000,
+      "salary_max": 125000,
+      "salary_range": "$100,000 - $125,000",
+      "degree_required": "4yr",
+      "degree_detail": "Yes — BS Law/Policy/Eng",
+      "experience": "5-9 years",
+      "skills": [
+        "ITAR/EAR",
+        "export licensing",
+        "compliance auditing",
+        "policy interpretation"
+      ],
+      "certifications": [],
+      "description": "Owns ITAR/EAR compliance, export licensing, and regulatory reviews across space programs.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-35",
+        "sp-r-34"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 5,
+      "grid_row": 1
+    },
+    {
+      "id": "sp-r-88",
+      "industry_id": "space",
+      "title": "Space Operations Manager",
+      "cluster": "Business, Policy & Supply Chain",
+      "seniority": "mid",
+      "salary_min": 105000,
+      "salary_max": 130000,
+      "salary_range": "$105,000 - $130,000",
+      "degree_required": "4yr",
+      "degree_detail": "Yes — BS Business/Operations",
+      "experience": "5-9 years",
+      "skills": [
+        "operations leadership",
+        "scheduling",
+        "vendor management",
+        "process design"
+      ],
+      "certifications": [],
+      "description": "Leads the business operations team across procurement, scheduling, and contracts for a space program.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-34",
+        "sp-r-35"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 5,
+      "grid_row": 1
+    },
+    {
+      "id": "sp-r-89",
+      "industry_id": "space",
+      "title": "VP of Space Programs",
+      "cluster": "Business, Policy & Supply Chain",
+      "seniority": "senior",
+      "salary_min": 240000,
+      "salary_max": 310000,
+      "salary_range": "$240,000 - $310,000",
+      "degree_required": "4yr",
+      "degree_detail": "Yes — BS Eng + MBA",
+      "experience": "15+ years",
+      "skills": [
+        "executive leadership",
+        "P&L",
+        "program portfolio",
+        "customer relationships"
+      ],
+      "certifications": [],
+      "description": "Executive owning the space program portfolio with P&L responsibility across multiple missions.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-38",
+        "sp-r-36",
         "sp-r-37"
       ],
       "open_jobs_count": 0,
       "hiring_companies": [],
       "grid_col": 5,
-      "grid_row": 3
+      "grid_row": 2
+    },
+    {
+      "id": "sp-r-90",
+      "industry_id": "space",
+      "title": "Chief Space Strategy Officer",
+      "cluster": "Business, Policy & Supply Chain",
+      "seniority": "senior",
+      "salary_min": 250000,
+      "salary_max": 320000,
+      "salary_range": "$250,000 - $320,000",
+      "degree_required": "4yr",
+      "degree_detail": "Yes — MBA + space industry depth",
+      "experience": "15+ years",
+      "skills": [
+        "corporate strategy",
+        "M&A",
+        "market analysis",
+        "executive influence"
+      ],
+      "certifications": [],
+      "description": "Sets corporate strategy across the company's space business including market entry and partnerships.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "sp-r-38",
+        "sp-r-37"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 5,
+      "grid_row": 2
     }
   ],
   "pathways": []

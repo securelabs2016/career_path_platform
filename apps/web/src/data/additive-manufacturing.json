@@ -3,7 +3,7 @@
     "id": "additive-manufacturing",
     "name": "Additive Manufacturing",
     "slug": "additive-manufacturing",
-    "description": "3D printing, metal fabrication, and advanced materials \u2014 one of the fastest-growing sectors in U.S. defense, aerospace, and medical manufacturing. 36 roles across 5 clusters.",
+    "description": "3D printing, metal fabrication, and advanced materials \u2014 one of the fastest-growing sectors in U.S. defense, aerospace, and medical manufacturing. 84 roles across 5 clusters.",
     "color": "#2563eb"
   },
   "clusters": [
@@ -1305,6 +1305,1478 @@
       "hiring_companies": [],
       "grid_col": 4,
       "grid_row": 1
+    },
+    {
+      "id": "am-r-37",
+      "industry_id": "additive-manufacturing",
+      "title": "AM Drafter",
+      "cluster": "Design & Engineering",
+      "seniority": "entry",
+      "salary_min": 52000,
+      "salary_max": 68000,
+      "salary_range": "$52,000 - $68,000",
+      "degree_required": "2yr",
+      "degree_detail": "Associate degree in CAD/drafting or equivalent training",
+      "experience": "0-2 years",
+      "skills": [
+        "CAD drafting",
+        "SolidWorks",
+        "AutoCAD",
+        "GD&T basics",
+        "technical documentation"
+      ],
+      "certifications": [],
+      "description": "Produces detailed 2D and 3D technical drawings for additive manufacturing parts, translating engineering specs into manufacturable build files.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-01",
+        "am-r-28"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 0,
+      "grid_row": 0
+    },
+    {
+      "id": "am-r-38",
+      "industry_id": "additive-manufacturing",
+      "title": "CAM Programmer (AM)",
+      "cluster": "Design & Engineering",
+      "seniority": "entry",
+      "salary_min": 58000,
+      "salary_max": 75000,
+      "salary_range": "$58,000 - $75,000",
+      "degree_required": "2yr",
+      "degree_detail": "Associate degree in manufacturing technology or CAM programming",
+      "experience": "0-3 years",
+      "skills": [
+        "CAM software (Mastercam/HSMWorks)",
+        "toolpath generation",
+        "G-code",
+        "CNC familiarity"
+      ],
+      "certifications": [],
+      "description": "Generates machine instructions and toolpaths from CAD models for hybrid AM/CNC workflows, ensuring printable geometry and downstream finishing compatibility.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-01",
+        "am-r-28",
+        "am-r-12"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 0,
+      "grid_row": 0
+    },
+    {
+      "id": "am-r-39",
+      "industry_id": "additive-manufacturing",
+      "title": "Reverse Engineering Technician (AM)",
+      "cluster": "Design & Engineering",
+      "seniority": "entry",
+      "salary_min": 54000,
+      "salary_max": 72000,
+      "salary_range": "$54,000 - $72,000",
+      "degree_required": "2yr",
+      "degree_detail": "Associate degree or certificate in CAD/metrology",
+      "experience": "0-3 years",
+      "skills": [
+        "3D scanning",
+        "point cloud processing",
+        "CAD reconstruction",
+        "GD&T",
+        "Geomagic/Polyworks"
+      ],
+      "certifications": [],
+      "description": "Captures legacy parts via 3D scanning and reconstructs printable CAD geometry, enabling AM reproduction of out-of-production or replacement components.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-28",
+        "am-r-01"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 0,
+      "grid_row": 0
+    },
+    {
+      "id": "am-r-40",
+      "industry_id": "additive-manufacturing",
+      "title": "Generative Design Engineer (AM)",
+      "cluster": "Design & Engineering",
+      "seniority": "mid",
+      "salary_min": 92000,
+      "salary_max": 118000,
+      "salary_range": "$92,000 - $118,000",
+      "degree_required": "4yr",
+      "degree_detail": "BS Mechanical/Aerospace Engineering",
+      "experience": "3-6 years",
+      "skills": [
+        "generative design",
+        "topology optimization",
+        "nTopology",
+        "Fusion 360 Generative",
+        "lattice design"
+      ],
+      "certifications": [],
+      "description": "Uses algorithm-driven design tools to produce optimized geometries that meet structural targets while exploiting additive freedoms like internal lattices and conformal cooling.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-02",
+        "am-r-05",
+        "am-r-01"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 0,
+      "grid_row": 1
+    },
+    {
+      "id": "am-r-41",
+      "industry_id": "additive-manufacturing",
+      "title": "Tooling & Fixture Engineer (AM)",
+      "cluster": "Design & Engineering",
+      "seniority": "mid",
+      "salary_min": 85000,
+      "salary_max": 108000,
+      "salary_range": "$85,000 - $108,000",
+      "degree_required": "4yr",
+      "degree_detail": "BS Mechanical Engineering",
+      "experience": "3-6 years",
+      "skills": [
+        "tooling design",
+        "jig & fixture design",
+        "GD&T",
+        "SolidWorks",
+        "manufacturing engineering"
+      ],
+      "certifications": [],
+      "description": "Designs 3D-printed and conventional jigs, fixtures, and tooling that support AM production and downstream assembly workflows.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-02",
+        "am-r-03",
+        "am-r-15"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 0,
+      "grid_row": 1
+    },
+    {
+      "id": "am-r-42",
+      "industry_id": "additive-manufacturing",
+      "title": "AM Solutions Architect",
+      "cluster": "Design & Engineering",
+      "seniority": "senior",
+      "salary_min": 145000,
+      "salary_max": 175000,
+      "salary_range": "$145,000 - $175,000",
+      "degree_required": "4yr",
+      "degree_detail": "BS/MS Mechanical or Manufacturing Engineering",
+      "experience": "10+ years",
+      "skills": [
+        "systems architecture",
+        "AM strategy",
+        "multi-process integration",
+        "DfAM",
+        "production planning"
+      ],
+      "certifications": [],
+      "description": "Designs end-to-end AM production architectures spanning design intake, materials selection, process selection, and qualification \u2014 for enterprise customers and internal programs.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-06",
+        "am-r-04",
+        "am-r-27"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 0,
+      "grid_row": 2
+    },
+    {
+      "id": "am-r-43",
+      "industry_id": "additive-manufacturing",
+      "title": "Lead Generative Design Engineer",
+      "cluster": "Design & Engineering",
+      "seniority": "senior",
+      "salary_min": 135000,
+      "salary_max": 165000,
+      "salary_range": "$135,000 - $165,000",
+      "degree_required": "4yr",
+      "degree_detail": "BS/MS Mechanical Engineering",
+      "experience": "8+ years",
+      "skills": [
+        "advanced topology optimization",
+        "multi-physics simulation",
+        "lattice design",
+        "nTopology lead",
+        "team leadership"
+      ],
+      "certifications": [],
+      "description": "Leads generative design programs, sets design-for-AM standards across the org, and mentors design engineers on optimization workflows.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-06",
+        "am-r-04",
+        "am-r-02"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 0,
+      "grid_row": 2
+    },
+    {
+      "id": "am-r-44",
+      "industry_id": "additive-manufacturing",
+      "title": "AM Standards & Compliance Lead",
+      "cluster": "Design & Engineering",
+      "seniority": "senior",
+      "salary_min": 130000,
+      "salary_max": 160000,
+      "salary_range": "$130,000 - $160,000",
+      "degree_required": "4yr",
+      "degree_detail": "BS/MS Engineering + ASTM/ISO standards experience",
+      "experience": "8+ years",
+      "skills": [
+        "ASTM F42 standards",
+        "ISO/ASTM 52900 family",
+        "qualification frameworks",
+        "FAA/FDA compliance basics"
+      ],
+      "certifications": [
+        "ASTM standards committee participation"
+      ],
+      "description": "Owns AM standards and compliance strategy \u2014 interfaces with ASTM F42 / ISO TC 261 and translates standards into internal qualification procedures.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-22",
+        "am-r-06"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 0,
+      "grid_row": 2
+    },
+    {
+      "id": "am-r-45",
+      "industry_id": "additive-manufacturing",
+      "title": "Lead Tooling Engineer (AM)",
+      "cluster": "Design & Engineering",
+      "seniority": "senior",
+      "salary_min": 125000,
+      "salary_max": 150000,
+      "salary_range": "$125,000 - $150,000",
+      "degree_required": "4yr",
+      "degree_detail": "BS Mechanical Engineering",
+      "experience": "8+ years",
+      "skills": [
+        "tooling strategy",
+        "fixture design leadership",
+        "production tooling",
+        "team leadership"
+      ],
+      "certifications": [],
+      "description": "Heads AM tooling and fixture development \u2014 drives standardization of jig/fixture design across product lines.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-04",
+        "am-r-17"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 0,
+      "grid_row": 2
+    },
+    {
+      "id": "am-r-46",
+      "industry_id": "additive-manufacturing",
+      "title": "Powder Handling Technician (AM)",
+      "cluster": "Materials & Process Development",
+      "seniority": "entry",
+      "salary_min": 48000,
+      "salary_max": 62000,
+      "salary_range": "$48,000 - $62,000",
+      "degree_required": "2yr",
+      "degree_detail": "Associate degree or certificate in materials/manufacturing tech",
+      "experience": "0-2 years",
+      "skills": [
+        "powder handling",
+        "sieving & blending",
+        "powder safety",
+        "inert gas systems",
+        "PPE protocols"
+      ],
+      "certifications": [],
+      "description": "Handles, conditions, and recycles metal/polymer powders for AM machines \u2014 manages powder lots, contamination control, and inert-atmosphere handling.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-30",
+        "am-r-07",
+        "am-r-31"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 1,
+      "grid_row": 0
+    },
+    {
+      "id": "am-r-47",
+      "industry_id": "additive-manufacturing",
+      "title": "Materials Test Technician (AM)",
+      "cluster": "Materials & Process Development",
+      "seniority": "entry",
+      "salary_min": 50000,
+      "salary_max": 65000,
+      "salary_range": "$50,000 - $65,000",
+      "degree_required": "2yr",
+      "degree_detail": "Associate degree in materials science or mechanical tech",
+      "experience": "0-2 years",
+      "skills": [
+        "mechanical testing",
+        "tensile testing",
+        "hardness testing",
+        "sample preparation",
+        "lab safety"
+      ],
+      "certifications": [],
+      "description": "Runs mechanical and physical property tests on AM coupons and witness samples to verify build quality.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-07",
+        "am-r-19"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 1,
+      "grid_row": 0
+    },
+    {
+      "id": "am-r-48",
+      "industry_id": "additive-manufacturing",
+      "title": "Metallography Technician (AM)",
+      "cluster": "Materials & Process Development",
+      "seniority": "entry",
+      "salary_min": 52000,
+      "salary_max": 68000,
+      "salary_range": "$52,000 - $68,000",
+      "degree_required": "2yr",
+      "degree_detail": "Associate degree in materials/metallurgy",
+      "experience": "0-2 years",
+      "skills": [
+        "sectioning & mounting",
+        "polishing & etching",
+        "optical microscopy",
+        "microstructure imaging"
+      ],
+      "certifications": [],
+      "description": "Prepares and images metallographic cross-sections of AM parts to evaluate porosity, grain structure, and defect distribution.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-07",
+        "am-r-30"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 1,
+      "grid_row": 0
+    },
+    {
+      "id": "am-r-49",
+      "industry_id": "additive-manufacturing",
+      "title": "AM Process Lab Assistant",
+      "cluster": "Materials & Process Development",
+      "seniority": "entry",
+      "salary_min": 46000,
+      "salary_max": 60000,
+      "salary_range": "$46,000 - $60,000",
+      "degree_required": "2yr",
+      "degree_detail": "Associate degree or equivalent training",
+      "experience": "0-2 years",
+      "skills": [
+        "lab notebooks",
+        "sample tracking",
+        "basic AM machine operation",
+        "data logging"
+      ],
+      "certifications": [],
+      "description": "Supports process development lab work \u2014 sample prep, parameter sweeps, build logs, and machine babysitting during R&D runs.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-07",
+        "am-r-31"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 1,
+      "grid_row": 0
+    },
+    {
+      "id": "am-r-50",
+      "industry_id": "additive-manufacturing",
+      "title": "Extrusion Process Engineer (AM)",
+      "cluster": "Materials & Process Development",
+      "seniority": "mid",
+      "salary_min": 85000,
+      "salary_max": 105000,
+      "salary_range": "$85,000 - $105,000",
+      "degree_required": "4yr",
+      "degree_detail": "BS Materials/Mechanical/Chemical Engineering",
+      "experience": "3-6 years",
+      "skills": [
+        "polymer extrusion",
+        "FDM/FFF tuning",
+        "pellet processing",
+        "rheology",
+        "process parameter optimization"
+      ],
+      "certifications": [],
+      "description": "Develops and qualifies extrusion-based AM processes \u2014 polymer feedstock, pellet extruders, and large-format FFF systems.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-09",
+        "am-r-08"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 1,
+      "grid_row": 1
+    },
+    {
+      "id": "am-r-51",
+      "industry_id": "additive-manufacturing",
+      "title": "AM Polymer Materials Engineer",
+      "cluster": "Materials & Process Development",
+      "seniority": "mid",
+      "salary_min": 90000,
+      "salary_max": 115000,
+      "salary_range": "$90,000 - $115,000",
+      "degree_required": "4yr",
+      "degree_detail": "BS/MS Polymer Science or Materials Engineering",
+      "experience": "3-6 years",
+      "skills": [
+        "polymer characterization",
+        "photopolymer chemistry",
+        "thermoplastic processing",
+        "feedstock qualification"
+      ],
+      "certifications": [],
+      "description": "Specializes in polymer feedstocks for SLA/DLP/FDM/SLS \u2014 qualifies new resins and powders against application requirements.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-08",
+        "am-r-09"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 1,
+      "grid_row": 1
+    },
+    {
+      "id": "am-r-52",
+      "industry_id": "additive-manufacturing",
+      "title": "Metallurgical Engineer (AM)",
+      "cluster": "Materials & Process Development",
+      "seniority": "mid",
+      "salary_min": 95000,
+      "salary_max": 118000,
+      "salary_range": "$95,000 - $118,000",
+      "degree_required": "4yr",
+      "degree_detail": "BS Metallurgical/Materials Engineering",
+      "experience": "3-6 years",
+      "skills": [
+        "alloy characterization",
+        "phase diagrams",
+        "heat treatment",
+        "powder metallurgy",
+        "microstructure analysis"
+      ],
+      "certifications": [],
+      "description": "Owns metallurgy for metal AM \u2014 alloy selection, post-build heat treatment design, and microstructure-property correlation.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-08",
+        "am-r-30",
+        "am-r-09"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 1,
+      "grid_row": 1
+    },
+    {
+      "id": "am-r-53",
+      "industry_id": "additive-manufacturing",
+      "title": "AM Process Validation Engineer",
+      "cluster": "Materials & Process Development",
+      "seniority": "mid",
+      "salary_min": 92000,
+      "salary_max": 115000,
+      "salary_range": "$92,000 - $115,000",
+      "degree_required": "4yr",
+      "degree_detail": "BS Engineering",
+      "experience": "3-6 years",
+      "skills": [
+        "process qualification",
+        "IQ/OQ/PQ",
+        "DOE",
+        "statistical process control",
+        "witness coupons"
+      ],
+      "certifications": [],
+      "description": "Validates AM processes for regulated production \u2014 runs IQ/OQ/PQ protocols, DOE studies, and lock-down documentation.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-09",
+        "am-r-21",
+        "am-r-15"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 1,
+      "grid_row": 1
+    },
+    {
+      "id": "am-r-54",
+      "industry_id": "additive-manufacturing",
+      "title": "Lead Materials Development Engineer (AM)",
+      "cluster": "Materials & Process Development",
+      "seniority": "senior",
+      "salary_min": 125000,
+      "salary_max": 155000,
+      "salary_range": "$125,000 - $155,000",
+      "degree_required": "4yr",
+      "degree_detail": "MS/PhD Materials Engineering",
+      "experience": "8+ years",
+      "skills": [
+        "materials roadmapping",
+        "alloy development leadership",
+        "cross-functional team leadership",
+        "qualification strategy"
+      ],
+      "certifications": [],
+      "description": "Leads materials development programs \u2014 owns the roadmap for new feedstocks and oversees the team qualifying them through to production.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-10",
+        "am-r-11"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 1,
+      "grid_row": 2
+    },
+    {
+      "id": "am-r-55",
+      "industry_id": "additive-manufacturing",
+      "title": "Principal Metallurgist (AM)",
+      "cluster": "Materials & Process Development",
+      "seniority": "senior",
+      "salary_min": 135000,
+      "salary_max": 170000,
+      "salary_range": "$135,000 - $170,000",
+      "degree_required": "4yr",
+      "degree_detail": "PhD Metallurgy or Materials Science",
+      "experience": "10+ years",
+      "skills": [
+        "advanced metallurgy",
+        "heat treatment design leadership",
+        "failure analysis",
+        "expert witness"
+      ],
+      "certifications": [],
+      "description": "Principal-level metallurgical authority for AM metal programs \u2014 final reviewer on alloy decisions, post-build thermal treatments, and failure investigations.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-10",
+        "am-r-11"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 1,
+      "grid_row": 2
+    },
+    {
+      "id": "am-r-56",
+      "industry_id": "additive-manufacturing",
+      "title": "AM R&D Manager",
+      "cluster": "Materials & Process Development",
+      "seniority": "senior",
+      "salary_min": 145000,
+      "salary_max": 180000,
+      "salary_range": "$145,000 - $180,000",
+      "degree_required": "4yr",
+      "degree_detail": "MS/PhD Engineering or Materials Science",
+      "experience": "10+ years",
+      "skills": [
+        "R&D program management",
+        "technology roadmapping",
+        "team leadership",
+        "IP strategy"
+      ],
+      "certifications": [],
+      "description": "Manages the AM R&D function \u2014 sets research priorities, owns IP strategy, and bridges advanced research and production engineering.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-11",
+        "am-r-10",
+        "am-r-27"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 1,
+      "grid_row": 2
+    },
+    {
+      "id": "am-r-57",
+      "industry_id": "additive-manufacturing",
+      "title": "Industrial Manufacturing Technician (AM)",
+      "cluster": "Machine Operation & Production",
+      "seniority": "entry",
+      "salary_min": 44000,
+      "salary_max": 58000,
+      "salary_range": "$44,000 - $58,000",
+      "degree_required": "hs",
+      "degree_detail": "High school + AM Registered Apprenticeship",
+      "experience": "0-2 years",
+      "skills": [
+        "AM machine operation",
+        "production routing",
+        "work instructions",
+        "shop-floor data entry"
+      ],
+      "certifications": [
+        "SME CAMF (Certified Additive Manufacturing Fundamentals)"
+      ],
+      "description": "Generalist production technician on an AM shop floor \u2014 runs builds, follows routing, and supports preventive maintenance.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-12",
+        "am-r-13",
+        "am-r-31"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 2,
+      "grid_row": 0
+    },
+    {
+      "id": "am-r-58",
+      "industry_id": "additive-manufacturing",
+      "title": "AM Production Operator",
+      "cluster": "Machine Operation & Production",
+      "seniority": "entry",
+      "salary_min": 40000,
+      "salary_max": 55000,
+      "salary_range": "$40,000 - $55,000",
+      "degree_required": "hs",
+      "degree_detail": "High school diploma + on-the-job training",
+      "experience": "0-2 years",
+      "skills": [
+        "machine babysitting",
+        "build start/stop",
+        "material loading",
+        "basic troubleshooting"
+      ],
+      "certifications": [],
+      "description": "Front-line operator running production AM machines on shift \u2014 load material, start builds, monitor for faults, hand off to post-processing.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-12",
+        "am-r-13"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 2,
+      "grid_row": 0
+    },
+    {
+      "id": "am-r-59",
+      "industry_id": "additive-manufacturing",
+      "title": "AM Process Engineer",
+      "cluster": "Machine Operation & Production",
+      "seniority": "mid",
+      "salary_min": 85000,
+      "salary_max": 108000,
+      "salary_range": "$85,000 - $108,000",
+      "degree_required": "4yr",
+      "degree_detail": "BS Mechanical/Manufacturing Engineering",
+      "experience": "3-6 years",
+      "skills": [
+        "process parameter optimization",
+        "build planning",
+        "machine qualification",
+        "DOE",
+        "SPC"
+      ],
+      "certifications": [],
+      "description": "Owns AM process parameters and build planning for a production cell \u2014 optimizes for yield, cycle time, and quality.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-15",
+        "am-r-09",
+        "am-r-16"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 2,
+      "grid_row": 1
+    },
+    {
+      "id": "am-r-60",
+      "industry_id": "additive-manufacturing",
+      "title": "AM Production Engineer",
+      "cluster": "Machine Operation & Production",
+      "seniority": "mid",
+      "salary_min": 88000,
+      "salary_max": 110000,
+      "salary_range": "$88,000 - $110,000",
+      "degree_required": "4yr",
+      "degree_detail": "BS Manufacturing/Industrial Engineering",
+      "experience": "3-6 years",
+      "skills": [
+        "production planning",
+        "cell layout",
+        "capacity modeling",
+        "lean manufacturing",
+        "OEE"
+      ],
+      "certifications": [],
+      "description": "Designs production cells and workflows for AM \u2014 capacity planning, cell layout, and KPI/OEE management.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-15",
+        "am-r-16"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 2,
+      "grid_row": 1
+    },
+    {
+      "id": "am-r-61",
+      "industry_id": "additive-manufacturing",
+      "title": "AM Plant Manager",
+      "cluster": "Machine Operation & Production",
+      "seniority": "senior",
+      "salary_min": 130000,
+      "salary_max": 160000,
+      "salary_range": "$130,000 - $160,000",
+      "degree_required": "4yr",
+      "degree_detail": "BS Engineering + plant management experience",
+      "experience": "10+ years",
+      "skills": [
+        "plant operations",
+        "production management",
+        "P&L responsibility",
+        "safety leadership"
+      ],
+      "certifications": [],
+      "description": "Runs an AM production plant or factory floor \u2014 full P&L responsibility, safety, headcount, and output.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-17",
+        "am-r-27"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 2,
+      "grid_row": 2
+    },
+    {
+      "id": "am-r-62",
+      "industry_id": "additive-manufacturing",
+      "title": "AM Production Director",
+      "cluster": "Machine Operation & Production",
+      "seniority": "senior",
+      "salary_min": 155000,
+      "salary_max": 195000,
+      "salary_range": "$155,000 - $195,000",
+      "degree_required": "4yr",
+      "degree_detail": "BS/MS Engineering + executive experience",
+      "experience": "12+ years",
+      "skills": [
+        "multi-site production",
+        "strategic operations",
+        "capex planning",
+        "organizational leadership"
+      ],
+      "certifications": [],
+      "description": "Senior executive over AM production across one or more sites \u2014 strategic operations, capex, and org design.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-17",
+        "am-r-27"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 2,
+      "grid_row": 2
+    },
+    {
+      "id": "am-r-63",
+      "industry_id": "additive-manufacturing",
+      "title": "Lead AM Process Engineer",
+      "cluster": "Machine Operation & Production",
+      "seniority": "senior",
+      "salary_min": 125000,
+      "salary_max": 155000,
+      "salary_range": "$125,000 - $155,000",
+      "degree_required": "4yr",
+      "degree_detail": "BS/MS Engineering",
+      "experience": "8+ years",
+      "skills": [
+        "process leadership",
+        "parameter standardization",
+        "qualification strategy",
+        "team mentorship"
+      ],
+      "certifications": [],
+      "description": "Leads the AM process engineering function \u2014 owns parameter libraries, qualification cadence, and process engineer mentorship.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-17",
+        "am-r-09"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 2,
+      "grid_row": 2
+    },
+    {
+      "id": "am-r-64",
+      "industry_id": "additive-manufacturing",
+      "title": "AM Facility Engineering Lead",
+      "cluster": "Machine Operation & Production",
+      "seniority": "senior",
+      "salary_min": 120000,
+      "salary_max": 148000,
+      "salary_range": "$120,000 - $148,000",
+      "degree_required": "4yr",
+      "degree_detail": "BS Mechanical/Facilities Engineering",
+      "experience": "8+ years",
+      "skills": [
+        "facility engineering",
+        "utilities (gas/power/HVAC)",
+        "EH&S leadership",
+        "capex projects"
+      ],
+      "certifications": [],
+      "description": "Owns AM facility infrastructure \u2014 inert gas, powder handling rooms, HVAC, fire suppression, and EH&S compliance.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-17",
+        "am-r-32"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 2,
+      "grid_row": 2
+    },
+    {
+      "id": "am-r-65",
+      "industry_id": "additive-manufacturing",
+      "title": "Principal Manufacturing Engineer (AM)",
+      "cluster": "Machine Operation & Production",
+      "seniority": "senior",
+      "salary_min": 135000,
+      "salary_max": 170000,
+      "salary_range": "$135,000 - $170,000",
+      "degree_required": "4yr",
+      "degree_detail": "BS/MS Manufacturing Engineering",
+      "experience": "10+ years",
+      "skills": [
+        "manufacturing engineering leadership",
+        "process architecture",
+        "qualification expertise",
+        "cross-program experience"
+      ],
+      "certifications": [],
+      "description": "Principal-level manufacturing engineer \u2014 final technical authority on AM production architectures and qualification packages.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-06",
+        "am-r-17"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 2,
+      "grid_row": 2
+    },
+    {
+      "id": "am-r-66",
+      "industry_id": "additive-manufacturing",
+      "title": "AM Heat Treatment Technician",
+      "cluster": "Post-Processing & Quality",
+      "seniority": "entry",
+      "salary_min": 47000,
+      "salary_max": 62000,
+      "salary_range": "$47,000 - $62,000",
+      "degree_required": "hs",
+      "degree_detail": "High school + furnace operations training",
+      "experience": "0-2 years",
+      "skills": [
+        "furnace operation",
+        "heat treat cycles",
+        "stress relief",
+        "HIP basics",
+        "thermocouple use"
+      ],
+      "certifications": [],
+      "description": "Runs heat-treatment, stress-relief, and HIP cycles on AM metal parts to achieve target mechanical properties.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-18",
+        "am-r-19"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 3,
+      "grid_row": 0
+    },
+    {
+      "id": "am-r-67",
+      "industry_id": "additive-manufacturing",
+      "title": "AM Surface Finishing Technician",
+      "cluster": "Post-Processing & Quality",
+      "seniority": "entry",
+      "salary_min": 44000,
+      "salary_max": 58000,
+      "salary_range": "$44,000 - $58,000",
+      "degree_required": "hs",
+      "degree_detail": "High school + finishing training",
+      "experience": "0-2 years",
+      "skills": [
+        "support removal",
+        "media blasting",
+        "tumbling",
+        "chemical polishing",
+        "surface roughness measurement"
+      ],
+      "certifications": [],
+      "description": "Removes supports and finishes AM part surfaces to spec \u2014 blasting, tumbling, polishing, and surface roughness verification.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-18",
+        "am-r-33"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 3,
+      "grid_row": 0
+    },
+    {
+      "id": "am-r-68",
+      "industry_id": "additive-manufacturing",
+      "title": "Quality Control Technician (AM)",
+      "cluster": "Post-Processing & Quality",
+      "seniority": "entry",
+      "salary_min": 48000,
+      "salary_max": 63000,
+      "salary_range": "$48,000 - $63,000",
+      "degree_required": "2yr",
+      "degree_detail": "Associate degree or QA certificate",
+      "experience": "0-2 years",
+      "skills": [
+        "dimensional inspection",
+        "CMM basics",
+        "first-article inspection",
+        "GD&T",
+        "inspection reports"
+      ],
+      "certifications": [],
+      "description": "Runs incoming, in-process, and final inspections of AM parts against drawings and specs.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-19",
+        "am-r-20"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 3,
+      "grid_row": 0
+    },
+    {
+      "id": "am-r-69",
+      "industry_id": "additive-manufacturing",
+      "title": "AM Post-Processing Engineer",
+      "cluster": "Post-Processing & Quality",
+      "seniority": "mid",
+      "salary_min": 80000,
+      "salary_max": 100000,
+      "salary_range": "$80,000 - $100,000",
+      "degree_required": "4yr",
+      "degree_detail": "BS Mechanical/Materials Engineering",
+      "experience": "3-6 years",
+      "skills": [
+        "post-process design",
+        "machining strategies",
+        "surface engineering",
+        "HIP/heat treatment design"
+      ],
+      "certifications": [],
+      "description": "Engineers post-process workflows for AM parts \u2014 machining strategies, surface treatments, and thermal cycles needed to meet drawings.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-33",
+        "am-r-21",
+        "am-r-34"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 3,
+      "grid_row": 1
+    },
+    {
+      "id": "am-r-70",
+      "industry_id": "additive-manufacturing",
+      "title": "AM Test Engineer",
+      "cluster": "Post-Processing & Quality",
+      "seniority": "mid",
+      "salary_min": 82000,
+      "salary_max": 105000,
+      "salary_range": "$82,000 - $105,000",
+      "degree_required": "4yr",
+      "degree_detail": "BS Mechanical/Materials Engineering",
+      "experience": "3-6 years",
+      "skills": [
+        "mechanical testing",
+        "NDT methods",
+        "test plan authoring",
+        "data analysis",
+        "ASTM test methods"
+      ],
+      "certifications": [],
+      "description": "Designs and runs test programs to validate AM part performance \u2014 tensile, fatigue, NDT, and acceptance criteria.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-21",
+        "am-r-20",
+        "am-r-34"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 3,
+      "grid_row": 1
+    },
+    {
+      "id": "am-r-71",
+      "industry_id": "additive-manufacturing",
+      "title": "AM Certification Engineer",
+      "cluster": "Post-Processing & Quality",
+      "seniority": "senior",
+      "salary_min": 115000,
+      "salary_max": 140000,
+      "salary_range": "$115,000 - $140,000",
+      "degree_required": "4yr",
+      "degree_detail": "BS Engineering + standards experience",
+      "experience": "8+ years",
+      "skills": [
+        "part certification",
+        "ASTM/ISO compliance",
+        "qualification dossiers",
+        "FAA/FDA regulatory"
+      ],
+      "certifications": [],
+      "description": "Drives part-level certification for AM components \u2014 assembles qualification dossiers, interfaces with regulators, and owns audit response.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-22",
+        "am-r-21"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 3,
+      "grid_row": 2
+    },
+    {
+      "id": "am-r-72",
+      "industry_id": "additive-manufacturing",
+      "title": "Lead AM Post-Processing Engineer",
+      "cluster": "Post-Processing & Quality",
+      "seniority": "senior",
+      "salary_min": 120000,
+      "salary_max": 145000,
+      "salary_range": "$120,000 - $145,000",
+      "degree_required": "4yr",
+      "degree_detail": "BS Mechanical Engineering",
+      "experience": "8+ years",
+      "skills": [
+        "post-process strategy",
+        "machining leadership",
+        "cycle-time reduction",
+        "team leadership"
+      ],
+      "certifications": [],
+      "description": "Leads post-processing engineering \u2014 sets standards across all material/machine combinations and mentors process engineers.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-33",
+        "am-r-22"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 3,
+      "grid_row": 2
+    },
+    {
+      "id": "am-r-73",
+      "industry_id": "additive-manufacturing",
+      "title": "AM Standards Engineer",
+      "cluster": "Post-Processing & Quality",
+      "seniority": "senior",
+      "salary_min": 115000,
+      "salary_max": 145000,
+      "salary_range": "$115,000 - $145,000",
+      "degree_required": "4yr",
+      "degree_detail": "BS/MS Engineering",
+      "experience": "8+ years",
+      "skills": [
+        "ASTM/ISO standards development",
+        "qualification frameworks",
+        "process documentation",
+        "cross-org influence"
+      ],
+      "certifications": [],
+      "description": "Owns standards engineering within the AM team \u2014 represents the company at ASTM F42 / ISO TC 261 and internalizes standards into specs.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-22",
+        "am-r-21"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 3,
+      "grid_row": 2
+    },
+    {
+      "id": "am-r-74",
+      "industry_id": "additive-manufacturing",
+      "title": "Principal AM Reliability Engineer",
+      "cluster": "Post-Processing & Quality",
+      "seniority": "senior",
+      "salary_min": 135000,
+      "salary_max": 165000,
+      "salary_range": "$135,000 - $165,000",
+      "degree_required": "4yr",
+      "degree_detail": "MS Engineering",
+      "experience": "10+ years",
+      "skills": [
+        "reliability engineering",
+        "fatigue analysis",
+        "failure mode analysis",
+        "root cause investigation"
+      ],
+      "certifications": [],
+      "description": "Principal-level reliability authority on AM parts \u2014 owns fatigue testing strategy, failure investigations, and reliability acceptance.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-22",
+        "am-r-11"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 3,
+      "grid_row": 2
+    },
+    {
+      "id": "am-r-75",
+      "industry_id": "additive-manufacturing",
+      "title": "Director of AM Quality",
+      "cluster": "Post-Processing & Quality",
+      "seniority": "senior",
+      "salary_min": 150000,
+      "salary_max": 185000,
+      "salary_range": "$150,000 - $185,000",
+      "degree_required": "4yr",
+      "degree_detail": "BS/MS Engineering + executive QA experience",
+      "experience": "12+ years",
+      "skills": [
+        "QA leadership",
+        "cross-program quality strategy",
+        "regulatory relations",
+        "audit ownership"
+      ],
+      "certifications": [],
+      "description": "Owns AM quality function at director level \u2014 strategy, regulatory relations, audit response, and quality team org design.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-22",
+        "am-r-27"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 3,
+      "grid_row": 2
+    },
+    {
+      "id": "am-r-76",
+      "industry_id": "additive-manufacturing",
+      "title": "AM Logistics Coordinator",
+      "cluster": "Business, Sales & Supply Chain",
+      "seniority": "entry",
+      "salary_min": 48000,
+      "salary_max": 62000,
+      "salary_range": "$48,000 - $62,000",
+      "degree_required": "hs",
+      "degree_detail": "High school + logistics experience",
+      "experience": "0-2 years",
+      "skills": [
+        "shipping/receiving",
+        "ERP basics",
+        "inventory tracking",
+        "documentation"
+      ],
+      "certifications": [],
+      "description": "Coordinates inbound feedstock and outbound finished AM part shipments \u2014 manages logistics paperwork and warehouse handoffs.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-25"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 4,
+      "grid_row": 0
+    },
+    {
+      "id": "am-r-77",
+      "industry_id": "additive-manufacturing",
+      "title": "AM Inventory Specialist",
+      "cluster": "Business, Sales & Supply Chain",
+      "seniority": "entry",
+      "salary_min": 44000,
+      "salary_max": 58000,
+      "salary_range": "$44,000 - $58,000",
+      "degree_required": "hs",
+      "degree_detail": "High school",
+      "experience": "0-2 years",
+      "skills": [
+        "inventory management",
+        "cycle counting",
+        "powder lot tracking",
+        "ERP entry"
+      ],
+      "certifications": [],
+      "description": "Tracks AM feedstock inventory and powder lots \u2014 cycle counting, lot traceability, and reorder triggers.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-25"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 4,
+      "grid_row": 0
+    },
+    {
+      "id": "am-r-78",
+      "industry_id": "additive-manufacturing",
+      "title": "AM Sales Coordinator",
+      "cluster": "Business, Sales & Supply Chain",
+      "seniority": "entry",
+      "salary_min": 46000,
+      "salary_max": 60000,
+      "salary_range": "$46,000 - $60,000",
+      "degree_required": "2yr",
+      "degree_detail": "Associate degree or equivalent",
+      "experience": "0-2 years",
+      "skills": [
+        "CRM administration",
+        "quote preparation",
+        "customer follow-up",
+        "order entry"
+      ],
+      "certifications": [],
+      "description": "Supports AM sales reps \u2014 prepares quotes, manages CRM data, and follows up on customer orders.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-23",
+        "am-r-25"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 4,
+      "grid_row": 0
+    },
+    {
+      "id": "am-r-79",
+      "industry_id": "additive-manufacturing",
+      "title": "AM Customer Success Specialist",
+      "cluster": "Business, Sales & Supply Chain",
+      "seniority": "entry",
+      "salary_min": 50000,
+      "salary_max": 65000,
+      "salary_range": "$50,000 - $65,000",
+      "degree_required": "4yr",
+      "degree_detail": "BS or equivalent + customer-facing experience",
+      "experience": "0-3 years",
+      "skills": [
+        "customer support",
+        "application troubleshooting",
+        "CRM",
+        "documentation",
+        "training delivery"
+      ],
+      "certifications": [],
+      "description": "Supports AM customers post-sale \u2014 application troubleshooting, training escalation, and account health.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-23",
+        "am-r-36"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 4,
+      "grid_row": 0
+    },
+    {
+      "id": "am-r-80",
+      "industry_id": "additive-manufacturing",
+      "title": "AM Procurement Analyst",
+      "cluster": "Business, Sales & Supply Chain",
+      "seniority": "entry",
+      "salary_min": 50000,
+      "salary_max": 65000,
+      "salary_range": "$50,000 - $65,000",
+      "degree_required": "4yr",
+      "degree_detail": "BS Business or Supply Chain",
+      "experience": "0-3 years",
+      "skills": [
+        "procurement",
+        "supplier evaluation",
+        "spend analysis",
+        "contract basics"
+      ],
+      "certifications": [],
+      "description": "Analyzes AM supplier spend and helps qualify new powder/equipment vendors against price and lead-time requirements.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-25"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 4,
+      "grid_row": 0
+    },
+    {
+      "id": "am-r-81",
+      "industry_id": "additive-manufacturing",
+      "title": "AM Account Manager",
+      "cluster": "Business, Sales & Supply Chain",
+      "seniority": "mid",
+      "salary_min": 85000,
+      "salary_max": 110000,
+      "salary_range": "$85,000 - $110,000",
+      "degree_required": "4yr",
+      "degree_detail": "BS + sales experience",
+      "experience": "3-6 years",
+      "skills": [
+        "account management",
+        "AM technical fluency",
+        "CRM",
+        "quota carrying"
+      ],
+      "certifications": [],
+      "description": "Owns key AM accounts \u2014 quota carrier, expansion planning, and primary relationship for assigned customers.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-23",
+        "am-r-26"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 4,
+      "grid_row": 1
+    },
+    {
+      "id": "am-r-82",
+      "industry_id": "additive-manufacturing",
+      "title": "AM Marketing Manager",
+      "cluster": "Business, Sales & Supply Chain",
+      "seniority": "mid",
+      "salary_min": 90000,
+      "salary_max": 115000,
+      "salary_range": "$90,000 - $115,000",
+      "degree_required": "4yr",
+      "degree_detail": "BS Marketing/Engineering",
+      "experience": "3-7 years",
+      "skills": [
+        "B2B marketing",
+        "demand gen",
+        "AM technical content",
+        "event/conference marketing"
+      ],
+      "certifications": [],
+      "description": "Owns AM marketing programs \u2014 segment positioning, demand gen, customer events, and technical content.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-35",
+        "am-r-23"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 4,
+      "grid_row": 1
+    },
+    {
+      "id": "am-r-83",
+      "industry_id": "additive-manufacturing",
+      "title": "VP of AM Business Development",
+      "cluster": "Business, Sales & Supply Chain",
+      "seniority": "senior",
+      "salary_min": 170000,
+      "salary_max": 210000,
+      "salary_range": "$170,000 - $210,000",
+      "degree_required": "4yr",
+      "degree_detail": "BS/MS + executive sales experience",
+      "experience": "12+ years",
+      "skills": [
+        "business development",
+        "strategic partnerships",
+        "executive selling",
+        "P&L responsibility"
+      ],
+      "certifications": [],
+      "description": "Senior executive over AM business development \u2014 strategic partnerships, large account ownership, and revenue scaling.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-26",
+        "am-r-27"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 4,
+      "grid_row": 2
+    },
+    {
+      "id": "am-r-84",
+      "industry_id": "additive-manufacturing",
+      "title": "Chief AM Strategy Officer",
+      "cluster": "Business, Sales & Supply Chain",
+      "seniority": "senior",
+      "salary_min": 200000,
+      "salary_max": 260000,
+      "salary_range": "$200,000 - $260,000",
+      "degree_required": "4yr",
+      "degree_detail": "MS/MBA + C-suite experience",
+      "experience": "15+ years",
+      "skills": [
+        "executive strategy",
+        "AM industry expertise",
+        "M&A",
+        "board management"
+      ],
+      "certifications": [],
+      "description": "C-suite leader owning AM strategy across the company \u2014 market entry, M&A, partnerships, and board reporting.",
+      "pathway_ids": [],
+      "adjacent_role_ids": [
+        "am-r-27",
+        "am-r-26"
+      ],
+      "open_jobs_count": 0,
+      "hiring_companies": [],
+      "grid_col": 4,
+      "grid_row": 2
     }
   ],
   "pathways": []
