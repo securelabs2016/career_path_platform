@@ -74,9 +74,9 @@ export default function MobileList({ roles, clusters, industrySlug }: Props) {
                     {/* Top 3 skills */}
                     <div className="flex flex-wrap gap-1.5 mt-3">
                       {role.skills.slice(0, 3).map(skill => (
-                        <span key={skill}
+                        <span key={skill.name}
                           className="text-[11px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                          {skill}
+                          {skill.name}
                         </span>
                       ))}
                       {role.skills.length > 3 && (

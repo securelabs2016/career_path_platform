@@ -30,7 +30,7 @@ function buildContext(data: IndustryData): string {
   const roles = data.roles.map(r =>
     `[${r.id}] ${r.title} | ${r.cluster} | ${r.seniority} | ` +
     `$${Math.round(r.salary_min / 1000)}k–$${Math.round(r.salary_max / 1000)}k | ` +
-    `${r.degree_required} | Skills: ${r.skills.slice(0, 5).join(', ')}`
+    `${r.degree_required} | Skills: ${r.skills.slice(0, 5).map(s => s.name).join(', ')}`
   ).join('\n');
 
   const pathways = data.pathways.map(p =>

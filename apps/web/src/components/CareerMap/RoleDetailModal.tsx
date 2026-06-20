@@ -73,68 +73,12 @@ export default function RoleDetailModal({ role, anyCount, industrySlug, onClose 
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Left column — description + skills (spans 2/3) */}
-          <div className="md:col-span-2 space-y-7">
+          {/* Left column — long description (spans 2/3) */}
+          <div className="md:col-span-2">
             {role.description && (
-              <p className="text-[15px] text-gray-700 leading-relaxed">
+              <p className="text-[15px] text-gray-700 leading-relaxed whitespace-pre-line">
                 {role.description}
               </p>
-            )}
-
-            {role.skills.length > 0 && (
-              <div>
-                <h3 className="text-base font-bold text-gray-900 mb-3 pb-2 border-b border-gray-200">
-                  Skills &amp; Requirements
-                </h3>
-                <ul className="space-y-2 text-[14px] text-gray-800 leading-relaxed">
-                  {role.skills.map(skill => (
-                    <li key={skill} className="flex items-start gap-2.5">
-                      <span
-                        className="mt-2 w-1.5 h-1.5 rounded-full flex-shrink-0"
-                        style={{ backgroundColor: bandHex }}
-                        aria-hidden="true"
-                      />
-                      <span>{skill}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {role.certifications.length > 0 && (
-              <div>
-                <h3 className="text-base font-bold text-gray-900 mb-3 pb-2 border-b border-gray-200">
-                  Certifications
-                </h3>
-                <ul className="space-y-2 text-[14px] text-gray-800 leading-relaxed">
-                  {role.certifications.map(cert => (
-                    <li key={cert} className="flex items-start gap-2.5">
-                      <span
-                        className="mt-2 w-1.5 h-1.5 rounded-full flex-shrink-0"
-                        style={{ backgroundColor: bandHex }}
-                        aria-hidden="true"
-                      />
-                      <span>{cert}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {/* Phase 5 — single CTA to the openings page. Country picker
-                lives on that page; modal stays focused on role info. */}
-            {worldwideCount > 0 && industrySlug && (
-              <div>
-                <Link
-                  href={`/${industrySlug}/role/${role.id}/openings`}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold
-                             text-white hover:opacity-90 transition-opacity
-                             focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-                  style={{ backgroundColor: bandHex }}
-                >
-                  View {worldwideCount} live opening{worldwideCount === 1 ? '' : 's'} →
-                </Link>
-              </div>
             )}
           </div>
 
@@ -151,9 +95,16 @@ export default function RoleDetailModal({ role, anyCount, industrySlug, onClose 
                   Required Education &amp; Training
                 </h4>
               </div>
-              <p className="text-base font-bold text-gray-900">{degreeLabel}</p>
+              <div className="flex items-center gap-2">
+                <span
+                  className="inline-block w-2 h-2 flex-shrink-0"
+                  style={{ backgroundColor: bandHex, transform: 'rotate(45deg)' }}
+                  aria-hidden="true"
+                />
+                <p className="text-base font-bold text-gray-900">{degreeLabel}</p>
+              </div>
               {role.degree_detail && (
-                <p className="text-sm text-gray-700 mt-1.5 leading-relaxed">{role.degree_detail}</p>
+                <p className="text-sm text-gray-700 mt-2 leading-relaxed">{role.degree_detail}</p>
               )}
             </div>
 
@@ -166,7 +117,7 @@ export default function RoleDetailModal({ role, anyCount, industrySlug, onClose 
                     <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
                   </svg>
                   <h4 className="text-[11px] font-bold uppercase tracking-wider text-gray-700">
-                    Required Experience
+                    Work Experience
                   </h4>
                 </div>
                 <p className="text-base font-bold text-gray-900">{role.experience}</p>
@@ -188,6 +139,70 @@ export default function RoleDetailModal({ role, anyCount, industrySlug, onClose 
             </div>
           </aside>
         </div>
+
+        {/* Skills & Requirements — full-width below the 2-col area */}
+        {role.skills.length > 0 && (
+          <div className="mt-10 pt-8 border-t border-gray-200">
+            <div className="flex items-center gap-2.5 mb-5">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" style={{ color: bandHex }} aria-hidden="true">
+                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+              </svg>
+              <h3 className="text-[13px] font-bold uppercase tracking-wider text-gray-800">
+                Skills &amp; Requirements
+              </h3>
+            </div>
+            <ul className="space-y-3 text-[14px] text-gray-800 leading-relaxed">
+              {role.skills.map(skill => (
+                <li key={skill.name} className="flex items-start gap-3">
+                  <span
+                    className="mt-1.5 w-2 h-2 rounded-full flex-shrink-0 border-2"
+                    style={{ borderColor: bandHex }}
+                    aria-hidden="true"
+                  />
+                  <span>
+                    <span className="font-semibold text-gray-900">{skill.name}</span>
+                    {skill.description ? <>: {skill.description}</> : null}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {role.certifications.length > 0 && (
+          <div className="mt-8">
+            <h3 className="text-[13px] font-bold uppercase tracking-wider text-gray-800 mb-3">
+              Certifications
+            </h3>
+            <ul className="space-y-2 text-[14px] text-gray-800 leading-relaxed">
+              {role.certifications.map(cert => (
+                <li key={cert} className="flex items-start gap-2.5">
+                  <span
+                    className="mt-2 w-1.5 h-1.5 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: bandHex }}
+                    aria-hidden="true"
+                  />
+                  <span>{cert}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* CTA — single button to the openings page. */}
+        {worldwideCount > 0 && industrySlug && (
+          <div className="mt-8">
+            <Link
+              href={`/${industrySlug}/role/${role.id}/openings`}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold
+                         text-white hover:opacity-90 transition-opacity
+                         focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+              style={{ backgroundColor: bandHex }}
+            >
+              View {worldwideCount} live opening{worldwideCount === 1 ? '' : 's'} →
+            </Link>
+          </div>
+        )}
       </div>
     </Modal>
   );

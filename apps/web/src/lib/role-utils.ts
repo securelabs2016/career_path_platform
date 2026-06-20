@@ -2,10 +2,10 @@ import type { Role, IndustryData, SeniorityLevel } from './types';
 
 // ── Skill gap between two roles ────────────────────────────────────────────────
 export function computeSkillGap(from: Role, to: Role) {
-  const fromSet = new Set(from.skills.map(s => s.toLowerCase()));
+  const fromSet = new Set(from.skills.map(s => s.name.toLowerCase()));
   return {
-    toGain:   to.skills.filter(s => !fromSet.has(s.toLowerCase())),
-    youBring: to.skills.filter(s =>  fromSet.has(s.toLowerCase())),
+    toGain:   to.skills.filter(s => !fromSet.has(s.name.toLowerCase())),
+    youBring: to.skills.filter(s =>  fromSet.has(s.name.toLowerCase())),
   };
 }
 
@@ -30,7 +30,7 @@ export function roleMatchesFilter(
   if (query) {
     const q = query.toLowerCase();
     const inTitle  = role.title.toLowerCase().includes(q);
-    const inSkill  = role.skills.some(s => s.toLowerCase().includes(q));
+    const inSkill  = role.skills.some(s => s.name.toLowerCase().includes(q));
     const inCluster = role.cluster.toLowerCase().includes(q);
     const inDesc   = role.description.toLowerCase().includes(q);
     if (!inTitle && !inSkill && !inCluster && !inDesc) return false;

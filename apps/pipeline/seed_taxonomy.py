@@ -128,6 +128,17 @@ def replace_canonical_roles(supabase: Client, industry_id: str, roles: list[dict
     def _normalize_degree(d):
         return d if d in ('hs', '2yr', '4yr', 'graduate') else None
 
+    # DB stores skills as TEXT[] (canonical_roles.skills). The JSON may now
+    # carry skills as [{name, description}, ...] objects — flatten to names
+    # for DB ingestion so the matcher (which keys off skill names) is unaffected.
+    def _flatten_skills(skills):
+        if not skills:
+            return []
+        first = skills[0]
+        if isinstance(first, str):
+            return skills
+        return [s.get("name", "") for s in skills if s.get("name")]
+
     rows = [
         {
             "industry_id":     industry_id,
@@ -137,7 +148,7 @@ def replace_canonical_roles(supabase: Client, industry_id: str, roles: list[dict
             "salary_min":      role["salary_min"],
             "salary_max":      role["salary_max"],
             "degree_required": _normalize_degree(role["degree_required"]),
-            "skills":          role["skills"],
+            "skills":          _flatten_skills(role["skills"]),
             "certifications":  role["certifications"],
             "description":     role["description"],
         }

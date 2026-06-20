@@ -2,6 +2,11 @@ export type DegreeLevel = 'hs' | '2yr' | '4yr' | 'graduate' | 'sometimes';
 export type SeniorityLevel = 'entry' | 'mid' | 'senior' | 'lead';
 export type MatchStatus = 'pending' | 'approved' | 'rejected';
 
+export interface Skill {
+  name: string;
+  description: string;
+}
+
 export interface Industry {
   id: string;
   name: string;
@@ -25,7 +30,7 @@ export interface Role {
   degree_detail?: string;
   /** Typical years of experience, e.g. "0-2 years" or "10+ years". Optional. */
   experience?: string;
-  skills: string[];
+  skills: Skill[];
   certifications: string[];
   description: string;
   pathway_ids: string[];
