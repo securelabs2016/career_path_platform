@@ -35,9 +35,13 @@ interface Props {
   isRecommended:  boolean;
   industryColor:  string;
   industrySlug:   string;
+  /** Topmost row (Senior/Lead) — no upper arrows, all clicks force 'down'. */
+  isTopRow:       boolean;
+  /** Bottommost row (Entry) — no lower arrows, all clicks force 'up'. */
+  isBottomRow:    boolean;
   /** Worldwide approved-match count — controls the Openings button enabled state. */
   anyCount?:      number;
-  onClick:        (id: string) => void;
+  onClick:        (id: string, direction: 'up' | 'down') => void;
   onDoubleClick?: (id: string) => void;
   onShowDetails:  (id: string) => void;
 }
@@ -53,10 +57,14 @@ type ArrowZone = 'up' | 'down' | 'neutral';
  *    arrows show, each at its resting position.
  *  Result: as the cursor enters the upper or lower zone, the 3-arrow cluster
  *  briefly slides outward together, then settles. */
-function FourArrows({ size, zone }: { size: number; zone: ArrowZone }) {
+function FourArrows({
+  size, zone, hideUp, hideDown,
+}: {
+  size: number; zone: ArrowZone; hideUp: boolean; hideDown: boolean;
+}) {
   type Group = 'up' | 'down';
   type ArrowState = 'hidden' | 'rest' | 'pushed';
-  const arrows: { angle: number; group: Group; alwaysOn: boolean }[] = [
+  const allArrows: { angle: number; group: Group; alwaysOn: boolean }[] = [
     { angle: -45, group: 'up',   alwaysOn: false },
     { angle:   0, group: 'up',   alwaysOn: true  },
     { angle:  45, group: 'up',   alwaysOn: false },
@@ -64,6 +72,7 @@ function FourArrows({ size, zone }: { size: number; zone: ArrowZone }) {
     { angle: 180, group: 'down', alwaysOn: true  },
     { angle: 225, group: 'down', alwaysOn: false },
   ];
+  const arrows = allArrows.filter(a => (a.group === 'up' ? !hideUp : !hideDown));
 
   // Map (group active?, alwaysOn?) → visual state.
   //   group active = the cursor zone matches this arrow's group.
@@ -128,10 +137,12 @@ function FourArrows({ size, zone }: { size: number; zone: ArrowZone }) {
 
 export default function RoleCard({
   role, position, isSelected, isLastInPath, isDimmed, isAdjacent, industrySlug,
+  isTopRow, isBottomRow,
   anyCount,
   onClick, onDoubleClick, onShowDetails,
 }: Props) {
   const [hovered, setHovered] = useState(false);
+  const [openingsHover, setOpeningsHover] = useState(false);
   const [zone, setZone] = useState<ArrowZone>('neutral');
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -173,10 +184,8 @@ export default function RoleCard({
    *  Down zone: angle ∈ ( 45°, 135°)    — lower quadrant
    *  Otherwise (left, right, or within 5px deadzone) → neutral.
    *
-   *  Each zone is a 90° wedge; together they cover the top and bottom
-   *  halves but leave a 90° wedge on each of the left and right sides
-   *  inert. That matches the user's spec: "if hovering left and right
-   *  nothing happens". */
+   *  Top-row roles suppress the up zone (no upper arrows ever fan); bottom-row
+   *  roles suppress the down zone. */
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
@@ -189,9 +198,20 @@ export default function RoleCard({
       return;
     }
     const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
-    if (angle > -135 && angle < -45)     setZone('up');
-    else if (angle >  45 && angle < 135) setZone('down');
-    else                                  setZone('neutral');
+    if      (angle > -135 && angle < -45 && !isTopRow)    setZone('up');
+    else if (angle >   45 && angle < 135 && !isBottomRow) setZone('down');
+    else                                                   setZone('neutral');
+  };
+
+  /** Which half of the circle the click landed in. Top/bottom rows force the
+   *  only valid direction regardless of click Y; middle rows split by Y. */
+  const directionForClick = (clientY: number): 'up' | 'down' => {
+    if (isTopRow)    return 'down';
+    if (isBottomRow) return 'up';
+    if (!containerRef.current) return 'down';
+    const rect = containerRef.current.getBoundingClientRect();
+    const centerY = rect.top + 4 + NODE_R;
+    return clientY < centerY ? 'up' : 'down';
   };
 
   // Softer dim than before — reference barely fades non-related roles.
@@ -262,16 +282,28 @@ export default function RoleCard({
                 <Link
                   href={`/${industrySlug}/role/${role.id}/openings`}
                   onClick={e => e.stopPropagation()}
+                  onMouseEnter={() => setOpeningsHover(true)}
+                  onMouseLeave={() => setOpeningsHover(false)}
                   className="inline-flex items-center gap-1 px-3 py-1.5 rounded text-[11px] font-semibold
-                             uppercase tracking-wide border bg-white hover:bg-gray-50 transition-colors
+                             uppercase tracking-wide border transition-all duration-200 ease-out
+                             hover:-translate-y-0.5
                              focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1"
-                  style={{ borderColor: clusterHex, color: clusterHex }}
+                  style={{
+                    borderColor:     clusterHex,
+                    backgroundColor: openingsHover ? clusterHex : '#ffffff',
+                    color:           openingsHover ? '#ffffff' : clusterHex,
+                    boxShadow:       openingsHover ? `0 6px 14px -4px ${clusterHex}66` : 'none',
+                  }}
                   title={`${anyCount} live opening${anyCount === 1 ? '' : 's'}`}
                 >
                   Openings
                   <span
-                    className="inline-block min-w-[16px] h-4 px-1 rounded-full text-[10px] leading-4 text-white text-center"
-                    style={{ backgroundColor: clusterHex }}
+                    className="inline-block min-w-[16px] h-4 px-1 rounded-full text-[10px] leading-4
+                               text-center transition-colors duration-200"
+                    style={{
+                      backgroundColor: openingsHover ? '#ffffff' : clusterHex,
+                      color:           openingsHover ? clusterHex : '#ffffff',
+                    }}
                   >
                     {anyCount > 9 ? '9+' : anyCount}
                   </span>
@@ -293,7 +325,7 @@ export default function RoleCard({
 
       <button
         type="button"
-        onClick={e => { e.stopPropagation(); onClick(role.id); }}
+        onClick={e => { e.stopPropagation(); onClick(role.id, directionForClick(e.clientY)); }}
         onDoubleClick={e => { e.stopPropagation(); onDoubleClick?.(role.id); }}
         aria-pressed={isSelected}
         aria-label={`${role.title}${isSelected ? ' (in path)' : ''}`}
@@ -327,7 +359,12 @@ export default function RoleCard({
               zIndex:          2,
             }}
           >
-            <FourArrows size={Math.round(NODE_R_ACTIVE * 1.95)} zone={zone} />
+            <FourArrows
+              size={Math.round(NODE_R_ACTIVE * 1.95)}
+              zone={zone}
+              hideUp={isTopRow}
+              hideDown={isBottomRow}
+            />
           </span>
 
           {/* Committed dot (in path but not last) — small solid cluster-colored circle. */}

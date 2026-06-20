@@ -8,6 +8,7 @@ import {
   SENIORITY_LABELS, SENIORITY_TO_ROW,
 } from '@/lib/map-layout';
 import { roleMatchesFilter } from '@/lib/role-utils';
+import { passesDirectionFilter, type VerticalPos } from '@/lib/role-direction';
 import { CLUSTER_COLORS } from './constants';
 import FilterBar from './FilterBar';
 import HiringFilter from './HiringFilter';
@@ -50,6 +51,12 @@ export default function CareerMap({ data }: Props) {
   const [saveOpen,       setSaveOpen]       = useState(false);
   const [errorOpen,      setErrorOpen]      = useState(false);
   const [detailRoleId,   setDetailRoleId]   = useState<string | null>(null);
+  // Direction of the most recent click on the last role's circle.
+  //   'up'   → diverge (edges fan OUT to higher / same-row-higher adjacents)
+  //   'down' → converge (edges flow IN from lower / same-row-lower adjacents)
+  // Equal-salary same-row adjacents (midpoints within $1000) show in both
+  // modes — but only when the source role sits in a middle seniority row.
+  const [lastClickDirection, setLastClickDirection] = useState<'up' | 'down' | null>(null);
   // Phase 5 — worldwide counts drive the Openings button on every role card
   // AND the modal's hiring CTA. Default-worldwide means we don't need a
   // separate US-cached fetch anymore — country filtering lives on the
@@ -91,6 +98,24 @@ export default function CareerMap({ data }: Props) {
   const layout = useMemo(() => computeLayout(roles), [roles]);
   const { positions, totalWidth, totalHeight, rowStartY, rowBandHeight, colW: COL_W } = layout;
 
+  // Global vertical extents — used to decide which role circles are at the
+  // absolute top / bottom of the map. Only those suppress one direction of
+  // arrows; every other role (even other "Senior" or "Entry" stack rows)
+  // gets both up and down arrows.
+  const verticalPosById = useMemo(() => {
+    let topY = Infinity;
+    let bottomY = -Infinity;
+    for (const p of positions.values()) {
+      if (p.cy < topY)    topY    = p.cy;
+      if (p.cy > bottomY) bottomY = p.cy;
+    }
+    const m = new Map<string, VerticalPos>();
+    for (const [id, p] of positions.entries()) {
+      m.set(id, { y: p.cy, isMapTop: p.cy === topY, isMapBottom: p.cy === bottomY });
+    }
+    return m;
+  }, [positions]);
+
   const filteredIds = useMemo(() => {
     if (!searchQuery.trim()) return null;
     return new Set(
@@ -100,25 +125,53 @@ export default function CareerMap({ data }: Props) {
     );
   }, [roles, searchQuery]);
 
-  /** Adjacency map { roleId → next-step role IDs } sourced from role.adjacent_role_ids. */
+  /** Adjacency map { roleId → next-step role IDs } sourced from role.adjacent_role_ids
+   *  and symmetrized — if X lists Y as an adjacent, Y also gets X. The curated
+   *  JSONs (Semi entirely, half of Space) only encode one direction of each
+   *  pairing, so without mirroring those columns' senior cells would never
+   *  converge to their mid/entry counterparts even though the relationship is
+   *  semantically symmetric. Mirroring makes "X→Y" and "Y→X" always agree. */
   const adjacencyById = useMemo(() => {
-    const m = new Map<string, string[]>();
-    roles.forEach(r => m.set(r.id, r.adjacent_role_ids));
-    return m;
+    const m = new Map<string, Set<string>>();
+    for (const r of roles) {
+      if (!m.has(r.id)) m.set(r.id, new Set());
+      for (const adj of r.adjacent_role_ids) {
+        m.get(r.id)!.add(adj);
+        if (!m.has(adj)) m.set(adj, new Set());
+        m.get(adj)!.add(r.id);
+      }
+    }
+    const out = new Map<string, string[]>();
+    for (const [id, set] of m) out.set(id, Array.from(set));
+    return out;
   }, [roles]);
 
   /** Constrained click model:
    *    - empty path     → any role can be clicked (starts a fresh path)
    *    - non-empty path → only the LAST role's adjacency (minus the path itself)
    *                       can be clicked to extend.  Off-list roles are not
-   *                       single-clickable; only double-tap resets.            */
+   *                       single-clickable; only double-tap resets.
+   *
+   *  Direction filter: when lastClickDirection is set, the adjacency is
+   *  further pruned to only the diverge/converge subset for that direction. */
   const possibleNextIds = useMemo(() => {
     if (selectedIds.length === 0) return new Set<string>();
-    const lastId = selectedIds[selectedIds.length - 1];
-    const next   = adjacencyById.get(lastId) ?? [];
+    const lastId   = selectedIds[selectedIds.length - 1];
+    const lastRole = roleById.get(lastId);
+    const lastPos  = verticalPosById.get(lastId);
+    if (!lastRole || !lastPos) return new Set<string>();
     const inPath = new Set(selectedIds);
-    return new Set(next.filter(id => !inPath.has(id)));
-  }, [selectedIds, adjacencyById]);
+    const adjIds = (adjacencyById.get(lastId) ?? []).filter(id => !inPath.has(id));
+    if (!lastClickDirection) return new Set(adjIds);
+    return new Set(
+      adjIds.filter(id => {
+        const y    = roleById.get(id);
+        const yPos = verticalPosById.get(id);
+        if (!y || !yPos) return false;
+        return passesDirectionFilter(lastRole, y, lastClickDirection, lastPos, yPos);
+      }),
+    );
+  }, [selectedIds, adjacencyById, roleById, verticalPosById, lastClickDirection]);
 
   const highlightedPathwayIds = useMemo(() => {
     const set = new Set<string>();
@@ -153,8 +206,11 @@ export default function CareerMap({ data }: Props) {
    *    • path empty                                   → start path with this role
    *    • role is in current possible-next (adjacent) → append to path
    *    • role already in the path                     → truncate path to end here
-   *    • off-list                                     → no-op (protect the path) */
-  const handleRoleClick = useCallback((id: string) => {
+   *    • off-list                                     → no-op (protect the path)
+   *  Every click also records the clicked half (up/down) so the next round of
+   *  possible-next adjacents are pruned by the diverge/converge filter. */
+  const handleRoleClick = useCallback((id: string, direction: 'up' | 'down') => {
+    setLastClickDirection(direction);
     if (selectedIds.length === 0) {
       const next = [id];
       setSelectedIds(next);
@@ -181,11 +237,13 @@ export default function CareerMap({ data }: Props) {
   /** Double-click anywhere — clears the entire path. */
   const handleRoleDoubleClick = useCallback(() => {
     setSelectedIds([]);
+    setLastClickDirection(null);
     syncUrl([]);
   }, [syncUrl]);
 
   const handleClearPath = useCallback(() => {
     setSelectedIds([]);
+    setLastClickDirection(null);
     syncUrl([]);
   }, [syncUrl]);
 
@@ -461,11 +519,14 @@ export default function CareerMap({ data }: Props) {
               industryColor={industry.color}
             />
 
-            {/* Animated "roads" between path roles + fan to possible next steps. */}
+            {/* Animated "roads" between path roles + fan to possible next steps.
+                Targets are the already direction-filtered possibleNextIds so
+                the fan animation matches the highlighted-role set exactly. */}
             <PathChain
               selectedPath={selectedIds}
-              adjacencyById={adjacencyById}
+              targetIds={possibleNextIds}
               positions={positions}
+              direction={lastClickDirection}
               width={totalWidth}
               height={totalHeight}
             />
@@ -476,6 +537,7 @@ export default function CareerMap({ data }: Props) {
               if (!pos) return null;
               const vis = getVisibility(role.id);
               const lastId = selectedIds[selectedIds.length - 1];
+              const vPos = verticalPosById.get(role.id);
               return (
                 <RoleCard
                   key={role.id}
@@ -488,6 +550,8 @@ export default function CareerMap({ data }: Props) {
                   isRecommended={false}
                   industryColor={industry.color}
                   industrySlug={industry.slug}
+                  isTopRow={vPos?.isMapTop ?? false}
+                  isBottomRow={vPos?.isMapBottom ?? false}
                   anyCount={getAnyCount(role.title)}
                   onClick={handleRoleClick}
                   onDoubleClick={handleRoleDoubleClick}

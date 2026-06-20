@@ -1,14 +1,14 @@
 /**
- * Cluster → color mapping. Palette is applied to every industry by column
- * position; the cluster NAME is just the lookup key.
+ * Cluster → color mapping. Each industry has its own palette chosen for
+ * psychological tone — palette is keyed by cluster name (names are unique
+ * across the three industries, so no collision).
  *
- * Hex stops:
- *   0  jade green     #2d9159
- *   1  ocean blue     #2e7eb0
- *   2  mint           #a3d9a3
- *   3  teal           #5fb9b1
- *   4  warm orange    #f0a868
- *   5  dark orange    #c2410c   (Space only — 6th column)
+ *   AM    → industrial blueprint  : deep blue → cyan → emerald → lime → amber
+ *           (trust, precision, quality, value of craft)
+ *   Semi  → electric silicon      : violet → electric blue → cyan → teal → magenta
+ *           (innovation, energy, advanced tech)
+ *   Space → cosmic frontier sunset: indigo → violet → fuchsia → sky → rocket
+ *           orange → rose (ambition, exploration, thrust, urgency)
  */
 export const CLUSTER_COLORS: Record<string, {
   dot:   string;     // tailwind bg class for the indicator bullet
@@ -17,27 +17,27 @@ export const CLUSTER_COLORS: Record<string, {
   band:  string;     // hex for the column header solid band
   tint:  string;     // hex (with alpha) for the cell background tint
 }> = {
-  // ── Additive Manufacturing (5 clusters) ────────────────────────────────
-  'Design & Engineering':              { dot: 'bg-[#2d9159]', ring: 'ring-[#2d9159]', light: '#2d9159', band: '#2d9159', tint: '#2d915914' },
-  'Materials & Process Development':   { dot: 'bg-[#2e7eb0]', ring: 'ring-[#2e7eb0]', light: '#2e7eb0', band: '#2e7eb0', tint: '#2e7eb014' },
-  'Machine Operation & Production':    { dot: 'bg-[#a3d9a3]', ring: 'ring-[#a3d9a3]', light: '#a3d9a3', band: '#a3d9a3', tint: '#a3d9a314' },
-  'Post-Processing & Quality':         { dot: 'bg-[#5fb9b1]', ring: 'ring-[#5fb9b1]', light: '#5fb9b1', band: '#5fb9b1', tint: '#5fb9b114' },
-  'Business, Sales & Supply Chain':    { dot: 'bg-[#f0a868]', ring: 'ring-[#f0a868]', light: '#f0a868', band: '#f0a868', tint: '#f0a86814' },
+  // ── Additive Manufacturing — industrial blueprint ──────────────────────
+  'Design & Engineering':              { dot: 'bg-[#1d4ed8]', ring: 'ring-[#1d4ed8]', light: '#1d4ed8', band: '#1d4ed8', tint: '#1d4ed814' },
+  'Materials & Process Development':   { dot: 'bg-[#0891b2]', ring: 'ring-[#0891b2]', light: '#0891b2', band: '#0891b2', tint: '#0891b214' },
+  'Machine Operation & Production':    { dot: 'bg-[#059669]', ring: 'ring-[#059669]', light: '#059669', band: '#059669', tint: '#05966914' },
+  'Post-Processing & Quality':         { dot: 'bg-[#65a30d]', ring: 'ring-[#65a30d]', light: '#65a30d', band: '#65a30d', tint: '#65a30d14' },
+  'Business, Sales & Supply Chain':    { dot: 'bg-[#d97706]', ring: 'ring-[#d97706]', light: '#d97706', band: '#d97706', tint: '#d9770614' },
 
-  // ── Semiconductors (5 clusters — reference site names, post-v3 migration) ─
-  'Research, Design & Engineering':                  { dot: 'bg-[#2d9159]', ring: 'ring-[#2d9159]', light: '#2d9159', band: '#2d9159', tint: '#2d915914' },
-  'Wafer Fabrication':                               { dot: 'bg-[#2e7eb0]', ring: 'ring-[#2e7eb0]', light: '#2e7eb0', band: '#2e7eb0', tint: '#2e7eb014' },
-  'Assembly, Packaging & Testing':                   { dot: 'bg-[#a3d9a3]', ring: 'ring-[#a3d9a3]', light: '#a3d9a3', band: '#a3d9a3', tint: '#a3d9a314' },
-  'Facilities & Equipment Maintenance':              { dot: 'bg-[#5fb9b1]', ring: 'ring-[#5fb9b1]', light: '#5fb9b1', band: '#5fb9b1', tint: '#5fb9b114' },
-  'Supply Chain, Logistics & Business Operations':   { dot: 'bg-[#f0a868]', ring: 'ring-[#f0a868]', light: '#f0a868', band: '#f0a868', tint: '#f0a86814' },
+  // ── Semiconductors — electric silicon ──────────────────────────────────
+  'Research, Design & Engineering':                  { dot: 'bg-[#7c3aed]', ring: 'ring-[#7c3aed]', light: '#7c3aed', band: '#7c3aed', tint: '#7c3aed14' },
+  'Wafer Fabrication':                               { dot: 'bg-[#2563eb]', ring: 'ring-[#2563eb]', light: '#2563eb', band: '#2563eb', tint: '#2563eb14' },
+  'Assembly, Packaging & Testing':                   { dot: 'bg-[#06b6d4]', ring: 'ring-[#06b6d4]', light: '#06b6d4', band: '#06b6d4', tint: '#06b6d414' },
+  'Facilities & Equipment Maintenance':              { dot: 'bg-[#0d9488]', ring: 'ring-[#0d9488]', light: '#0d9488', band: '#0d9488', tint: '#0d948814' },
+  'Supply Chain, Logistics & Business Operations':   { dot: 'bg-[#db2777]', ring: 'ring-[#db2777]', light: '#db2777', band: '#db2777', tint: '#db277714' },
 
-  // ── Space Industry (6 clusters) ────────────────────────────────────────
-  'Spacecraft Design & Engineering':     { dot: 'bg-[#2d9159]', ring: 'ring-[#2d9159]', light: '#2d9159', band: '#2d9159', tint: '#2d915914' },
-  'Propulsion & Systems':                { dot: 'bg-[#2e7eb0]', ring: 'ring-[#2e7eb0]', light: '#2e7eb0', band: '#2e7eb0', tint: '#2e7eb014' },
-  'Manufacturing & Assembly (AIT)':      { dot: 'bg-[#a3d9a3]', ring: 'ring-[#a3d9a3]', light: '#a3d9a3', band: '#a3d9a3', tint: '#a3d9a314' },
-  'Mission Operations & Ground Systems': { dot: 'bg-[#5fb9b1]', ring: 'ring-[#5fb9b1]', light: '#5fb9b1', band: '#5fb9b1', tint: '#5fb9b114' },
-  'Launch & Test Operations':            { dot: 'bg-[#f0a868]', ring: 'ring-[#f0a868]', light: '#f0a868', band: '#f0a868', tint: '#f0a86814' },
-  'Business, Policy & Supply Chain':     { dot: 'bg-[#c2410c]', ring: 'ring-[#c2410c]', light: '#c2410c', band: '#c2410c', tint: '#c2410c14' },
+  // ── Space Industry — cosmic frontier sunset ────────────────────────────
+  'Spacecraft Design & Engineering':     { dot: 'bg-[#4338ca]', ring: 'ring-[#4338ca]', light: '#4338ca', band: '#4338ca', tint: '#4338ca14' },
+  'Propulsion & Systems':                { dot: 'bg-[#7c3aed]', ring: 'ring-[#7c3aed]', light: '#7c3aed', band: '#7c3aed', tint: '#7c3aed14' },
+  'Manufacturing & Assembly (AIT)':      { dot: 'bg-[#c026d3]', ring: 'ring-[#c026d3]', light: '#c026d3', band: '#c026d3', tint: '#c026d314' },
+  'Mission Operations & Ground Systems': { dot: 'bg-[#0284c7]', ring: 'ring-[#0284c7]', light: '#0284c7', band: '#0284c7', tint: '#0284c714' },
+  'Launch & Test Operations':            { dot: 'bg-[#ea580c]', ring: 'ring-[#ea580c]', light: '#ea580c', band: '#ea580c', tint: '#ea580c14' },
+  'Business, Policy & Supply Chain':     { dot: 'bg-[#dc2626]', ring: 'ring-[#dc2626]', light: '#dc2626', band: '#dc2626', tint: '#dc262614' },
 };
 
 export const DEGREE_BADGES: Record<string, { label: string; className: string }> = {

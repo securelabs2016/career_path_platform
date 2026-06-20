@@ -10,6 +10,12 @@ interface Props {
   children:    React.ReactNode;
   /** Optional aria-label when there's no visible title. */
   ariaLabel?:  string;
+  /** Skip the default content padding — caller handles its own. */
+  noPadding?:  boolean;
+  /** Override the close button's color classes (text + hover bg).
+   *  Default is gray-on-white; pass white-on-colored when the close button
+   *  sits over a colored header band. */
+  closeButtonClass?: string;
 }
 
 /**
@@ -23,6 +29,8 @@ interface Props {
  */
 export default function Modal({
   open, onClose, title, maxWidth = '720px', children, ariaLabel,
+  noPadding = false,
+  closeButtonClass = 'text-gray-500 hover:text-gray-900 hover:bg-gray-100',
 }: Props) {
   const closeBtnRef = useRef<HTMLButtonElement>(null);
 
@@ -77,9 +85,9 @@ export default function Modal({
           type="button"
           onClick={onClose}
           aria-label="Close"
-          className="absolute top-3 right-3 w-8 h-8 rounded-full text-gray-500 hover:text-gray-900
-                     hover:bg-gray-100 flex items-center justify-center
-                     focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+          className={`absolute top-3 right-3 w-8 h-8 rounded-full ${closeButtonClass}
+                     flex items-center justify-center z-10
+                     focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500`}
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <line x1="18" y1="6" x2="6" y2="18" />
@@ -95,7 +103,7 @@ export default function Modal({
           </div>
         )}
 
-        <div className={title ? 'px-6 pt-4 pb-6' : 'p-6 pr-12'}>
+        <div className={title ? 'px-6 pt-4 pb-6' : noPadding ? '' : 'p-6 pr-12'}>
           {children}
         </div>
       </div>

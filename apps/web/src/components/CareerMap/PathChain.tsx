@@ -32,10 +32,16 @@ const BLOOM_R = LAYOUT.NODE_R_ACTIVE + 2; // bloom edge + 2px gap
 interface Props {
   /** Ordered list of role IDs the user has clicked, in click order. */
   selectedPath: string[];
-  /** Adjacency list keyed by role ID — the roles you can step to from this one. */
-  adjacencyById: Map<string, string[]>;
+  /** Pre-filtered set of role IDs to draw the exploration fan to.
+   *  Already excludes path members and any direction-filter rejects. */
+  targetIds: Set<string>;
   /** Pixel position of every role on the map. */
   positions: Map<string, CardPosition>;
+  /** Click direction on the last role's circle.
+   *    'up'   → diverge: dash animates from the source role outward to targets
+   *    'down' → converge: dash animates from each target inward to the source
+   *    null   → empty path / no committed direction (diverge fallback) */
+  direction: 'up' | 'down' | null;
   width: number;
   height: number;
 }
@@ -57,8 +63,9 @@ interface Props {
  */
 export default function PathChain({
   selectedPath,
-  adjacencyById,
+  targetIds,
   positions,
+  direction,
   width,
   height,
 }: Props) {
@@ -85,24 +92,28 @@ export default function PathChain({
     if (!lastId) return [];
     const lastPos = positions.get(lastId);
     if (!lastPos) return [];
-    const pathSet = new Set(selectedPath);
-    const nexts = adjacencyById.get(lastId) ?? [];
     const segs: { id: string; x1: number; y1: number; x2: number; y2: number; length: number }[] = [];
-    for (const adjId of nexts) {
-      if (pathSet.has(adjId)) continue;
+    const converge = direction === 'down';
+    for (const adjId of targetIds) {
       const adjPos = positions.get(adjId);
       if (!adjPos) continue;
+      // Geometry stays center-to-center, just trimmed to the visible perimeter.
+      // For converge mode swap the endpoints so the stroke-dashoffset animation
+      // grows from the adjacent inward to the source instead of outward.
       const trimmed = trimEnd(lastPos.cx, lastPos.cy, adjPos.cx, adjPos.cy, BLOOM_R, SMALL_R);
       const dx = trimmed.x2 - trimmed.x1;
       const dy = trimmed.y2 - trimmed.y1;
+      const seg = converge
+        ? { x1: trimmed.x2, y1: trimmed.y2, x2: trimmed.x1, y2: trimmed.y1 }
+        : { x1: trimmed.x1, y1: trimmed.y1, x2: trimmed.x2, y2: trimmed.y2 };
       segs.push({
-        id: `ex-${lastId}-${adjId}`,
-        ...trimmed,
+        id: `ex-${lastId}-${adjId}-${converge ? 'in' : 'out'}`,
+        ...seg,
         length: Math.hypot(dx, dy),
       });
     }
     return segs;
-  }, [lastId, selectedPath, adjacencyById, positions]);
+  }, [lastId, targetIds, positions, direction]);
 
   if (selectedPath.length === 0) return null;
 
