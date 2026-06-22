@@ -8,11 +8,18 @@ interface ExtJob   { normalized_title: string; skills: string[]; seniority: stri
 interface CanonRole{ id: string; title: string; cluster: string; seniority: string; salary_min: number; salary_max: number; }
 interface Match    { id: string; confidence: number; status: string; created_at: string; extracted_jobs: ExtJob; canonical_roles: CanonRole; }
 
+type Bucket = 'pending' | 'approved' | 'rejected';
+type Counts = Record<Bucket, number>;
+
 // ── Confidence badge colour ────────────────────────────────────────────────────
+// Buckets here match the matcher's ACTUAL routing thresholds in matcher.py:
+//   ≥ 0.80 → auto-approved
+//   0.35 – 0.80 → queued for human review
+//   < 0.35 → auto-rejected
 function ConfBadge({ score }: { score: number }) {
   const pct = Math.round(score * 100);
-  const cls = score >= 0.85 ? 'bg-green-100 text-green-700'
-            : score >= 0.5  ? 'bg-yellow-100 text-yellow-700'
+  const cls = score >= 0.80 ? 'bg-green-100 text-green-700'
+            : score >= 0.35 ? 'bg-yellow-100 text-yellow-700'
             : 'bg-red-100 text-red-700';
   return <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${cls}`}>{pct}%</span>;
 }
@@ -85,7 +92,13 @@ function LoginForm({ onSuccess }: { onSuccess: () => void }) {
 }
 
 // ── Match row ──────────────────────────────────────────────────────────────────
-function MatchRow({ match, onDecide }: { match: Match; onDecide: (id: string, d: string) => void }) {
+// `bucket` controls which action button(s) appear: each tab shows only the
+// transition that actually changes the status — Pending shows both; Approved
+// shows only Reject (demote); Rejected shows only Approve (rescue). This
+// kills the historical double-click-on-approved bug at the UI surface.
+function MatchRow({
+  match, bucket, onDecide,
+}: { match: Match; bucket: Bucket; onDecide: (id: string, d: 'approved' | 'rejected') => void }) {
   const job  = match.extracted_jobs;
   const raw  = job?.raw_jobs;
   const role = match.canonical_roles;
@@ -95,6 +108,9 @@ function MatchRow({ match, onDecide }: { match: Match; onDecide: (id: string, d:
     setDeciding(true);
     await onDecide(match.id, decision);
   }
+
+  const showApprove = bucket !== 'approved';
+  const showReject  = bucket !== 'rejected';
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr_auto] gap-4 items-center
@@ -145,23 +161,69 @@ function MatchRow({ match, onDecide }: { match: Match; onDecide: (id: string, d:
         )}
       </div>
 
-      {/* Approve / Reject */}
+      {/* Approve / Reject — only the actionable transition for this tab */}
       <div className="flex gap-2 flex-shrink-0">
+        {showApprove && (
+          <button
+            onClick={() => decide('approved')}
+            disabled={deciding}
+            className="px-4 py-2 rounded-xl bg-green-600 text-white text-xs font-bold
+                       hover:bg-green-700 disabled:opacity-40 transition-colors"
+          >
+            ✓ Approve
+          </button>
+        )}
+        {showReject && (
+          <button
+            onClick={() => decide('rejected')}
+            disabled={deciding}
+            className="px-4 py-2 rounded-xl bg-red-100 text-red-700 text-xs font-bold
+                       hover:bg-red-200 disabled:opacity-40 transition-colors"
+          >
+            ✗ Reject
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Pagination controls ────────────────────────────────────────────────────────
+function Pagination({
+  page, total, limit, onChange,
+}: { page: number; total: number; limit: number; onChange: (p: number) => void }) {
+  const totalPages = Math.max(1, Math.ceil(total / limit));
+  if (totalPages <= 1) return null;
+
+  const from = (page - 1) * limit + 1;
+  const to   = Math.min(page * limit, total);
+
+  return (
+    <div className="mt-6 flex items-center justify-between text-sm text-gray-600">
+      <span>
+        Showing <span className="font-semibold text-gray-900">{from}–{to}</span> of{' '}
+        <span className="font-semibold text-gray-900">{total}</span>
+      </span>
+      <div className="flex items-center gap-2">
         <button
-          onClick={() => decide('approved')}
-          disabled={deciding}
-          className="px-4 py-2 rounded-xl bg-green-600 text-white text-xs font-bold
-                     hover:bg-green-700 disabled:opacity-40 transition-colors"
+          onClick={() => onChange(page - 1)}
+          disabled={page <= 1}
+          className="px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-xs font-semibold
+                     hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
-          ✓ Approve
+          ← Prev
         </button>
+        <span className="text-xs text-gray-500">
+          Page <span className="font-semibold text-gray-900">{page}</span> of{' '}
+          <span className="font-semibold text-gray-900">{totalPages}</span>
+        </span>
         <button
-          onClick={() => decide('rejected')}
-          disabled={deciding}
-          className="px-4 py-2 rounded-xl bg-red-100 text-red-700 text-xs font-bold
-                     hover:bg-red-200 disabled:opacity-40 transition-colors"
+          onClick={() => onChange(page + 1)}
+          disabled={page >= totalPages}
+          className="px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-xs font-semibold
+                     hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
-          ✗ Reject
+          Next →
         </button>
       </div>
     </div>
@@ -172,38 +234,57 @@ function MatchRow({ match, onDecide }: { match: Match; onDecide: (id: string, d:
 export default function AdminClient({ isAuthed: initAuthed }: { isAuthed: boolean }) {
   const [authed,  setAuthed]  = useState(initAuthed);
   const [matches, setMatches] = useState<Match[]>([]);
-  const [tab,     setTab]     = useState<'pending' | 'approved' | 'rejected'>('pending');
+  const [tab,     setTab]     = useState<Bucket>('pending');
+  const [page,    setPage]    = useState(1);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState('');
   const [total,   setTotal]   = useState(0);
+  const [counts,  setCounts]  = useState<Counts>({ pending: 0, approved: 0, rejected: 0 });
   const [dbMissing, setDbMissing] = useState(false);
 
   useEffect(() => {
     if (!authed) return;
     let cancelled = false;
     (async () => {
-      const res = await fetch(`/api/admin/matches?status=${tab}`);
+      setLoading(true);
+      const res = await fetch(`/api/admin/matches?status=${tab}&page=${page}`);
       if (cancelled) return;
       if (res.status === 503) { setDbMissing(true); setLoading(false); return; }
       if (!res.ok) { setError('Failed to load matches'); setLoading(false); return; }
-      const { matches: data, total: t } = await res.json();
+      const { matches: data, total: t, counts: c } = await res.json();
       if (cancelled) return;
       setMatches(data ?? []);
       setTotal(t ?? 0);
+      if (c) setCounts(c);
       setError('');
       setLoading(false);
     })();
     return () => { cancelled = true; };
-  }, [authed, tab]);
+  }, [authed, tab, page]);
 
-  async function handleDecide(matchId: string, decision: string) {
+  async function handleDecide(matchId: string, decision: 'approved' | 'rejected') {
+    // Optimistic update: drop the row from the current view AND adjust the
+    // tab badge counts so the UI stays in sync without a refetch round-trip.
+    setMatches(prev => prev.filter(m => m.id !== matchId));
+    setTotal(t => Math.max(0, t - 1));
+    setCounts(prev => ({
+      ...prev,
+      [tab]:      Math.max(0, prev[tab] - 1),
+      [decision]: prev[decision] + 1,
+    }));
+
     await fetch('/api/admin/decide', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ matchId, decision }),
     });
-    // Remove from current tab's list
-    setMatches(prev => prev.filter(m => m.id !== matchId));
+  }
+
+  function changeTab(next: Bucket) {
+    if (next === tab) return;
+    setError('');
+    setPage(1);
+    setTab(next);
   }
 
   async function handleLogout() {
@@ -215,7 +296,7 @@ export default function AdminClient({ isAuthed: initAuthed }: { isAuthed: boolea
     return <LoginForm onSuccess={() => setAuthed(true)} />;
   }
 
-  const TABS = ['pending', 'approved', 'rejected'] as const;
+  const TABS: Bucket[] = ['pending', 'approved', 'rejected'];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -257,39 +338,43 @@ export default function AdminClient({ isAuthed: initAuthed }: { isAuthed: boolea
           </div>
         )}
 
-        {/* Tabs */}
+        {/* Tabs — every tab shows its own count badge from the API response */}
         <div className="flex gap-2 mb-6">
-          {TABS.map(t => (
-            <button
-              key={t}
-              onClick={() => { if (t !== tab) { setLoading(true); setError(''); setTab(t); } }}
-              className={[
-                'px-4 py-2 rounded-xl text-sm font-semibold capitalize transition-colors',
-                t === tab ? 'bg-gray-900 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50',
-              ].join(' ')}
-            >
-              {t}
-              {t === tab && total > 0 && (
-                <span className="ml-2 bg-white/20 px-1.5 py-0.5 rounded-full text-xs">
-                  {total}
+          {TABS.map(t => {
+            const active = t === tab;
+            return (
+              <button
+                key={t}
+                onClick={() => changeTab(t)}
+                className={[
+                  'px-4 py-2 rounded-xl text-sm font-semibold capitalize transition-colors flex items-center gap-2',
+                  active ? 'bg-gray-900 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50',
+                ].join(' ')}
+              >
+                {t}
+                <span className={[
+                  'px-1.5 py-0.5 rounded-full text-xs',
+                  active ? 'bg-white/20' : 'bg-gray-100 text-gray-600',
+                ].join(' ')}>
+                  {counts[t]}
                 </span>
-              )}
-            </button>
-          ))}
+              </button>
+            );
+          })}
         </div>
 
-        {/* Confidence legend */}
+        {/* Confidence legend — thresholds match matcher.py's routing rules. */}
         {tab === 'pending' && (
           <div className="flex items-center gap-4 mb-5 text-xs text-gray-500">
             <span className="font-semibold">Confidence:</span>
             <span className="flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-green-500" /> ≥85% auto-approved next run
+              <span className="w-2 h-2 rounded-full bg-green-500" /> ≥80% auto-approved
             </span>
             <span className="flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-yellow-500" /> 50–85% queued for review
+              <span className="w-2 h-2 rounded-full bg-yellow-500" /> 35–80% queued for review
             </span>
             <span className="flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-red-500" /> &lt;50% auto-rejected
+              <span className="w-2 h-2 rounded-full bg-red-500" /> &lt;35% auto-rejected
             </span>
           </div>
         )}
@@ -311,11 +396,19 @@ export default function AdminClient({ isAuthed: initAuthed }: { isAuthed: boolea
             </p>
           </div>
         ) : (
-          <div className="flex flex-col gap-3">
-            {matches.map(match => (
-              <MatchRow key={match.id} match={match} onDecide={handleDecide} />
-            ))}
-          </div>
+          <>
+            <div className="flex flex-col gap-3">
+              {matches.map(match => (
+                <MatchRow
+                  key={match.id}
+                  match={match}
+                  bucket={tab}
+                  onDecide={handleDecide}
+                />
+              ))}
+            </div>
+            <Pagination page={page} total={total} limit={20} onChange={setPage} />
+          </>
         )}
       </main>
     </div>

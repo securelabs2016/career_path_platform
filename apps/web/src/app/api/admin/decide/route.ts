@@ -2,6 +2,25 @@ import { isAdminAuthed } from '@/lib/admin-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { checkRateLimit, getClientIp, LIMITS } from '@/lib/rate-limit';
 
+/**
+ * POST /api/admin/decide  { matchId, decision: 'approved' | 'rejected' }
+ *
+ * Transition-aware: compares the match's CURRENT status to the requested
+ * decision and only touches the cached US count when the (was-approved →
+ * will-be-approved) bit actually flips. Same-status clicks are no-ops on
+ * the count, eliminating the historical double-count bug.
+ *
+ * Count rules (only applied when extracted_jobs.country = 'US'):
+ *   • pending/rejected → approved   →  open_jobs_count += 1, append company
+ *   • approved → pending/rejected   →  open_jobs_count -= 1 (clamped at 0)
+ *   • same status → no count change (still writes the audit row)
+ *
+ * Company list is APPEND-ONLY on demote — once a company has hired for a
+ * role we leave it in hiring_companies even if the specific match is
+ * demoted. The worldwide view live-queries role_matches anyway; only the
+ * US-cached fast path consumes this list, and stale entries there are
+ * harmless (one extra name in a hover tooltip).
+ */
 export async function POST(request: Request) {
   if (!(await isAdminAuthed())) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
@@ -26,7 +45,26 @@ export async function POST(request: Request) {
     );
   }
 
-  // Update match status
+  // Snapshot current state BEFORE the update so we can compute the count delta.
+  const { data: existing } = await supabase
+    .from('role_matches')
+    .select('status, canonical_role_id, extracted_jobs(country, raw_jobs(company))')
+    .eq('id', matchId)
+    .single();
+
+  if (!existing) {
+    return Response.json({ error: 'Match not found' }, { status: 404 });
+  }
+
+  const oldStatus = (existing as { status?: string }).status ?? '';
+  const roleId    = (existing as { canonical_role_id?: string }).canonical_role_id ?? '';
+  const ej = ((existing as unknown) as {
+    extracted_jobs?: { country?: string; raw_jobs?: { company?: string } } | null;
+  }).extracted_jobs;
+  const country = (ej?.country || '').toUpperCase();
+  const company = (ej?.raw_jobs?.company || '').trim();
+
+  // Apply the status change.
   const { error: matchErr } = await supabase
     .from('role_matches')
     .update({ status: decision })
@@ -36,53 +74,60 @@ export async function POST(request: Request) {
     return Response.json({ error: matchErr.message }, { status: 500 });
   }
 
-  // Record the human decision
+  // Always record the human decision — even no-op same-status clicks, since
+  // the audit log is a record of human review, not of count changes.
   await supabase.from('review_decisions').insert({
     match_id:   matchId,
     decided_by: 'admin',
     decision,
   });
 
-  // If approved: increment open_jobs_count + append source company to hiring_companies.
-  // Doc Step 5 (Section 3) calls for both — count and company list — on the canonical role.
-  // Phase 3 — only increment the cached US count when the job is in the US;
-  // worldwide totals are computed live from role_matches at API time.
-  if (decision === 'approved') {
-    const { data: match } = await supabase
-      .from('role_matches')
-      .select('canonical_role_id, extracted_jobs(country,raw_jobs(company))')
-      .eq('id', matchId)
-      .single();
+  // Count math — only US jobs feed the cached open_jobs_count column.
+  // Worldwide view live-aggregates from role_matches and is unaffected.
+  if (!roleId || country !== 'US') {
+    return Response.json({ ok: true });
+  }
 
-    const roleId  = match?.canonical_role_id;
-    // The embedded select gives us match.extracted_jobs.{country,raw_jobs.company}.
-    // Supabase typings narrow embedded relations to objects/arrays — cast loosely
-    // here since the shape is well-known from the schema FKs.
-    const ej = ((match as unknown) as {
-      extracted_jobs?: { country?: string; raw_jobs?: { company?: string } } | null;
-    })?.extracted_jobs;
-    const country = (ej?.country || '').toUpperCase();
-    const company = (ej?.raw_jobs?.company || '').trim();
+  const wasApproved    = oldStatus === 'approved';
+  const willBeApproved = decision  === 'approved';
 
-    if (roleId && country === 'US') {
-      await supabase.rpc('increment_job_count', { role_id: roleId });
+  // Same approval bit → no count change. Kills the historical double-count
+  // bug when an admin re-clicks Approve on an already-approved row.
+  if (wasApproved === willBeApproved) {
+    return Response.json({ ok: true });
+  }
 
-      if (company) {
-        // Append company to hiring_companies array, deduped.
-        const { data: roleRow } = await supabase
+  if (willBeApproved) {
+    // Promotion: pending|rejected → approved
+    await supabase.rpc('increment_job_count', { role_id: roleId });
+
+    if (company) {
+      const { data: roleRow } = await supabase
+        .from('canonical_roles')
+        .select('hiring_companies')
+        .eq('id', roleId)
+        .single();
+      const current: string[] = roleRow?.hiring_companies || [];
+      if (!current.includes(company)) {
+        await supabase
           .from('canonical_roles')
-          .select('hiring_companies')
-          .eq('id', roleId)
-          .single();
-        const current: string[] = roleRow?.hiring_companies || [];
-        if (!current.includes(company)) {
-          await supabase
-            .from('canonical_roles')
-            .update({ hiring_companies: [...current, company] })
-            .eq('id', roleId);
-        }
+          .update({ hiring_companies: [...current, company] })
+          .eq('id', roleId);
       }
     }
+  } else {
+    // Demotion: approved → pending|rejected. No decrement RPC exists, so
+    // read-modify-write the count with a floor of 0.
+    const { data: roleRow } = await supabase
+      .from('canonical_roles')
+      .select('open_jobs_count')
+      .eq('id', roleId)
+      .single();
+    const nextCount = Math.max(0, (roleRow?.open_jobs_count ?? 0) - 1);
+    await supabase
+      .from('canonical_roles')
+      .update({ open_jobs_count: nextCount })
+      .eq('id', roleId);
   }
 
   return Response.json({ ok: true });
