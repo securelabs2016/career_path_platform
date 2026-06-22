@@ -92,7 +92,7 @@ export async function GET(request: Request) {
       return Response.json({});
     }
 
-    let out: CountsByTitle = {};
+    const out: CountsByTitle = {};
 
     if (filter.mode === 'us-cached') {
       // Fast path: use cached US-only counts written by the matcher.
