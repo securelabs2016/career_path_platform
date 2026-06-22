@@ -73,12 +73,13 @@ function effectiveRow(role: Role): number {
 
 /**
  * Target page-container width that the map must fit inside (in pixels).
- * Matches the website's <main className="max-w-[1508px] ... sm:px-6">:
- *   1508 (max width) − 2 × 24 (sm:px-6 padding) = 1460px usable.
- * Sized so COL_W = 230 → CARD_W = 70 → cells come out exactly 230 × 230.
- * Tune this if you change the page container width.
+ * Page <main> is max-w-[1508px] − 2×24 (sm:px-6) = 1460px usable, but the
+ * map targets ~40px less so Space (6 clusters, the widest industry) doesn't
+ * sit flush against the page edges — mx-auto on the map div centers it,
+ * leaving ~20px breathing room on each side. AM/Semi (5 clusters) are
+ * narrower than this anyway and stay centered with more buffer.
  */
-const TARGET_TOTAL_WIDTH = 1460;
+const TARGET_TOTAL_WIDTH = 1420;
 
 // Inner sub-grid is capped at 3 × 3 — rows = salary tiers (top = highest),
 // up to 3 roles per tier-row.
