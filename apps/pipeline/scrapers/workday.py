@@ -154,7 +154,21 @@ def scrape_company(company: dict, supabase: Client, dead_slugs: list[str]) -> in
             log.error(f"Workday request failed for {slug!r}: {e}")
             break
 
-        payload = resp.json()
+        try:
+            payload = resp.json()
+        except ValueError:
+            # 200 OK but body wasn't JSON — anti-bot wall, maintenance page, or
+            # the tenant started returning HTML. Treat like a dead slug so the
+            # rest of the pipeline keeps running.
+            log.warning(
+                f"Workday {slug!r} returned non-JSON response "
+                f"(status {resp.status_code}, content-type "
+                f"{resp.headers.get('content-type', 'unknown')!r}) — "
+                f"likely anti-bot wall or board change. Skipping."
+            )
+            dead_slugs.append(slug)
+            break
+
         postings = payload.get("jobPostings", [])
         if seen_total is None:
             seen_total = payload.get("total", 0)
@@ -223,7 +237,18 @@ def run_workday(supabase: Client, industries: list[str] | None = None) -> dict[s
         total = 0
         log.info(f"Scraping Workday for {industry} ({len(companies)} companies)…")
         for company in companies:
-            n = scrape_company(company, supabase, dead_slugs)
+            try:
+                n = scrape_company(company, supabase, dead_slugs)
+            except Exception as e:
+                # Belt-and-suspenders — never let one company's unexpected crash
+                # take down the whole weekly run (extractor + matcher depend on
+                # us finishing).
+                log.error(
+                    f"Workday scraper crashed for {company.get('slug')!r}: {e}",
+                    exc_info=True,
+                )
+                dead_slugs.append(company.get("slug", "?"))
+                n = 0
             total += n
             time.sleep(1)  # be polite between companies
         totals[industry] = total
